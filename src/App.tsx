@@ -54,7 +54,7 @@ const StoreContent: React.FC = () => {
   if (isSecretAdminRoute) {
     if (adminAuthenticated) {
       return (
-        <div className="min-h-screen bg-[#fffaf5]">
+       <div className="min-h-screen bg-[var(--page-bg)] text-[var(--text-primary)] transition-colors duration-300">
           {toastMessage && (
             <div className="fixed bottom-6 right-6 z-50 bg-stone-900 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl border border-rose-500/40 animate-in slide-in-from-bottom-5 duration-300 flex items-center gap-2">
               <span>{toastMessage}</span>
@@ -77,7 +77,7 @@ const StoreContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-between relative bg-[#fffaf5]">
+    <div className="min-h-screen flex flex-col justify-between relative bg-[var(--page-bg)] text-[var(--text-primary)] transition-colors duration-300">
       
       {/* Toast Notification Floating Pill */}
       {toastMessage && (
@@ -97,11 +97,11 @@ const StoreContent: React.FC = () => {
           
           {/* Category Title & Filter Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-8 border-b-2 border-rose-200/80 pb-4">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-stone-900 flex items-center gap-2">
+            <div><h2 className="text-2xl sm:text-3xl font-black text-[var(--text-primary)] flex items-center gap-2">
+              
                 <span>{selectedCategory === 'All' ? '🌸 Handcrafted Wool & Cotton Collection' : selectedCategory}</span>
               </h2>
-              <p className="text-xs text-stone-500 font-semibold mt-1">
+              <p className="text-xs text-[var(--text-secondary)] font-semibold mt-1">
                 Showing {filteredProducts.length} unique hand-knitted item(s) ready for campus dorm delivery
               </p>
             </div>
@@ -118,12 +118,12 @@ const StoreContent: React.FC = () => {
 
           {/* Empty state */}
           {filteredProducts.length === 0 ? (
-            <div className="bg-white rounded-3xl p-12 text-center border-2 border-stone-200 max-w-md mx-auto my-12 space-y-3 shadow-md">
+            <div className="bg-[var(--surface)] rounded-3xl p-12 text-center border-2 border-[var(--border)] max-w-md mx-auto my-12 space-y-3 shadow-md transition-colors duration-300">
               <div className="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center text-3xl mx-auto">
                 🔍
               </div>
-              <h3 className="font-extrabold text-stone-800 text-lg">No crochet products found</h3>
-              <p className="text-xs text-stone-500 font-medium">
+             <h3 className="font-extrabold text-[var(--text-primary)] text-lg">No crochet products found</h3>
+              <p className="text-xs text-[var(--text-secondary)] font-medium">
                 We couldn't find any items matching "{searchQuery}". Try searching for tulips, sunflowers, or keychains!
               </p>
               <button
@@ -151,10 +151,10 @@ const StoreContent: React.FC = () => {
                 <HeartHandshake className="w-3.5 h-3.5" />
                 <span>Personalized Student Orders</span>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-black text-stone-900">
+              <h3 className="text-2xl sm:text-3xl font-black text-[var(--text-primary)]">
                 Need a Custom Crochet Gift For Someone Special?
               </h3>
-              <p className="text-xs sm:text-sm text-stone-700 font-semibold max-w-xl">
+              <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-semibold max-w-xl">
                 Choose your favorite yarn colors, stem count, and custom notes. We'll hand-crochet it and deliver directly to your dorm room or campus spot!
               </p>
             </div>

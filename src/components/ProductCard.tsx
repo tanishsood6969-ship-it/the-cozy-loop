@@ -89,7 +89,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Product Name */}
           <h3 
             onClick={handleCardClick}
-            className="font-bold text-stone-900 text-base sm:text-lg leading-snug cursor-pointer hover:text-rose-600 transition-colors line-clamp-1"
+           className="font-bold text-[var(--text-primary)] text-base sm:text-lg leading-snug cursor-pointer hover:text-rose-600 transition-colors line-clamp-1"
           >
             {product.name}
           </h3>
@@ -99,7 +99,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <div className="flex items-center text-amber-400">
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
             </div>
-            <span className="font-bold text-stone-800">{product.rating.toFixed(1)}</span>
+           <span className="font-bold text-[var(--text-primary)]">{product.rating.toFixed(1)}</span>
             <span className="text-stone-400">({product.reviewCount})</span>
           </div>
         </div>
@@ -125,7 +125,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="flex items-center justify-between pt-2 border-t border-stone-100">
           <div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-lg sm:text-xl font-extrabold text-stone-900">
+              <span className="text-lg sm:text-xl font-extrabold text-[var(--text-primary)]">
                 ₹{product.price}
               </span>
               {product.originalPrice && (

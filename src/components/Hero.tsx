@@ -24,21 +24,21 @@ export const Hero: React.FC = () => {
         {/* Left Column: Vibrant Headline & CTA */}
         <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
           
-          <div className="inline-flex items-center gap-2 bg-white/95 backdrop-blur-md border-2 border-rose-300 rounded-full px-4 py-1.5 shadow-md">
+          <div className="inline-flex items-center gap-2 bg-[var(--surface)]/95 backdrop-blur-md border-2 border-rose-300 rounded-full px-4 py-1.5 shadow-md">
             <span className="flex h-2.5 w-2.5 rounded-full bg-rose-500 animate-ping"></span>
             <span className="text-xs font-black text-rose-700 tracking-wider uppercase">
               🧶 100% Handcrafted Wool & Milk Cotton Studio
             </span>
           </div>
 
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-stone-900 leading-none tracking-tight">
+        <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[var(--text-primary)] leading-none tracking-tight">
             Hand-Knitted Flowers <br />
             <span className="bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 bg-clip-text text-transparent">
               That Bloom Forever 💕
             </span>
           </h2>
 
-          <p className="text-stone-700 text-sm sm:text-base max-w-xl mx-auto lg:mx-0 leading-relaxed font-semibold">
+         <p className="text-[var(--text-secondary)] text-sm sm:text-base max-w-xl mx-auto lg:mx-0 leading-relaxed font-semibold">
             Brighten your dorm desk, gift your best friends, or order a custom bouquet! Every tulip stem, plush frog keychain, and daisy bag is individually crocheted by hand using soft milk cotton & wool yarn.
           </p>
 
@@ -54,7 +54,7 @@ export const Hero: React.FC = () => {
 
             <button
               onClick={() => setActiveModal('customOrder')}
-              className="bg-white hover:bg-stone-50 text-stone-900 font-extrabold px-6 py-4 rounded-2xl border-2 border-amber-300 shadow-md transition-all transform hover:-translate-y-1 active:translate-y-0 text-sm sm:text-base flex items-center gap-2"
+              className="bg-[var(--surface)] hover:bg-stone-50 text-[var(--text-primary)] font-extrabold px-6 py-4 rounded-2xl border-2 border-amber-300 shadow-md transition-all transform hover:-translate-y-1 active:translate-y-0 text-sm sm:text-base flex items-center gap-2"
             >
               <Sparkles className="w-5 h-5 text-amber-500" />
               <span>Request Custom Design</span>
@@ -68,31 +68,43 @@ export const Hero: React.FC = () => {
                 <Heart className="w-5 h-5 fill-rose-500 text-rose-500" />
               </div>
               <div className="text-left">
-                <div className="text-xs sm:text-sm font-extrabold text-stone-900">Soft Wool Yarn</div>
-                <div className="text-[11px] text-stone-600 font-semibold">100% Premium Cotton</div>
-              </div>
-            </div>
+               <div className="text-xs sm:text-sm font-extrabold text-[var(--text-primary)]">
+  Soft Wool Yarn
+</div>
+<div className="text-[11px] text-[var(--text-secondary)] font-semibold">
+  100% Premium Cotton
+</div>
+</div>
+</div>
 
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-700 flex-shrink-0 shadow-xs">
-                <Truck className="w-5 h-5" />
-              </div>
-              <div className="text-left">
-                <div className="text-xs sm:text-sm font-extrabold text-stone-900">Dorm Drop</div>
-                <div className="text-[11px] text-stone-600 font-semibold">Fast Campus Pickup</div>
-              </div>
-            </div>
+<div className="flex items-center gap-2.5">
+  <div className="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-700 flex-shrink-0 shadow-xs">
+    <Truck className="w-5 h-5" />
+  </div>
+  <div className="text-left">
+    <div className="text-xs sm:text-sm font-extrabold text-[var(--text-primary)]">
+      Dorm Drop
+    </div>
+    <div className="text-[11px] text-[var(--text-secondary)] font-semibold">
+      Fast Campus Pickup
+    </div>
+  </div>
+</div>
 
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700 flex-shrink-0 shadow-xs">
-                <Star className="w-5 h-5 fill-emerald-500 text-emerald-500" />
-              </div>
-              <div className="text-left">
-                <div className="text-xs sm:text-sm font-extrabold text-stone-900">5.0 Star Rating</div>
-                <div className="text-[11px] text-stone-600 font-semibold">Verified Students</div>
-              </div>
-            </div>
-          </div>
+<div className="flex items-center gap-2.5">
+  <div className="w-10 h-10 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700 flex-shrink-0 shadow-xs">
+    <Star className="w-5 h-5 fill-emerald-500 text-emerald-500" />
+  </div>
+  <div className="text-left">
+    <div className="text-xs sm:text-sm font-extrabold text-[var(--text-primary)]">
+      5.0 Star Rating
+    </div>
+    <div className="text-[11px] text-[var(--text-secondary)] font-semibold">
+      Verified Students
+    </div>
+  </div>
+</div>
+</div>
         </div>
 
         {/* Right Column: Hero Visual Card with Yarn Border */}
@@ -103,25 +115,15 @@ export const Hero: React.FC = () => {
             <div className="glass-card rounded-3xl p-4 shadow-2xl transform rotate-1 hover:rotate-0 transition-transform duration-300 border-2 border-rose-300">
               <div className="relative h-72 w-full rounded-2xl overflow-hidden mb-3">
                 <img 
-                  src="https://images.unsplash.com/photo-1591886960571-74d43a9d4166?auto=format&fit=crop&w=800&q=80" 
-                  alt="Sunflower Bouquet"
+                  src="https://imgs.search.brave.com/49PPffm7k_l1g1i5UBvIj-nVC4kL-m8YnunmNJvkrYM/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pLmV0/c3lzdGF0aWMuY29t/LzY3MDcxODM1L3Iv/aWwvNWMwOTkxLzg0/MjQ0NzU3MjEvaWxf/MzAweDMwMC44NDI0/NDc1NzIxX2x6aHMu/anBn" 
                   className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-500" 
                 />
-                <span className="absolute top-3 left-3 bg-rose-600 text-white font-extrabold text-xs px-3 py-1 rounded-full shadow-md">
-                  🔥 Best Seller
-                </span>
-                <span className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-md text-stone-900 font-black text-base px-3 py-1 rounded-full shadow-md border border-rose-200">
-                  ₹650
-                </span>
               </div>
 
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-extrabold text-stone-900 text-base">Grand Sunflower Bouquet</h3>
-                  <p className="text-xs text-stone-500 font-semibold">Includes rustic kraft wrap & gift note</p>
-                </div>
-                <div className="flex items-center gap-1 text-amber-500 text-xs font-black bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-                  ★ 5.0 (38)
+                 <h3 className="font-extrabold text-[var(--text-primary)] dark:text-white text-base">Grand Sunflower Bouquet</h3>
+                  <p className="text-xs text-[var(--text-secondary)] font-semibold">Includes rustic kraft wrap & gift note</p>
                 </div>
               </div>
             </div>
@@ -132,8 +134,8 @@ export const Hero: React.FC = () => {
                 🌸
               </div>
               <div>
-                <div className="text-xs font-black text-stone-900">Custom Colors Available</div>
-                <div className="text-[10px] text-stone-600 font-bold">Pick your favorite yarn shades!</div>
+                <div className="hero-theme-text text-xs font-black text-[var(--text-primary)]">Custom Colors Available</div>
+                <div className="hero-text-mute text-xs [var(--text-secondary)]">Pick your favorite yarn shades!</div>
               </div>
             </div>
           </div>

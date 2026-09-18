@@ -1,16 +1,47 @@
+
 @import "tailwindcss";
+:root {
+  --page-bg: #fffaf5;
+  --surface: #ffffff;
+  --surface-soft: #faf7f4;
+  --surface-hover: #f5f5f4;
+  --text-primary: #1c1917;
+  --text-secondary: #78716c;
+  --border: #e7e5e4;
+  --border-soft: #ffe4e6;
+}
+
+html.dark {
+  --page-bg: #171412;
+  --surface: #211d1a;
+  --surface-soft: #29231f;
+  --surface-hover: #332b27;
+  --text-primary: #f5f1ed;
+  --text-secondary: #b8ada5;
+  --border: #403732;
+  --border-soft: #55383d;
+}
+
 
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    /* Soft knitted / yarn weave pattern background */
-    background-color: #fffaf5;
-    background-image: 
-      radial-gradient(#fecdd3 0.75px, transparent 0.75px), 
+    background-color: var(--page-bg);
+    background-image:
+      radial-gradient(#fecdd3 0.75px, transparent 0.75px),
       radial-gradient(#fed7aa 0.75px, #fffaf5 0.75px);
     background-size: 30px 30px;
     background-position: 0 0, 15px 15px;
-    color: #1c1917;
+    color: var(--text-primary);
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  html.dark body {
+    background-color: #171412;
+    background-image:
+      radial-gradient(#3f3030 0.75px, transparent 0.75px),
+      radial-gradient(#29221e 0.75px, #171412 0.75px);
+    color: #f5f5f4;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -19,11 +50,17 @@
 }
 
 /* Glassmorphism & Yarn Card Utilities */
+
 .glass-panel {
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.dark .glass-panel {
+  background: rgba(41, 34, 30, 0.90);
+  border-color: rgba(255, 255, 255, 0.10);
 }
 
 .glass-nav {
@@ -33,26 +70,47 @@
   border-bottom: 2px solid rgba(251, 113, 133, 0.2);
 }
 
+.dark .glass-nav {
+  background: rgba(28, 25, 23, 0.94);
+  border-bottom-color: rgba(251, 113, 133, 0.25);
+}
+
 .glass-card {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border: 2px solid #ffe4e6;
-  box-shadow: 0 12px 30px -5px rgba(244, 63, 94, 0.1), 0 4px 12px -2px rgba(251, 146, 60, 0.08);
+  box-shadow: 0 12px 30px -5px rgba(244, 63, 94, 0.1),
+              0 4px 12px -2px rgba(251, 146, 60, 0.08);
+}
+
+.dark .glass-card {
+  background: rgba(41, 34, 30, 0.96);
+  border-color: #4a3538;
+  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.35);
 }
 
 .glass-card:hover {
   border-color: #f43f5e;
-  box-shadow: 0 20px 35px -5px rgba(244, 63, 94, 0.2), 0 8px 16px -2px rgba(251, 146, 60, 0.15);
+  box-shadow: 0 20px 35px -5px rgba(244, 63, 94, 0.2),
+              0 8px 16px -2px rgba(251, 146, 60, 0.15);
 }
 
 /* Yarn & Wool Specific Aesthetic Gradients */
+
 .yarn-gradient-hero {
   background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 30%, #fef3c7 65%, #f0fdf4 100%);
-  background-image: 
+  background-image:
     radial-gradient(#f472b6 0.8px, transparent 0.8px),
     radial-gradient(#fbbf24 0.8px, transparent 0.8px);
   background-size: 24px 24px;
   background-position: 0 0, 12px 12px;
+}
+
+.dark .yarn-gradient-hero {
+  background: linear-gradient(135deg, #3a2028 0%, #38242b 30%, #39301f 65%, #1e3028 100%);
+  background-image:
+    radial-gradient(#9d4c68 0.8px, transparent 0.8px),
+    radial-gradient(#9a7620 0.8px, transparent 0.8px);
 }
 
 .yarn-gradient-vibrant {
@@ -68,6 +126,7 @@
 }
 
 /* Craft Stitch Borders */
+
 .yarn-stitch-border {
   border: 3px dashed #f43f5e;
 }
@@ -81,6 +140,7 @@
 }
 
 /* Animations */
+
 @keyframes float-wool {
   0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
   50% { transform: translateY(-12px) rotate(6deg) scale(1.05); }
@@ -100,6 +160,7 @@
 }
 
 /* Custom Wool Scrollbar */
+
 ::-webkit-scrollbar {
   width: 10px;
 }
@@ -108,12 +169,28 @@
   background: #fffaf5;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #171412;
+}
+
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #f43f5e 0%, #f59e0b 100%);
   border-radius: 9999px;
   border: 2px solid #fffaf5;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  border-color: #171412;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: #be123c;
+}
+/* Hero text automatically switches between light and dark mode */
+html.dark .hero-theme-text {
+  color: #ffffff !important;
+}
+
+html.dark .hero-theme-muted {
+  color: #d6d3d1 !important;
 }
