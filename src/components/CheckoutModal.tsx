@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { X, CheckCircle, MapPin, Phone, User, CreditCard, Truck, QrCode, Copy, Check, Upload, ShieldAlert, BadgeCheck } from 'lucide-react';
+import { X, CheckCircle, MapPin, Phone, User, CreditCard, Truck, QrCode, Copy, Check, Upload, BadgeCheck } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export const CheckoutModal: React.FC = () => {

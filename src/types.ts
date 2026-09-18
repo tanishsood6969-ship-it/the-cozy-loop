@@ -78,7 +78,9 @@ export interface Order {
   userId?: string;
   upiTransactionId?: string;
   paymentScreenshotUrl?: string;
-  paymentVerificationStatus?: 'Pending Owner Verification' | 'Payment Verified ✅' | 'Payment Rejected ❌';
+   paymentVerificationStatus?: 'Pending Owner Verification' | 'Payment Verified ✅' | 'Payment Rejected ❌';
+
+  status: 'Pending' | 'Crocheting' | 'Ready for Pickup' | 'Delivered' | 'Cancelled';
 }
 
 export interface CustomRequest {
