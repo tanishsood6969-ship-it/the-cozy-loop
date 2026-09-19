@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { StoreProvider, useStore } from './context/StoreContext';
+
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ProductCard } from './components/ProductCard';
@@ -16,129 +16,38 @@ import { UserOrdersModal } from './components/UserOrdersModal';
 import { SecretAdminLoginPage } from './components/Admin/SecretAdminLoginPage';
 import { AdminDashboard } from './components/Admin/AdminDashboard';
 import { Footer } from './components/Footer';
-import { Sparkles, HeartHandshake } from 'lucide-react';
 
-const StoreContent: React.FC = () => {
-  const {
-    products,
-    reviews,
-    selectedCategory,
-    searchQuery,
-    isAdmin,
-    adminAuthenticated,
-    toastMessage,
-    setActiveModal,
-    setSelectedCategory
-  } = useStore();
+import {
+  Sparkles,
+  HeartHandshake
+} from 'lucide-react';
 
-  const [currentHash, setCurrentHash] = useState<string>(
-    window.location.hash
-  );
+/*
+ * ============================================================
+ * TOAST NOTIFICATION
+ * ============================================================
+ *
+ * IMPORTANT:
+ * This component is intentionally OUTSIDE StoreContent.
+ *
+ * This prevents React from treating the toast component as a
+ * brand-new component every time StoreContent re-renders.
+ * ============================================================
+ */
 
-  useEffect(() => {
-    const handleHashChange = () => {
-      setCurrentHash(window.location.hash);
-    };
+interface ToastNotificationProps {
+  message: string | null;
+}
 
-    window.addEventListener(
-      'hashchange',
-      handleHashChange
-    );
-
-    return () =>
-      window.removeEventListener(
-        'hashchange',
-        handleHashChange
-      );
-  }, []);
-
-  /*
-   * ============================================================
-   * FILTER PRODUCTS
-   * ============================================================
-   */
-
-  const filteredProducts = products.filter(product => {
-    const matchesCategory =
-      selectedCategory === 'All' ||
-      product.category === selectedCategory;
-
-    const matchesSearch =
-      searchQuery === '' ||
-      product.name
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      product.description
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      product.category
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-
-    return matchesCategory && matchesSearch;
-  });
-
-  /*
-   * ============================================================
-   * CALCULATE LIVE PRODUCT RATINGS
-   * ============================================================
-   */
-
-  const getProductWithLiveRating = (
-    product: typeof products[number]
-  ) => {
-    const productReviews = reviews.filter(
-      review =>
-        review.productName.trim().toLowerCase() ===
-        product.name.trim().toLowerCase()
-    );
-
-    /*
-     * If there are no reviews, preserve the product's
-     * existing rating and count.
-     */
-    if (productReviews.length === 0) {
-      return product;
-    }
-
-    const totalRating = productReviews.reduce(
-      (sum, review) =>
-        sum + Number(review.rating || 0),
-      0
-    );
-
-    const averageRating =
-      totalRating / productReviews.length;
-
-    const roundedRating =
-      Math.round(averageRating * 10) / 10;
-
-    return {
-      ...product,
-      rating: roundedRating,
-      reviewCount: productReviews.length
-    };
-  };
-
-  /*
-   * ============================================================
-   * TOAST NOTIFICATION
-   * ============================================================
-   *
-   * All toast notifications now appear at the TOP CENTER
-   * with a smooth pop / drop animation.
-   * ============================================================
-   */
-
- 
-const ToastNotification = () => {
-  if (!toastMessage) {
+const ToastNotification: React.FC<
+  ToastNotificationProps
+> = ({ message }) => {
+  if (!message) {
     return null;
   }
 
   return (
     <div
-      key={toastMessage}
       className="
         fixed
         top-6
@@ -215,7 +124,7 @@ const ToastNotification = () => {
 
           {/* Toast message */}
           <span className="relative leading-5">
-            {toastMessage}
+            {message}
           </span>
 
           {/* Moving shine */}
@@ -239,10 +148,153 @@ const ToastNotification = () => {
   );
 };
 
+/*
+ * ============================================================
+ * STORE CONTENT
+ * ============================================================
+ */
+
+const StoreContent: React.FC = () => {
+  const {
+    products,
+    reviews,
+    selectedCategory,
+    searchQuery,
+    isAdmin,
+    adminAuthenticated,
+    toastMessage,
+    setActiveModal,
+    setSelectedCategory
+  } = useStore();
+
+  const [currentHash, setCurrentHash] =
+    useState<string>(
+      window.location.hash
+    );
 
   /*
    * ============================================================
-   * SECRET ADMIN PAGE ROUTING
+   * HASH ROUTING
+   * ============================================================
+   */
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setCurrentHash(
+        window.location.hash
+      );
+    };
+
+    window.addEventListener(
+      'hashchange',
+      handleHashChange
+    );
+
+    return () => {
+      window.removeEventListener(
+        'hashchange',
+        handleHashChange
+      );
+    };
+  }, []);
+
+  /*
+   * ============================================================
+   * FILTER PRODUCTS
+   * ============================================================
+   */
+
+  const filteredProducts =
+    products.filter(product => {
+      const matchesCategory =
+        selectedCategory === 'All' ||
+        product.category ===
+          selectedCategory;
+
+      const matchesSearch =
+        searchQuery === '' ||
+        product.name
+          .toLowerCase()
+          .includes(
+            searchQuery.toLowerCase()
+          ) ||
+        product.description
+          .toLowerCase()
+          .includes(
+            searchQuery.toLowerCase()
+          ) ||
+        product.category
+          .toLowerCase()
+          .includes(
+            searchQuery.toLowerCase()
+          );
+
+      return (
+        matchesCategory &&
+        matchesSearch
+      );
+    });
+
+  /*
+   * ============================================================
+   * LIVE PRODUCT RATINGS
+   * ============================================================
+   */
+
+  const getProductWithLiveRating = (
+    product: typeof products[number]
+  ) => {
+    const productReviews =
+      reviews.filter(
+        review =>
+          review.productName
+            .trim()
+            .toLowerCase() ===
+          product.name
+            .trim()
+            .toLowerCase()
+      );
+
+    /*
+     * If there are no reviews, preserve the
+     * existing product rating.
+     */
+    if (
+      productReviews.length === 0
+    ) {
+      return product;
+    }
+
+    const totalRating =
+      productReviews.reduce(
+        (sum, review) =>
+          sum +
+          Number(
+            review.rating || 0
+          ),
+        0
+      );
+
+    const averageRating =
+      totalRating /
+      productReviews.length;
+
+    const roundedRating =
+      Math.round(
+        averageRating * 10
+      ) / 10;
+
+    return {
+      ...product,
+      rating: roundedRating,
+      reviewCount:
+        productReviews.length
+    };
+  };
+
+  /*
+   * ============================================================
+   * SECRET ADMIN ROUTING
    * ============================================================
    */
 
@@ -251,12 +303,27 @@ const ToastNotification = () => {
     currentHash === '#/admin' ||
     isAdmin;
 
+  /*
+   * ============================================================
+   * ADMIN DASHBOARD
+   * ============================================================
+   */
+
   if (isSecretAdminRoute) {
     if (adminAuthenticated) {
       return (
-        <div className="min-h-screen bg-[var(--page-bg)] text-[var(--text-primary)] transition-colors duration-300">
-
-          <ToastNotification />
+        <div
+          className="
+            min-h-screen
+            bg-[var(--page-bg)]
+            text-[var(--text-primary)]
+            transition-colors
+            duration-300
+          "
+        >
+          <ToastNotification
+            message={toastMessage}
+          />
 
           <AdminDashboard />
         </div>
@@ -264,65 +331,134 @@ const ToastNotification = () => {
     }
 
     return (
-      <div className="min-h-screen bg-stone-950">
-
-        <ToastNotification />
+      <div
+        className="
+          min-h-screen
+          bg-stone-950
+        "
+      >
+        <ToastNotification
+          message={toastMessage}
+        />
 
         <SecretAdminLoginPage />
       </div>
     );
   }
 
+  /*
+   * ============================================================
+   * MAIN STORE
+   * ============================================================
+   */
+
   return (
-    <div className="min-h-screen relative bg-[var(--page-bg)]/50 text-[var(--text-primary)] transition-colors duration-300">
-
-      {/* ========================================================
+    <div
+      className="
+        min-h-screen
+        relative
+        bg-[var(--page-bg)]/50
+        text-[var(--text-primary)]
+        transition-colors
+        duration-300
+      "
+    >
+      {/* ======================================================
           TOP CENTER TOAST
-          ======================================================== */}
+          ====================================================== */}
 
-      <ToastNotification />
+      <ToastNotification
+        message={toastMessage}
+      />
 
       <Navbar />
 
       <main className="flex-1">
 
-        {/* ======================================================
+        {/* ====================================================
             HERO
-            ====================================================== */}
+            ==================================================== */}
 
-        {selectedCategory === 'All' && !searchQuery && (
-          <Hero />
-        )}
+        {selectedCategory ===
+          'All' &&
+          !searchQuery && (
+            <Hero />
+          )}
 
-        {/* ======================================================
+        {/* ====================================================
             PRODUCT CATALOG
-            ====================================================== */}
+            ==================================================== */}
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12">
+        <div
+          className="
+            max-w-7xl
+            mx-auto
+            px-4
+            sm:px-8
+            py-8
+            sm:py-12
+          "
+        >
 
-          {/* Category Title & Filter Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-8 border-b-2 border-rose-200/80 pb-4">
-
+          {/* Category Header */}
+          <div
+            className="
+              flex
+              flex-col
+              sm:flex-row
+              sm:items-center
+              justify-between
+              gap-2
+              mb-8
+              border-b-2
+              border-rose-200/80
+              pb-4
+            "
+          >
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-[var(--text-primary)] flex items-center gap-2">
-
+              <h2
+                className="
+                  text-2xl
+                  sm:text-3xl
+                  font-black
+                  text-[var(--text-primary)]
+                  flex
+                  items-center
+                  gap-2
+                "
+              >
                 <span>
-                  {selectedCategory === 'All'
+                  {selectedCategory ===
+                  'All'
                     ? '🌸 Handcrafted Wool & Cotton Collection'
                     : selectedCategory}
                 </span>
-
               </h2>
 
-              <p className="text-xs text-[var(--text-secondary)] font-semibold mt-1">
-                Showing {filteredProducts.length} unique hand-knitted item(s) ready for campus dorm delivery
+              <p
+                className="
+                  text-xs
+                  text-[var(--text-secondary)]
+                  font-semibold
+                  mt-1
+                "
+              >
+                Showing{' '}
+                {
+                  filteredProducts.length
+                }{' '}
+                unique hand-knitted
+                item(s) ready for campus
+                dorm delivery
               </p>
             </div>
 
-            {/* Custom Request CTA Button */}
+            {/* Custom Order Button */}
             <button
               onClick={() =>
-                setActiveModal('customOrder')
+                setActiveModal(
+                  'customOrder'
+                )
               }
               className="
                 bg-amber-100
@@ -344,19 +480,28 @@ const ToastNotification = () => {
                 shadow-xs
               "
             >
-              <Sparkles className="w-4 h-4 text-amber-600" />
+              <Sparkles
+                className="
+                  w-4
+                  h-4
+                  text-amber-600
+                "
+              />
 
               <span>
-                Want a custom flower color? Request Custom Order
+                Want a custom flower
+                color? Request Custom
+                Order
               </span>
             </button>
           </div>
 
-          {/* ====================================================
+          {/* ==================================================
               EMPTY STATE
-              ==================================================== */}
+              ================================================== */}
 
-          {filteredProducts.length === 0 ? (
+          {filteredProducts.length ===
+          0 ? (
             <div
               className="
                 bg-[var(--surface)]
@@ -374,23 +519,52 @@ const ToastNotification = () => {
                 duration-300
               "
             >
-
-              <div className="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center text-3xl mx-auto">
+              <div
+                className="
+                  w-16
+                  h-16
+                  rounded-full
+                  bg-rose-100
+                  flex
+                  items-center
+                  justify-center
+                  text-3xl
+                  mx-auto
+                "
+              >
                 🔍
               </div>
 
-              <h3 className="font-extrabold text-[var(--text-primary)] text-lg">
-                No crochet products found
+              <h3
+                className="
+                  font-extrabold
+                  text-[var(--text-primary)]
+                  text-lg
+                "
+              >
+                No crochet products
+                found
               </h3>
 
-              <p className="text-xs text-[var(--text-secondary)] font-medium">
-                We couldn't find any items matching "{searchQuery}".
-                Try searching for tulips, sunflowers, or keychains!
+              <p
+                className="
+                  text-xs
+                  text-[var(--text-secondary)]
+                  font-medium
+                "
+              >
+                We couldn't find any
+                items matching "
+                {searchQuery}".
+                Try searching for tulips,
+                sunflowers, or keychains!
               </p>
 
               <button
                 onClick={() => {
-                  setSelectedCategory('All');
+                  setSelectedCategory(
+                    'All'
+                  );
                 }}
                 className="
                   bg-stone-900
@@ -424,29 +598,29 @@ const ToastNotification = () => {
                 gap-6
               "
             >
-              {filteredProducts.map(product => {
+              {filteredProducts.map(
+                product => {
+                  const liveProduct =
+                    getProductWithLiveRating(
+                      product
+                    );
 
-                /*
-                 * Calculate rating directly from live reviews.
-                 */
-                const liveProduct =
-                  getProductWithLiveRating(
-                    product
+                  return (
+                    <ProductCard
+                      key={product.id}
+                      product={
+                        liveProduct
+                      }
+                    />
                   );
-
-                return (
-                  <ProductCard
-                    key={product.id}
-                    product={liveProduct}
-                  />
-                );
-              })}
+                }
+              )}
             </div>
           )}
 
-          {/* ====================================================
+          {/* ==================================================
               CUSTOM COMMISSION BANNER
-              ==================================================== */}
+              ================================================== */}
 
           <div
             className="
@@ -465,9 +639,13 @@ const ToastNotification = () => {
               shadow-md
             "
           >
-
-            <div className="space-y-2 text-center md:text-left">
-
+            <div
+              className="
+                space-y-2
+                text-center
+                md:text-left
+              "
+            >
               <div
                 className="
                   inline-flex
@@ -483,26 +661,54 @@ const ToastNotification = () => {
                   shadow-xs
                 "
               >
-                <HeartHandshake className="w-3.5 h-3.5" />
+                <HeartHandshake
+                  className="
+                    w-3.5
+                    h-3.5
+                  "
+                />
 
                 <span>
-                  Personalized Student Orders
+                  Personalized Student
+                  Orders
                 </span>
               </div>
 
-              <h3 className="text-2xl sm:text-3xl font-black text-[var(--text-primary)]">
-                Need a Custom Crochet Gift For Someone Special?
+              <h3
+                className="
+                  text-2xl
+                  sm:text-3xl
+                  font-black
+                  text-[var(--text-primary)]
+                "
+              >
+                Need a Custom Crochet
+                Gift For Someone Special?
               </h3>
 
-              <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-semibold max-w-xl">
-                Choose your favorite yarn colors, stem count, and custom notes.
-                We'll hand-crochet it and deliver directly to your dorm room or campus spot!
+              <p
+                className="
+                  text-xs
+                  sm:text-sm
+                  text-[var(--text-secondary)]
+                  font-semibold
+                  max-w-xl
+                "
+              >
+                Choose your favorite yarn
+                colors, stem count, and
+                custom notes. We'll
+                hand-crochet it and deliver
+                directly to your dorm room
+                or campus spot!
               </p>
             </div>
 
             <button
               onClick={() =>
-                setActiveModal('customOrder')
+                setActiveModal(
+                  'customOrder'
+                )
               }
               className="
                 bg-gradient-to-r
@@ -530,9 +736,9 @@ const ToastNotification = () => {
         <Footer />
       </main>
 
-      {/* ========================================================
+      {/* ======================================================
           ALL MODALS & DRAWERS
-          ======================================================== */}
+          ====================================================== */}
 
       <ProductModal />
       <CustomOrderModal />
@@ -543,22 +749,27 @@ const ToastNotification = () => {
       <AuthModal />
       <AdminAuthModal />
       <UserOrdersModal />
-
     </div>
   );
 };
 
 /*
- * ==============================================================
+ * ============================================================
  * APP
- * ==============================================================
+ * ============================================================
  */
 
 export function App() {
   return (
     <StoreProvider>
-
-      <div className="relative min-h-screen w-full max-w-full ">
+      <div
+        className="
+          relative
+          min-h-screen
+          w-full
+          max-w-full
+        "
+      >
 
         {/* Background Video */}
         <video
@@ -598,12 +809,9 @@ export function App() {
         />
 
         <StoreContent />
-
       </div>
-
     </StoreProvider>
   );
 }
 
 export default App;
-

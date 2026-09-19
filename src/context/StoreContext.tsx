@@ -202,8 +202,7 @@ const getSafeLocalStorage = <T,>(
   fallback: T
 ): T => {
   try {
-    const saved =
-      localStorage.getItem(key);
+    const saved = localStorage.getItem(key);
 
     if (
       !saved ||
@@ -259,8 +258,7 @@ const INITIAL_DEMO_USERS: User[] = [
     email: 'aarav@university.edu',
     phone: '+91 98765 43210',
     password: 'student123',
-    dormOrBuilding:
-      'Subir Hall - Block B',
+    dormOrBuilding: 'Subir Hall - Block B',
     roomOrSpot: 'Room 304'
   }
 ];
@@ -405,9 +403,7 @@ export const StoreProvider: React.FC<{
 
     localStorage.setItem(
       'cozy_dark_mode',
-      isDarkMode
-        ? 'true'
-        : 'false'
+      isDarkMode ? 'true' : 'false'
     );
   }, [isDarkMode]);
 
@@ -451,8 +447,29 @@ export const StoreProvider: React.FC<{
   const cloudInitialized =
     useRef(false);
 
+  /*
+   * Prevent duplicate Add To Cart calls.
+   */
+  const addToCartLock =
+    useRef(false);
+
   const cloudLoadFailed =
     useRef(false);
+
+  /*
+   * Toast refs.
+   *
+   * IMPORTANT:
+   * These are declared ONLY ONCE in this component.
+   */
+  const toastTimeoutRef =
+    useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const lastToastMessageRef =
+    useRef<string | null>(null);
+
+  const lastToastTimeRef =
+    useRef<number>(0);
 
   const cloudDataTypes =
     useRef<Set<string>>(
@@ -470,9 +487,10 @@ export const StoreProvider: React.FC<{
     );
 
   /*
-   * Keep the latest reviews available to callbacks/effects
+   * Keep latest reviews available to callbacks/effects
    * that are created only once.
    */
+
   const reviewsRef =
     useRef<Review[]>(reviews);
 
@@ -483,10 +501,6 @@ export const StoreProvider: React.FC<{
   /*
    * ============================================================
    * SAVE QUEUE
-   * ============================================================
-   *
-   * Prevents multiple Supabase writes of the same data type
-   * from racing against each other.
    * ============================================================
    */
 
@@ -513,9 +527,7 @@ export const StoreProvider: React.FC<{
      */
     incoming.forEach(
       review => {
-        if (
-          review?.id
-        ) {
+        if (review?.id) {
           merged.set(
             String(review.id),
             review
@@ -525,21 +537,14 @@ export const StoreProvider: React.FC<{
     );
 
     /*
-     * Add current/local reviews AFTER cloud reviews.
+     * Add current/local reviews after cloud reviews.
      *
-     * This is extremely important.
-     *
-     * If an old Supabase snapshot does not contain a review
-     * that currently exists locally, the local review remains.
-     *
-     * If both contain the same review, the current/local
-     * version wins.
+     * Local/current version wins if the same review exists
+     * in both places.
      */
     existing.forEach(
       review => {
-        if (
-          review?.id
-        ) {
+        if (review?.id) {
           merged.set(
             String(review.id),
             review
@@ -549,7 +554,7 @@ export const StoreProvider: React.FC<{
     );
 
     /*
-     * Newest generated review IDs are shown first.
+     * Newest generated review IDs first.
      */
     return Array.from(
       merged.values()
@@ -599,7 +604,7 @@ export const StoreProvider: React.FC<{
           );
 
         /*
-         * No reviews = preserve existing product rating.
+         * No reviews = preserve existing rating.
          */
         if (
           productReviews.length ===
@@ -653,8 +658,7 @@ export const StoreProvider: React.FC<{
 
         return {
           ...product,
-          rating:
-            rounded,
+          rating: rounded,
           reviewCount:
             ratings.length
         };
@@ -756,7 +760,6 @@ export const StoreProvider: React.FC<{
 
             /*
              * Realtime already delivered this exact data.
-             * No need to write it again.
              */
             if (
               lastCloudData.current[
@@ -796,9 +799,7 @@ export const StoreProvider: React.FC<{
                   }
                 );
 
-            if (
-              error
-            ) {
+            if (error) {
               console.error(
                 `Error saving ${dataType}:`,
                 error
@@ -846,9 +847,7 @@ export const StoreProvider: React.FC<{
         const cloudData =
           await loadStoreData();
 
-        if (
-          cancelled
-        ) {
+        if (cancelled) {
           return;
         }
 
@@ -885,8 +884,7 @@ export const StoreProvider: React.FC<{
          */
 
         let cloudReviews: Review[] = [];
-
-       let cloudProducts: Product[] = [];
+        let cloudProducts: Product[] = [];
 
         cloudData.forEach(
           item => {
@@ -979,17 +977,6 @@ export const StoreProvider: React.FC<{
          * ========================================================
          * MERGE REVIEWS
          * ========================================================
-         *
-         * IMPORTANT:
-         * Use reviewsRef.current rather than `reviews`.
-         *
-         * `reviews` inside this effect would be the value from
-         * the first render because this effect runs only once.
-         *
-         * If a user submits a review while the cloud request is
-         * still loading, reviewsRef.current contains that new
-         * review and it will NOT be lost.
-         * ========================================================
          */
 
         const currentReviews =
@@ -998,46 +985,49 @@ export const StoreProvider: React.FC<{
         let finalReviews =
           currentReviews;
 
-       if (cloudReviews.length > 0) {
-  finalReviews =
-    mergeReviews(
-      currentReviews,
-      cloudReviews
-    );
+        if (
+          cloudReviews.length > 0
+        ) {
+          finalReviews =
+            mergeReviews(
+              currentReviews,
+              cloudReviews
+            );
 
-  setReviews(
-    finalReviews
-  );
+          setReviews(
+            finalReviews
+          );
 
-  const cloudIds =
-    new Set<string>();
+          const cloudIds =
+            new Set<string>();
 
-  for (
-    const review of cloudReviews
-  ) {
-    cloudIds.add(
-      String(review.id)
-    );
-  }
+          for (
+            const review of cloudReviews
+          ) {
+            cloudIds.add(
+              String(review.id)
+            );
+          }
 
-  const hasLocalReviewsMissingFromCloud =
-    currentReviews.some(
-      review =>
-        !cloudIds.has(
-          String(
-            review.id
-          )
-        )
-    );
+          const hasLocalReviewsMissingFromCloud =
+            currentReviews.some(
+              review =>
+                !cloudIds.has(
+                  String(
+                    review.id
+                  )
+                )
+            );
 
-  if (
-    hasLocalReviewsMissingFromCloud
-  ) {
-    modifiedDataTypes.current.add(
-      'reviews'
-    );
-  }
-}
+          if (
+            hasLocalReviewsMissingFromCloud
+          ) {
+            modifiedDataTypes.current.add(
+              'reviews'
+            );
+          }
+        }
+
         /*
          * ========================================================
          * PRODUCTS
@@ -1045,7 +1035,7 @@ export const StoreProvider: React.FC<{
          */
 
         if (
-          cloudProducts
+          cloudProducts.length > 0
         ) {
           const productsWithRatings =
             recalculateProductRatings(
@@ -1101,26 +1091,27 @@ export const StoreProvider: React.FC<{
             'settings'
           );
 
-          /*
-           * Use the latest refs/state values.
-           */
           await Promise.all([
             saveStoreData(
               'products',
               products
             ),
+
             saveStoreData(
               'orders',
               orders
             ),
+
             saveStoreData(
               'custom_requests',
               customRequests
             ),
+
             saveStoreData(
               'reviews',
               reviewsRef.current
             ),
+
             saveStoreData(
               'settings',
               settings
@@ -1218,10 +1209,6 @@ export const StoreProvider: React.FC<{
              * ========================================================
              * REVIEWS
              * ========================================================
-             *
-             * NEVER blindly replace reviews with the realtime
-             * snapshot.
-             * ========================================================
              */
 
             if (
@@ -1244,10 +1231,6 @@ export const StoreProvider: React.FC<{
                         incomingReviews
                       );
 
-                    /*
-                     * Check whether the current local state contains
-                     * reviews missing from the cloud event.
-                     */
                     const incomingIds =
                       new Set(
                         incomingReviews.map(
@@ -1280,11 +1263,6 @@ export const StoreProvider: React.FC<{
                   }
                 );
 
-                /*
-                 * Only use this as a record of what Supabase
-                 * actually sent. The merge above protects local
-                 * reviews from being deleted.
-                 */
                 lastCloudData.current[
                   dataType
                 ] = serialized;
@@ -1313,20 +1291,12 @@ export const StoreProvider: React.FC<{
                     const incomingProducts =
                       data as Product[];
 
-                    /*
-                     * Use the latest reviews from the ref,
-                     * NOT the stale `reviews` closure.
-                     */
                     const updatedProducts =
                       recalculateProductRatings(
                         incomingProducts,
                         reviewsRef.current
                       );
 
-                    /*
-                     * If there are no reviews for a product,
-                     * preserve the locally known rating/count.
-                     */
                     return updatedProducts.map(
                       product => {
                         const localProduct =
@@ -1597,14 +1567,42 @@ export const StoreProvider: React.FC<{
    * ============================================================
    */
 
-  const showToast = (
-    msg: string
-  ) => {
+  const showToast = (msg: string) => {
+    const now = Date.now();
+
+    /*
+     * Prevent the exact same toast from being displayed
+     * multiple times within 2 seconds.
+     */
+    if (
+      lastToastMessageRef.current === msg &&
+      now - lastToastTimeRef.current < 2000
+    ) {
+      return;
+    }
+
+    lastToastMessageRef.current = msg;
+    lastToastTimeRef.current = now;
+
     setToastMessage(msg);
 
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 4000);
+    /*
+     * Clear previous timeout.
+     */
+    if (toastTimeoutRef.current) {
+      clearTimeout(
+        toastTimeoutRef.current
+      );
+    }
+
+    /*
+     * Automatically hide the toast.
+     */
+    toastTimeoutRef.current =
+      setTimeout(() => {
+        setToastMessage(null);
+        toastTimeoutRef.current = null;
+      }, 4000);
   };
 
   /*
@@ -1909,77 +1907,111 @@ export const StoreProvider: React.FC<{
    * ============================================================
    */
 
+  const addToCart = (
+    product: Product,
+    quantity = 1,
+    selectedColor?: string,
+    wrapPaperColor?: string,
+    giftNote?: string
+  ) => {
+    /*
+     * Prevent duplicate calls caused by:
+     * - double clicks
+     * - event bubbling
+     * - accidental repeated handlers
+     */
+    if (
+      addToCartLock.current
+    ) {
+      return;
+    }
 
-const addToCart = (
-  product: Product,
-  quantity = 1,
-  selectedColor?: string,
-  wrapPaperColor?: string,
-  giftNote?: string
-) => {
-  if (product.stock <= 0) {
-    showToast(
-      '⚠️ Sorry, this item is currently out of stock!'
-    );
-
-    return;
-  }
-
-  const finalColor =
-    selectedColor ||
-    product.colorsAvailable[0];
-
-  setCart(prev => {
-    const existingIndex =
-      prev.findIndex(
-        item =>
-          item.product.id === product.id &&
-          item.selectedColor === finalColor
-      );
+    addToCartLock.current = true;
 
     /*
-     * If this product/color is already in the cart,
-     * create a NEW CartItem object instead of mutating
-     * the existing object.
-     *
-     * This is important for React Strict Mode and prevents
-     * the quantity from being accidentally increased twice.
+     * Release the lock after 700ms.
      */
-    if (existingIndex > -1) {
-      return prev.map(
-        (item, index) =>
-          index === existingIndex
-            ? {
-                ...item,
-                quantity:
-                  item.quantity + quantity
-              }
-            : item
+    setTimeout(() => {
+      addToCartLock.current =
+        false;
+    }, 700);
+
+    /*
+     * Check stock.
+     */
+    if (
+      product.stock <= 0
+    ) {
+      showToast(
+        '⚠️ Sorry, this item is currently out of stock!'
       );
+
+      return;
     }
 
     /*
-     * Product does not exist in cart yet.
-     * Add exactly ONE new cart item.
+     * Determine selected color.
      */
-    return [
-      ...prev,
-      {
-        product,
-        quantity,
-        selectedColor: finalColor,
-        wrapPaperColor,
-        giftNote
+    const finalColor =
+      selectedColor ||
+      product.colorsAvailable[0];
+
+    /*
+     * Update cart.
+     */
+    setCart(prev => {
+      const existingIndex =
+        prev.findIndex(
+          item =>
+            item.product.id ===
+              product.id &&
+            item.selectedColor ===
+              finalColor
+        );
+
+      /*
+       * Product already exists.
+       */
+      if (
+        existingIndex > -1
+      ) {
+        return prev.map(
+          (item, index) =>
+            index ===
+            existingIndex
+              ? {
+                  ...item,
+                  quantity:
+                    item.quantity +
+                    quantity
+                }
+              : item
+        );
       }
-    ];
-  });
 
-  showToast(
-    `🌸 Added "${product.name}" to your cart!`
-  );
-};
+      /*
+       * Product does not exist.
+       */
+      return [
+        ...prev,
+        {
+          product,
+          quantity,
+          selectedColor:
+            finalColor,
+          wrapPaperColor,
+          giftNote
+        }
+      ];
+    });
 
-
+    /*
+     * Exactly one toast.
+     */
+    showToast(
+      `🌸 Added "${product.name}" to your cart!`
+    );
+  };
 
   const updateCartQuantity = (
     index: number,
@@ -1999,9 +2031,7 @@ const addToCart = (
         const updated =
           [...prev];
 
-        updated[
-          index
-        ].quantity =
+        updated[index].quantity =
           quantity;
 
         return updated;
@@ -2039,8 +2069,8 @@ const addToCart = (
     newProdData: Omit<
       Product,
       'id' |
-        'rating' |
-        'reviewCount'
+      'rating' |
+      'reviewCount'
     >
   ) => {
     modifiedDataTypes.current.add(
@@ -2155,8 +2185,8 @@ const addToCart = (
     orderData: Omit<
       Order,
       'id' |
-        'createdAt' |
-        'status'
+      'createdAt' |
+      'status'
     >
   ): Order => {
     modifiedDataTypes.current.add(
@@ -2193,12 +2223,14 @@ const addToCart = (
       item => {
         updateStock(
           item.productId,
-          (products.find(
-            p =>
-              p.id ===
-              item.productId
-          )?.stock ||
-            1) -
+          (
+            products.find(
+              p =>
+                p.id ===
+                item.productId
+            )?.stock ||
+            1
+          ) -
             item.quantity
         );
       }
@@ -2291,8 +2323,8 @@ const addToCart = (
     reqData: Omit<
       CustomRequest,
       'id' |
-        'createdAt' |
-        'status'
+      'createdAt' |
+      'status'
     >
   ) => {
     modifiedDataTypes.current.add(
@@ -2372,8 +2404,8 @@ const addToCart = (
     reviewData: Omit<
       Review,
       'id' |
-        'date' |
-        'verifiedStudent'
+      'date' |
+      'verifiedStudent'
     >
   ) => {
     modifiedDataTypes.current.add(
@@ -2385,7 +2417,7 @@ const addToCart = (
     );
 
     /*
-     * Convert rating to a real number.
+     * Convert rating to number.
      */
     const numericRating =
       Number(
@@ -2393,7 +2425,7 @@ const addToCart = (
       );
 
     /*
-     * Keep rating safely between 1 and 5.
+     * Keep rating between 1 and 5.
      */
     const safeRating =
       Number.isFinite(
@@ -2427,23 +2459,7 @@ const addToCart = (
     };
 
     /*
-     * IMPORTANT:
-     *
-     * Do NOT calculate the product rating here using the
-     * `reviews` variable.
-     *
-     * That variable can be stale because React state updates
-     * are asynchronous.
-     *
-     * Instead:
-     *
-     * new review
-     *      ↓
-     * setReviews()
-     *      ↓
-     * reviews effect
-     *      ↓
-     * recalculateProductRatings()
+     * Add review using functional state update.
      */
     setReviews(
       prev => [
@@ -2516,18 +2532,25 @@ const addToCart = (
 
         selectedCategory,
         setSelectedCategory,
+
         searchQuery,
         setSearchQuery,
+
         cartOpen,
         setCartOpen,
+
         activeModal,
         setActiveModal,
+
         selectedProduct,
         setSelectedProduct,
+
         lastCreatedOrder,
         setLastCreatedOrder,
+
         isDarkMode,
         toggleDarkMode,
+
         toastMessage,
         showToast,
 

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import type { Product } from '../types';
 import { useStore } from '../context/StoreContext';
 import {
@@ -130,7 +130,6 @@ const getColorStyle = (colorName: string) => {
 export const ProductCard: React.FC<ProductCardProps> = ({
   product
 }) => {
-    const addToCartLock = useRef(false);
   const {
     products,
     addToCart,
@@ -141,15 +140,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   /*
    * Always use the newest version of the product
    * from StoreContext.
-   *
-   * This ensures rating, review count, stock, price,
-   * etc. update when the context changes.
    */
   const latestProduct =
     products.find(
       p => p.id === product.id
     ) || product;
 
+  /*
+   * Opens the product drawer.
+   */
   const handleCardClick = () => {
     setSelectedProduct(latestProduct);
     setActiveModal('product');
@@ -162,11 +161,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     latestProduct.stock > 0 &&
     latestProduct.stock <= 5;
 
-  /*
-   * Make sure rating is always treated as a number.
-   * This also prevents strings such as "4.5" from
-   * causing display/calculation problems.
-   */
   const currentRating =
     Number(latestProduct.rating ?? 0);
 
@@ -175,6 +169,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
   return (
     <div
+      onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => {
+        if (
+          e.key === 'Enter' ||
+          e.key === ' '
+        ) {
+          e.preventDefault();
+          handleCardClick();
+        }
+      }}
       className="
         group
         glass-card
@@ -189,9 +195,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         justify-between
         border
         border-[var(--border-color)]
+        cursor-pointer
       "
     >
-
       {/* Product Image Container */}
       <div
         className="
@@ -201,9 +207,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           overflow-hidden
           bg-stone-100
           dark:bg-stone-900
-          cursor-pointer
         "
-        onClick={handleCardClick}
       >
         <img
           src={latestProduct.imageUrl}
@@ -221,121 +225,175 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         />
 
         {/* Badges Overlay */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-
+        <div className="
+          absolute
+          top-3
+          left-3
+          flex
+          flex-col
+          gap-1.5
+          items-start
+        ">
           {latestProduct.isPopular && (
-            <span className="bg-rose-500 text-white font-bold text-[10px] sm:text-xs px-2.5 py-1 rounded-full shadow-sm">
+            <span className="
+              bg-rose-500
+              text-white
+              font-bold
+              text-[10px]
+              sm:text-xs
+              px-2.5
+              py-1
+              rounded-full
+              shadow-sm
+            ">
               ✨ Bestseller
             </span>
           )}
 
           {latestProduct.isNew && (
-            <span className="bg-amber-400 text-stone-900 font-bold text-[10px] sm:text-xs px-2.5 py-1 rounded-full shadow-sm">
+            <span className="
+              bg-amber-400
+              text-stone-900
+              font-bold
+              text-[10px]
+              sm:text-xs
+              px-2.5
+              py-1
+              rounded-full
+              shadow-sm
+            ">
               🌟 New Arrival
             </span>
           )}
-
         </div>
 
         {/* Stock Status Pill */}
-        <div className="absolute top-3 right-3">
-
+        <div className="
+          absolute
+          top-3
+          right-3
+        ">
           {isOutOfStock ? (
-            <span className="bg-stone-900/90 text-stone-200 font-semibold text-[10px] sm:text-xs px-2.5 py-1 rounded-full backdrop-blur-sm">
+            <span className="
+              bg-stone-900/90
+              text-stone-200
+              font-semibold
+              text-[10px]
+              sm:text-xs
+              px-2.5
+              py-1
+              rounded-full
+              backdrop-blur-sm
+            ">
               Sold Out
             </span>
           ) : isLowStock ? (
-            <span className="bg-amber-500 text-white font-semibold text-[10px] sm:text-xs px-2.5 py-1 rounded-full shadow-sm animate-pulse-subtle">
+            <span className="
+              bg-amber-500
+              text-white
+              font-semibold
+              text-[10px]
+              sm:text-xs
+              px-2.5
+              py-1
+              rounded-full
+              shadow-sm
+              animate-pulse-subtle
+            ">
               Only {latestProduct.stock} left
             </span>
           ) : (
-            <span className="bg-emerald-500/90 text-white font-medium text-[10px] sm:text-xs px-2.5 py-1 rounded-full backdrop-blur-sm">
+            <span className="
+              bg-emerald-500/90
+              text-white
+              font-medium
+              text-[10px]
+              sm:text-xs
+              px-2.5
+              py-1
+              rounded-full
+              backdrop-blur-sm
+            ">
               In Stock
             </span>
           )}
-
         </div>
 
-        {/* Quick View Button */}
-        <div className="absolute inset-0 bg-stone-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              handleCardClick();
-            }}
-            className="
-              bg-white/95
-              text-stone-800
-              font-semibold
-              text-xs
-              px-4
-              py-2
-              rounded-full
-              shadow-lg
-              flex
-              items-center
-              gap-1.5
-              hover:bg-rose-50
-              hover:text-rose-600
-              transition-all
-              transform
-              translate-y-2
-              group-hover:translate-y-0
-            "
-          >
+        {/* Quick View Overlay */}
+        <div className="
+          absolute
+          inset-0
+          bg-stone-900/20
+          opacity-0
+          group-hover:opacity-100
+          transition-opacity
+          flex
+          items-center
+          justify-center
+          pointer-events-none
+        ">
+          <div className="
+            bg-white/95
+            text-stone-800
+            font-semibold
+            text-xs
+            px-4
+            py-2
+            rounded-full
+            shadow-lg
+            flex
+            items-center
+            gap-1.5
+            transform
+            translate-y-2
+            group-hover:translate-y-0
+            transition-all
+          ">
             <Eye className="w-3.5 h-3.5" />
 
             <span>
               Quick View
             </span>
-
-          </button>
-
+          </div>
         </div>
       </div>
 
       {/* Product Content Details */}
-      <div
-        className="
-          p-4
-          sm:p-5
-          flex-1
-          flex
-          flex-col
-          justify-between
-          space-y-3
-        "
-      >
-
+      <div className="
+        p-4
+        sm:p-5
+        flex-1
+        flex
+        flex-col
+        justify-between
+        space-y-3
+      ">
         <div>
-
           {/* Category & Lead Time */}
-          <div
-            className="
-              flex
-              items-center
-              justify-between
-              text-xs
-              text-[var(--text-secondary)]
-              mb-1
-            "
-          >
-
-            <span
-              className="
-                font-semibold
-                text-rose-500
-                uppercase
-                tracking-wider
-                text-[10px]
-              "
-            >
+          <div className="
+            flex
+            items-center
+            justify-between
+            text-xs
+            text-[var(--text-secondary)]
+            mb-1
+          ">
+            <span className="
+              font-semibold
+              text-rose-500
+              uppercase
+              tracking-wider
+              text-[10px]
+            ">
               {latestProduct.category}
             </span>
 
-            <span className="flex items-center gap-1 text-[11px]">
-
+            <span className="
+              flex
+              items-center
+              gap-1
+              text-[11px]
+            ">
               <Clock
                 className="
                   w-3
@@ -345,45 +403,36 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               />
 
               {latestProduct.leadTimeDays}d lead
-
             </span>
-
           </div>
 
           {/* Product Name */}
-          <h3
-            onClick={handleCardClick}
-            className="
-              font-bold
-              text-[var(--text-primary)]
-              text-base
-              sm:text-lg
-              leading-snug
-              cursor-pointer
-              hover:text-rose-600
-              transition-colors
-              line-clamp-1
-            "
-          >
+          <h3 className="
+            font-bold
+            text-[var(--text-primary)]
+            text-base
+            sm:text-lg
+            leading-snug
+            hover:text-rose-600
+            transition-colors
+            line-clamp-1
+          ">
             {latestProduct.name}
           </h3>
 
-          {/* =====================================================
-              LIVE STAR RATING
-              ===================================================== */}
-          <div
-            className="
+          {/* Live Star Rating */}
+          <div className="
+            flex
+            items-center
+            gap-1.5
+            text-xs
+            mt-1
+          ">
+            <div className="
               flex
               items-center
-              gap-1.5
-              text-xs
-              mt-1
-            "
-          >
-
-            {/* Star */}
-            <div className="flex items-center gap-0.5">
-
+              gap-0.5
+            ">
               <Star
                 className="
                   w-3.5
@@ -392,42 +441,35 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   text-amber-400
                 "
               />
-
             </div>
 
-            {/* Rating Number */}
-            <span
-              className="
-                font-bold
-                text-[var(--text-primary)]
-              "
-            >
+            <span className="
+              font-bold
+              text-[var(--text-primary)]
+            ">
               {currentRating.toFixed(1)}
             </span>
 
-            {/* Review Count */}
-            <span
-              className="
-                text-[var(--text-secondary)]
-              "
-            >
+            <span className="
+              text-[var(--text-secondary)]
+            ">
               ({currentReviewCount})
             </span>
-
           </div>
-
         </div>
 
         {/* Color Palette Indicators */}
-        <div className="flex items-center gap-1.5 pt-1">
-
-          <span
-            className="
-              text-[11px]
-              text-[var(--text-secondary)]
-              mr-1
-            "
-          >
+        <div className="
+          flex
+          items-center
+          gap-1.5
+          pt-1
+        ">
+          <span className="
+            text-[11px]
+            text-[var(--text-secondary)]
+            mr-1
+          ">
             Colors:
           </span>
 
@@ -457,86 +499,68 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             ))}
 
           {latestProduct.colorsAvailable.length > 4 && (
-            <span
-              className="
-                text-[10px]
-                text-[var(--text-secondary)]
-              "
-            >
+            <span className="
+              text-[10px]
+              text-[var(--text-secondary)]
+            ">
               +
               {latestProduct.colorsAvailable.length - 4}
             </span>
           )}
-
         </div>
 
         {/* Price & Add To Cart Bar */}
-        <div
-          className="
-            flex
-            items-center
-            justify-between
-            pt-2
-            border-t
-            border-[var(--border-color)]
-          "
-        >
-
+        <div className="
+          flex
+          items-center
+          justify-between
+          pt-2
+          border-t
+          border-[var(--border-color)]
+        ">
           <div>
-
-            <div className="flex items-baseline gap-1.5">
-
-              <span
-                className="
-                  text-lg
-                  sm:text-xl
-                  font-extrabold
-                  text-[var(--text-primary)]
-                "
-              >
+            <div className="
+              flex
+              items-baseline
+              gap-1.5
+            ">
+              <span className="
+                text-lg
+                sm:text-xl
+                font-extrabold
+                text-[var(--text-primary)]
+              ">
                 ₹{latestProduct.price}
               </span>
 
               {latestProduct.originalPrice && (
-                <span
-                  className="
-                    text-xs
-                    text-[var(--text-secondary)]
-                    line-through
-                  "
-                >
+                <span className="
+                  text-xs
+                  text-[var(--text-secondary)]
+                  line-through
+                ">
                   ₹{latestProduct.originalPrice}
                 </span>
               )}
-
             </div>
-
           </div>
 
+          {/* Add To Cart */}
           <button
-            
-  onClick={e => {
-    e.preventDefault();
-    e.stopPropagation();
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
 
-    // Prevent the same click/event from adding twice
-    if (addToCartLock.current || isOutOfStock) {
-      return;
-    }
+              if (isOutOfStock) {
+                return;
+              }
 
-    addToCartLock.current = true;
-
-    addToCart(
-      latestProduct,
-      1
-    );
-
-    // Unlock shortly after the click
-    setTimeout(() => {
-      addToCartLock.current = false;
-    }, 400);
-  }}
-  disabled={isOutOfStock}
+              addToCart(
+                latestProduct,
+                1
+              );
+            }}
+            disabled={isOutOfStock}
             className={`
               px-3.5
               py-2
@@ -556,7 +580,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               }
             `}
           >
-
             <ShoppingBag className="w-4 h-4" />
 
             <span>
@@ -564,13 +587,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 ? 'Sold Out'
                 : 'Add'}
             </span>
-
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 };
