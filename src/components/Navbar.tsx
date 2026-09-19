@@ -218,26 +218,28 @@ export const Navbar: React.FC = () => {
 
   
 
-        <div
-          className="
-            sticky
-            top-0
-            z-50
-            w-full
-            px-4
-            sm:px-6
-            lg:px-8
-            py-2
-            bg-[#fffaf5]/95
-            dark:bg-stone-950/95
-            backdrop-blur-xl
-            border-t
-            border-b
-            border-stone-200/60
-            dark:border-stone-800/60
-            shadow-sm
-          "
-        >
+<div
+  className="
+    hidden
+    md:flex
+    md:sticky
+    md:top-0
+    md:z-50
+    w-full
+    px-4
+    sm:px-6
+    lg:px-8
+    py-2
+    bg-[#fffaf5]/95
+    dark:bg-stone-950/95
+    backdrop-blur-xl
+    border-t
+    border-b
+    border-stone-200/60
+    dark:border-stone-800/60
+    shadow-sm
+  "
+>
         <div
           className="
             w-full
