@@ -219,8 +219,20 @@ export const CheckoutModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/65 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col border-2 border-rose-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto backdrop-blur-sm"
+      style={{
+        backgroundColor: 'rgba(28, 25, 23, 0.65)'
+      }}
+    >
+      <div
+        className="relative w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col"
+        style={{
+          backgroundColor: 'var(--surface)',
+          color: 'var(--text-primary)',
+          border: '2px solid var(--border-soft)'
+        }}
+      >
 
         {/* Header */}
         <div className="yarn-gradient-vibrant p-6 text-white relative">
@@ -251,25 +263,41 @@ export const CheckoutModal: React.FC = () => {
         <form
           onSubmit={handleSubmitOrder}
           className="p-6 overflow-y-auto space-y-4"
+          style={{
+            color: 'var(--text-primary)'
+          }}
         >
 
           {/* Order Summary */}
-          <div className="bg-stone-50 border border-stone-200 rounded-2xl p-3 text-xs space-y-2">
+          <div
+            className="rounded-2xl p-3 text-xs space-y-2"
+            style={{
+              backgroundColor: 'var(--surface-soft)',
+              border: '1px solid var(--border)'
+            }}
+          >
 
-            <div className="font-bold text-stone-800 flex justify-between items-center">
+            <div
+              className="font-bold flex justify-between items-center"
+              style={{
+                color: 'var(--text-primary)'
+              }}
+            >
 
               <span>
                 Order Summary ({cart.length} items):
               </span>
 
               <div className="text-right">
-                <div className="text-emerald-600 font-black text-[11px] uppercase tracking-wide">
+
+                <div className="text-emerald-600 dark:text-emerald-400 font-black text-[11px] uppercase tracking-wide">
                   🚚 FREE DELIVERY
                 </div>
 
-                <div className="text-rose-600 font-black text-sm">
+                <div className="text-rose-600 dark:text-rose-400 font-black text-sm">
                   Total: ₹{total}
                 </div>
+
               </div>
 
             </div>
@@ -279,8 +307,13 @@ export const CheckoutModal: React.FC = () => {
               {cart.map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex-shrink-0 flex items-center gap-2 bg-white p-1.5 rounded-xl border border-stone-200 max-w-[200px]"
+                  className="flex-shrink-0 flex items-center gap-2 p-1.5 rounded-xl max-w-[200px]"
+                  style={{
+                    backgroundColor: 'var(--surface)',
+                    border: '1px solid var(--border)'
+                  }}
                 >
+
                   <img
                     src={item.product.imageUrl}
                     alt=""
@@ -289,16 +322,27 @@ export const CheckoutModal: React.FC = () => {
 
                   <div className="truncate">
 
-                    <div className="font-bold text-stone-900 truncate">
+                    <div
+                      className="font-bold truncate"
+                      style={{
+                        color: 'var(--text-primary)'
+                      }}
+                    >
                       {item.product.name}
                     </div>
 
-                    <div className="text-[10px] text-stone-500">
+                    <div
+                      className="text-[10px]"
+                      style={{
+                        color: 'var(--text-secondary)'
+                      }}
+                    >
                       Qty: {item.quantity} • ₹
                       {item.product.price}
                     </div>
 
                   </div>
+
                 </div>
               ))}
 
@@ -309,9 +353,22 @@ export const CheckoutModal: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
             <div>
-              <label className="block text-xs font-bold text-stone-700 mb-1 flex items-center gap-1">
-                <User className="w-3.5 h-3.5 text-stone-400" />
+
+              <label
+                className="block text-xs font-bold mb-1 flex items-center gap-1"
+                style={{
+                  color: 'var(--text-primary)'
+                }}
+              >
+                <User
+                  className="w-3.5 h-3.5"
+                  style={{
+                    color: 'var(--text-secondary)'
+                  }}
+                />
+
                 <span className="text-rose-500">*</span>
+
                 Full Name:
               </label>
 
@@ -323,15 +380,36 @@ export const CheckoutModal: React.FC = () => {
                 onChange={(e) =>
                   setCustomerName(e.target.value)
                 }
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs outline-none focus:ring-2 focus:ring-rose-200"
+                className="w-full rounded-xl px-3.5 py-2 text-xs outline-none focus:ring-2 focus:ring-rose-200"
+                style={{
+                  backgroundColor: 'var(--surface-soft)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-primary)'
+                }}
               />
+
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-stone-700 mb-1 flex items-center gap-1">
-                <Phone className="w-3.5 h-3.5 text-stone-400" />
+
+              <label
+                className="block text-xs font-bold mb-1 flex items-center gap-1"
+                style={{
+                  color: 'var(--text-primary)'
+                }}
+              >
+
+                <Phone
+                  className="w-3.5 h-3.5"
+                  style={{
+                    color: 'var(--text-secondary)'
+                  }}
+                />
+
                 <span className="text-rose-500">*</span>
+
                 Phone / WhatsApp:
+
               </label>
 
               <input
@@ -342,8 +420,14 @@ export const CheckoutModal: React.FC = () => {
                 onChange={(e) =>
                   setPhone(e.target.value)
                 }
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs outline-none focus:ring-2 focus:ring-rose-200"
+                className="w-full rounded-xl px-3.5 py-2 text-xs outline-none focus:ring-2 focus:ring-rose-200"
+                style={{
+                  backgroundColor: 'var(--surface-soft)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-primary)'
+                }}
               />
+
             </div>
 
           </div>
@@ -352,9 +436,23 @@ export const CheckoutModal: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
             <div>
-              <label className="block text-xs font-bold text-stone-700 mb-1 flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-stone-400" />
+
+              <label
+                className="block text-xs font-bold mb-1 flex items-center gap-1"
+                style={{
+                  color: 'var(--text-primary)'
+                }}
+              >
+
+                <MapPin
+                  className="w-3.5 h-3.5"
+                  style={{
+                    color: 'var(--text-secondary)'
+                  }}
+                />
+
                 Campus Delivery Location:
+
               </label>
 
               <select
@@ -362,22 +460,46 @@ export const CheckoutModal: React.FC = () => {
                 onChange={(e) =>
                   setDormOrBuilding(e.target.value)
                 }
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs font-semibold text-stone-800 outline-none"
+                className="w-full rounded-xl px-3.5 py-2 text-xs font-semibold outline-none"
+                style={{
+                  backgroundColor: 'var(--surface-soft)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-primary)'
+                }}
               >
+
                 {settings.campusDeliveryLocations.map(
                   (loc, idx) => (
-                    <option key={idx} value={loc}>
+                    <option
+                      key={idx}
+                      value={loc}
+                      style={{
+                        backgroundColor: 'var(--surface)',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
                       {loc}
                     </option>
                   )
                 )}
+
               </select>
+
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-stone-700 mb-1">
+
+              <label
+                className="block text-xs font-bold mb-1"
+                style={{
+                  color: 'var(--text-primary)'
+                }}
+              >
+
                 <span className="text-rose-500">*</span>
+
                 Room No. / Pickup Spot Details:
+
               </label>
 
               <input
@@ -388,8 +510,14 @@ export const CheckoutModal: React.FC = () => {
                 onChange={(e) =>
                   setRoomOrSpot(e.target.value)
                 }
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs outline-none focus:ring-2 focus:ring-rose-200"
+                className="w-full rounded-xl px-3.5 py-2 text-xs outline-none focus:ring-2 focus:ring-rose-200"
+                style={{
+                  backgroundColor: 'var(--surface-soft)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-primary)'
+                }}
               />
+
             </div>
 
           </div>
@@ -397,13 +525,27 @@ export const CheckoutModal: React.FC = () => {
           {/* Payment Method Selector */}
           <div>
 
-            <label className="block text-xs font-bold text-stone-700 mb-2 flex items-center gap-1">
-              <CreditCard className="w-3.5 h-3.5 text-stone-400" />
+            <label
+              className="block text-xs font-bold mb-2 flex items-center gap-1"
+              style={{
+                color: 'var(--text-primary)'
+              }}
+            >
+
+              <CreditCard
+                className="w-3.5 h-3.5"
+                style={{
+                  color: 'var(--text-secondary)'
+                }}
+              />
+
               Payment Method:
+
             </label>
 
             <div className="grid grid-cols-3 gap-2">
 
+              {/* UPI */}
               <button
                 type="button"
                 onClick={() =>
@@ -412,12 +554,25 @@ export const CheckoutModal: React.FC = () => {
                 className={`p-3 rounded-2xl border text-center text-xs font-bold transition-all ${
                   paymentMethod === 'UPI / GPay'
                     ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-xs'
-                    : 'bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100'
+                    : ''
                 }`}
+                style={
+                  paymentMethod !== 'UPI / GPay'
+                    ? {
+                        backgroundColor:
+                          'var(--surface-soft)',
+                        borderColor:
+                          'var(--border)',
+                        color:
+                          'var(--text-primary)'
+                      }
+                    : undefined
+                }
               >
                 📲 UPI / GPay
               </button>
 
+              {/* Cash */}
               <button
                 type="button"
                 onClick={() =>
@@ -429,12 +584,26 @@ export const CheckoutModal: React.FC = () => {
                   paymentMethod ===
                   'Cash on Campus Pickup'
                     ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-xs'
-                    : 'bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100'
+                    : ''
                 }`}
+                style={
+                  paymentMethod !==
+                  'Cash on Campus Pickup'
+                    ? {
+                        backgroundColor:
+                          'var(--surface-soft)',
+                        borderColor:
+                          'var(--border)',
+                        color:
+                          'var(--text-primary)'
+                      }
+                    : undefined
+                }
               >
                 💵 Cash on Pickup
               </button>
 
+              {/* Card */}
               <button
                 type="button"
                 onClick={() =>
@@ -443,8 +612,20 @@ export const CheckoutModal: React.FC = () => {
                 className={`p-3 rounded-2xl border text-center text-xs font-bold transition-all ${
                   paymentMethod === 'Card'
                     ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-xs'
-                    : 'bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100'
+                    : ''
                 }`}
+                style={
+                  paymentMethod !== 'Card'
+                    ? {
+                        backgroundColor:
+                          'var(--surface-soft)',
+                        borderColor:
+                          'var(--border)',
+                        color:
+                          'var(--text-primary)'
+                      }
+                    : undefined
+                }
               >
                 💳 Debit / Credit
               </button>
@@ -454,18 +635,39 @@ export const CheckoutModal: React.FC = () => {
 
           {/* UPI Payment & Verification */}
           {paymentMethod === 'UPI / GPay' && (
-            <div className="bg-gradient-to-r from-amber-50 to-rose-50 border-2 border-rose-200 rounded-3xl p-5 text-center space-y-4">
+            <div
+              className="border-2 rounded-3xl p-5 text-center space-y-4"
+              style={{
+                background:
+                  'linear-gradient(135deg, var(--surface-soft), var(--surface))',
+                borderColor: 'var(--border-soft)'
+              }}
+            >
 
-              <div className="flex items-center justify-center gap-1.5 text-xs font-extrabold text-stone-900">
+              <div
+                className="flex items-center justify-center gap-1.5 text-xs font-extrabold"
+                style={{
+                  color: 'var(--text-primary)'
+                }}
+              >
+
                 <QrCode className="w-4 h-4 text-rose-500" />
+
                 <span>
                   1. Scan & Pay via GPay / PhonePe /
                   Paytm / BHIM
                 </span>
+
               </div>
 
               {/* QR Code */}
-              <div className="bg-white p-3 rounded-2xl shadow-md inline-block border border-stone-200 relative">
+              <div
+                className="p-3 rounded-2xl shadow-md inline-block relative"
+                style={{
+                  backgroundColor: 'var(--surface)',
+                  border: '1px solid var(--border)'
+                }}
+              >
 
                 {settings.upiQrImageUrl ? (
                   <img
@@ -488,13 +690,29 @@ export const CheckoutModal: React.FC = () => {
               </div>
 
               {/* Copy UPI ID */}
-              <div className="flex items-center justify-center gap-2 max-w-sm mx-auto bg-white p-2 rounded-xl border border-stone-200 text-xs">
+              <div
+                className="flex items-center justify-center gap-2 max-w-sm mx-auto p-2 rounded-xl text-xs"
+                style={{
+                  backgroundColor: 'var(--surface)',
+                  border: '1px solid var(--border)'
+                }}
+              >
 
-                <span className="text-stone-500 text-[11px] font-semibold">
+                <span
+                  className="text-[11px] font-semibold"
+                  style={{
+                    color: 'var(--text-secondary)'
+                  }}
+                >
                   UPI ID:
                 </span>
 
-                <span className="font-mono font-black text-stone-900">
+                <span
+                  className="font-mono font-black"
+                  style={{
+                    color: 'var(--text-primary)'
+                  }}
+                >
                   {activeUpiId}
                 </span>
 
@@ -503,6 +721,7 @@ export const CheckoutModal: React.FC = () => {
                   onClick={copyUpiId}
                   className="bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold px-2.5 py-1 rounded-lg transition-colors text-[10px] flex items-center gap-1 ml-auto"
                 >
+
                   {upiCopied ? (
                     <Check className="w-3 h-3 text-emerald-600" />
                   ) : (
@@ -512,14 +731,26 @@ export const CheckoutModal: React.FC = () => {
                   <span>
                     {upiCopied ? 'Copied' : 'Copy'}
                   </span>
+
                 </button>
 
               </div>
 
               {/* Payment Verification Inputs */}
-              <div className="bg-white p-4 rounded-2xl border border-rose-200 text-left space-y-3">
+              <div
+                className="p-4 rounded-2xl text-left space-y-3"
+                style={{
+                  backgroundColor: 'var(--surface)',
+                  border: '1px solid var(--border-soft)'
+                }}
+              >
 
-                <div className="font-extrabold text-xs text-stone-800 flex items-center justify-between">
+                <div
+                  className="font-extrabold text-xs flex items-center justify-between"
+                  style={{
+                    color: 'var(--text-primary)'
+                  }}
+                >
 
                   <span>
                     2. Payment Verification Details:
@@ -533,7 +764,12 @@ export const CheckoutModal: React.FC = () => {
 
                 <div>
 
-                  <label className="block text-[11px] font-bold text-stone-600 mb-1">
+                  <label
+                    className="block text-[11px] font-bold mb-1"
+                    style={{
+                      color: 'var(--text-secondary)'
+                    }}
+                  >
                     Enter 12-Digit UPI UTR Transaction Reference ID:
                   </label>
 
@@ -549,7 +785,15 @@ export const CheckoutModal: React.FC = () => {
                         );
                         setIsUtrVerified(false);
                       }}
-                      className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs font-mono font-bold outline-none"
+                      className="flex-1 rounded-xl px-3 py-2 text-xs font-mono font-bold outline-none"
+                      style={{
+                        backgroundColor:
+                          'var(--surface-soft)',
+                        border:
+                          '1px solid var(--border)',
+                        color:
+                          'var(--text-primary)'
+                      }}
                     />
 
                     <button
@@ -561,27 +805,49 @@ export const CheckoutModal: React.FC = () => {
                     </button>
 
                   </div>
+
                 </div>
 
                 {/* Screenshot Upload */}
                 <div>
 
-                  <label className="block text-[11px] font-bold text-stone-600 mb-1 flex items-center gap-1">
+                  <label
+                    className="block text-[11px] font-bold mb-1 flex items-center gap-1"
+                    style={{
+                      color: 'var(--text-secondary)'
+                    }}
+                  >
+
                     <Upload className="w-3.5 h-3.5 text-rose-500" />
+
                     Attach Payment Screenshot (Optional):
+
                   </label>
 
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleScreenshotUpload}
-                    className="w-full text-xs text-stone-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rose-100 file:text-rose-700 hover:file:bg-rose-200"
+                    className="w-full text-xs"
+                    style={{
+                      color: 'var(--text-secondary)'
+                    }}
                   />
 
                 </div>
 
                 {paymentScreenshotUrl && (
-                  <div className="flex items-center gap-2 bg-rose-50 p-2 rounded-xl border border-rose-200 text-xs text-rose-800 font-semibold">
+                  <div
+                    className="flex items-center gap-2 p-2 rounded-xl border text-xs font-semibold"
+                    style={{
+                      backgroundColor:
+                        'rgba(244, 63, 94, 0.08)',
+                      borderColor:
+                        'var(--border-soft)',
+                      color:
+                        'var(--text-primary)'
+                    }}
+                  >
 
                     <img
                       src={paymentScreenshotUrl}
@@ -597,7 +863,17 @@ export const CheckoutModal: React.FC = () => {
                 )}
 
                 {isUtrVerified && (
-                  <div className="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 text-xs text-emerald-800 font-bold flex items-center gap-1.5">
+                  <div
+                    className="p-2.5 rounded-xl border text-xs font-bold flex items-center gap-1.5"
+                    style={{
+                      backgroundColor:
+                        'rgba(16, 185, 129, 0.10)',
+                      borderColor:
+                        'rgba(16, 185, 129, 0.30)',
+                      color:
+                        'var(--text-primary)'
+                    }}
+                  >
 
                     <BadgeCheck className="w-4 h-4 text-emerald-600" />
 
@@ -616,7 +892,12 @@ export const CheckoutModal: React.FC = () => {
           {/* Special Delivery Instructions */}
           <div>
 
-            <label className="block text-xs font-bold text-stone-700 mb-1">
+            <label
+              className="block text-xs font-bold mb-1"
+              style={{
+                color: 'var(--text-primary)'
+              }}
+            >
               Delivery Timing / Instructions (Optional):
             </label>
 
@@ -627,7 +908,12 @@ export const CheckoutModal: React.FC = () => {
               onChange={(e) =>
                 setSpecialInstructions(e.target.value)
               }
-              className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs outline-none"
+              className="w-full rounded-xl px-3.5 py-2 text-xs outline-none focus:ring-2 focus:ring-rose-200"
+              style={{
+                backgroundColor: 'var(--surface-soft)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-primary)'
+              }}
             />
 
           </div>
@@ -637,10 +923,13 @@ export const CheckoutModal: React.FC = () => {
             type="submit"
             className="w-full bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-lg shadow-rose-200 flex items-center justify-center gap-2 text-sm transition-all"
           >
+
             <CheckCircle className="w-4 h-4" />
+
             <span>
               Place Order • ₹{total}
             </span>
+
           </button>
 
         </form>
