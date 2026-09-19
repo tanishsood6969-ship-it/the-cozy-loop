@@ -187,16 +187,16 @@ const StoreContent: React.FC = () => {
 export function App() {
   return (
     <StoreProvider>
-      <div className="relative min-h-screen">
-        <video
-  autoPlay
-  muted
-  loop
-  playsInline
-  className="fixed inset-0 w-full h-full object-cover -z-10 opacity-60"
->
-  <source src="/background.mp4" type="video/mp4" />
-</video>
+  <div className="relative min-h-screen w-full max-w-full overflow-x-hidden">
+    <video
+      autoPlay
+      muted
+      loop
+      playsInline
+      className="fixed top-0 left-0 w-full h-[100dvh] max-w-full object-cover -z-10 opacity-60 pointer-events-none"
+    >
+      <source src="/background.mp4" type="video/mp4" />
+    </video>
 
 <div className="fixed inset-0 -z-10 bg-white/55 dark:bg-black/35 pointer-events-none" />
 

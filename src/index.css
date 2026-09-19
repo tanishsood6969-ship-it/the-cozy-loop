@@ -881,3 +881,21 @@ html.dark .cozy-yarn-line {
     left: calc(50% + 145px);
   }
 }
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+video,
+iframe {
+  max-width: 100%;
+}
