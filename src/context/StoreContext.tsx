@@ -187,7 +187,9 @@ interface StoreContextType {
 }
 
 const StoreContext =
-  createContext<StoreContextType | undefined>(undefined);
+  createContext<StoreContextType | undefined>(
+    undefined
+  );
 
 /*
  * ============================================================
@@ -195,23 +197,13 @@ const StoreContext =
  * ============================================================
  */
 
-/*
- * Safely reads JSON data from localStorage.
- *
- * If the stored value is:
- * - missing
- * - "undefined"
- * - "null"
- * - corrupted JSON
- *
- * the fallback value is returned instead of crashing the app.
- */
 const getSafeLocalStorage = <T,>(
   key: string,
   fallback: T
 ): T => {
   try {
-    const saved = localStorage.getItem(key);
+    const saved =
+      localStorage.getItem(key);
 
     if (
       !saved ||
@@ -229,28 +221,16 @@ const getSafeLocalStorage = <T,>(
     );
 
     /*
-     * Remove corrupted data so it cannot break
-     * the application again on the next refresh.
+     * IMPORTANT:
+     *
+     * Do NOT delete corrupted data here.
+     * This prevents accidental permanent loss
+     * of locally stored data.
      */
-    try {
-      localStorage.removeItem(key);
-    } catch {
-      // Ignore localStorage removal errors.
-    }
-
     return fallback;
   }
 };
 
-/*
- * Safely saves data to localStorage.
- *
- * Most importantly, undefined is NEVER saved as:
- *
- * "undefined"
- *
- * because that value cannot later be parsed by JSON.parse().
- */
 const setSafeLocalStorage = (
   key: string,
   value: unknown
@@ -286,7 +266,8 @@ const INITIAL_DEMO_USERS: User[] = [
     email: 'aarav@university.edu',
     phone: '+91 98765 43210',
     password: 'student123',
-    dormOrBuilding: 'Subir Hall - Block B',
+    dormOrBuilding:
+      'Subir Hall - Block B',
     roomOrSpot: 'Room 304'
   }
 ];
@@ -300,7 +281,9 @@ const INITIAL_DEMO_USERS: User[] = [
 export const StoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  console.log('STORE PROVIDER IS RUNNING');
+  console.log(
+    'STORE PROVIDER IS RUNNING'
+  );
 
   /*
    * ============================================================
@@ -342,10 +325,11 @@ export const StoreProvider: React.FC<{
 
   const [settings, setSettings] =
     useState<StoreSettings>(() => {
-      const parsed = getSafeLocalStorage(
-        'knot_bloom_settings',
-        INITIAL_SETTINGS
-      );
+      const parsed =
+        getSafeLocalStorage(
+          'knot_bloom_settings',
+          INITIAL_SETTINGS
+        );
 
       return {
         ...INITIAL_SETTINGS,
@@ -432,7 +416,9 @@ export const StoreProvider: React.FC<{
 
     localStorage.setItem(
       'cozy_dark_mode',
-      isDarkMode ? 'true' : 'false'
+      isDarkMode
+        ? 'true'
+        : 'false'
     );
   }, [isDarkMode]);
 
@@ -471,13 +457,43 @@ export const StoreProvider: React.FC<{
    * ============================================================
    * CLOUD SYNC CONTROL
    * ============================================================
+   *
+   * cloudInitialized:
+   * Prevents ANY cloud save before the initial
+   * Supabase request has finished.
+   *
+   * cloudLoadFailed:
+   * If Supabase could not be read, nothing is
+   * allowed to overwrite the cloud.
+   *
+   * cloudDataTypes:
+   * Stores which rows actually existed in Supabase.
+   *
+   * modifiedDataTypes:
+   * Stores which data types the user actually
+   * changed during this session.
    */
 
   const cloudInitialized =
     useRef(false);
 
+  const cloudLoadFailed =
+    useRef(false);
+
+  const cloudDataTypes =
+    useRef<Set<string>>(
+      new Set()
+    );
+
+  const modifiedDataTypes =
+    useRef<Set<string>>(
+      new Set()
+    );
+
   const lastCloudData =
-    useRef<Record<string, string>>({});
+    useRef<Record<string, string>>(
+      {}
+    );
 
   /*
    * ============================================================
@@ -489,7 +505,9 @@ export const StoreProvider: React.FC<{
     const { data, error } =
       await supabase
         .from('store_data')
-        .select('data_type, data');
+        .select(
+          'data_type, data'
+        );
 
     if (error) {
       console.error(
@@ -513,12 +531,32 @@ export const StoreProvider: React.FC<{
     dataType: string,
     data: unknown
   ) => {
-    if (!cloudInitialized.current) {
+    /*
+     * NEVER save before the initial
+     * Supabase load has completed.
+     */
+    if (
+      !cloudInitialized.current
+    ) {
       return;
     }
 
     /*
-     * NEVER save undefined/null values.
+     * If the initial cloud request failed,
+     * NEVER overwrite Supabase.
+     */
+    if (
+      cloudLoadFailed.current
+    ) {
+      console.warn(
+        `Skipping cloud save for ${dataType}: initial cloud load failed.`
+      );
+
+      return;
+    }
+
+    /*
+     * Never save undefined/null.
      */
     if (
       data === undefined ||
@@ -531,6 +569,30 @@ export const StoreProvider: React.FC<{
       return;
     }
 
+    /*
+     * IMPORTANT:
+     *
+     * If this data type did NOT exist in Supabase
+     * and the user has NOT actually modified it,
+     * do not create a row from local/demo fallback data.
+     *
+     * This is what protects INITIAL_PRODUCTS.
+     */
+    if (
+      !cloudDataTypes.current.has(
+        dataType
+      ) &&
+      !modifiedDataTypes.current.has(
+        dataType
+      )
+    ) {
+      console.log(
+        `Skipping ${dataType}: no existing cloud row and no user modification.`
+      );
+
+      return;
+    }
+
     const serialized =
       JSON.stringify(data);
 
@@ -538,8 +600,9 @@ export const StoreProvider: React.FC<{
      * Prevent realtime loops.
      */
     if (
-      lastCloudData.current[dataType] ===
-      serialized
+      lastCloudData.current[
+        dataType
+      ] === serialized
     ) {
       delete lastCloudData.current[
         dataType
@@ -558,7 +621,8 @@ export const StoreProvider: React.FC<{
         .from('store_data')
         .upsert(
           {
-            data_type: dataType,
+            data_type:
+              dataType,
             data,
             updated_at:
               new Date().toISOString()
@@ -574,11 +638,27 @@ export const StoreProvider: React.FC<{
         `Error saving ${dataType}:`,
         error
       );
-    } else {
-      console.log(
-        `Successfully saved ${dataType} to Supabase`
-      );
+
+      return;
     }
+
+    /*
+     * The row now definitely exists.
+     */
+    cloudDataTypes.current.add(
+      dataType
+    );
+
+    /*
+     * The change has now been persisted.
+     */
+    modifiedDataTypes.current.delete(
+      dataType
+    );
+
+    console.log(
+      `Successfully saved ${dataType} to Supabase`
+    );
   };
 
   /*
@@ -593,118 +673,202 @@ export const StoreProvider: React.FC<{
         const cloudData =
           await loadStoreData();
 
-        if (
-          cloudData &&
-          cloudData.length > 0
-        ) {
-          cloudData.forEach(
-            (item) => {
-              /*
-               * Ignore malformed Supabase rows.
-               */
-              if (
-                !item?.data_type ||
-                item.data ===
-                  undefined ||
-                item.data === null
-              ) {
-                return;
-              }
+        /*
+         * ========================================================
+         * SUPABASE REQUEST FAILED
+         * ========================================================
+         *
+         * DO NOT upload local/demo data.
+         */
 
-              const serialized =
-                JSON.stringify(
-                  item.data
-                );
-
-              lastCloudData.current[
-                item.data_type
-              ] = serialized;
-
-              switch (
-                item.data_type
-              ) {
-                case 'products':
-                  if (
-                    Array.isArray(
-                      item.data
-                    )
-                  ) {
-                    setProducts(
-                      item.data as Product[]
-                    );
-                  }
-                  break;
-
-                case 'orders':
-                  if (
-                    Array.isArray(
-                      item.data
-                    )
-                  ) {
-                    setOrders(
-                      item.data as Order[]
-                    );
-                  }
-                  break;
-
-                case 'custom_requests':
-                  if (
-                    Array.isArray(
-                      item.data
-                    )
-                  ) {
-                    setCustomRequests(
-                      item.data as CustomRequest[]
-                    );
-                  }
-                  break;
-
-                case 'reviews':
-                  if (
-                    Array.isArray(
-                      item.data
-                    )
-                  ) {
-                    setReviews(
-                      item.data as Review[]
-                    );
-                  }
-                  break;
-
-                case 'settings':
-                  if (
-                    typeof item.data ===
-                      'object' &&
-                    !Array.isArray(
-                      item.data
-                    )
-                  ) {
-                    setSettings({
-                      ...INITIAL_SETTINGS,
-                      ...(item.data as StoreSettings)
-                    });
-                  }
-                  break;
-              }
-            }
+        if (!cloudData) {
+          console.error(
+            'Cloud data could not be loaded.'
           );
+
+          console.error(
+            'Cloud saving is disabled for this session.'
+          );
+
+          cloudLoadFailed.current =
+            true;
+
+          return;
         }
 
         /*
-         * Only after cloud data has been loaded
-         * do we allow changes to be saved.
+         * ========================================================
+         * RECORD EXISTING CLOUD DATA TYPES
+         * ========================================================
          */
+
+        cloudData.forEach(
+          (item) => {
+            if (
+              item?.data_type &&
+              item.data !==
+                undefined &&
+              item.data !== null
+            ) {
+              cloudDataTypes.current.add(
+                item.data_type
+              );
+            }
+          }
+        );
+
+        /*
+         * ========================================================
+         * LOAD VALID CLOUD DATA INTO REACT
+         * ========================================================
+         */
+
+        cloudData.forEach(
+          (item) => {
+            /*
+             * Ignore malformed rows.
+             */
+            if (
+              !item?.data_type ||
+              item.data ===
+                undefined ||
+              item.data === null
+            ) {
+              return;
+            }
+
+            const serialized =
+              JSON.stringify(
+                item.data
+              );
+
+            lastCloudData.current[
+              item.data_type
+            ] = serialized;
+
+            switch (
+              item.data_type
+            ) {
+              case 'products':
+                if (
+                  Array.isArray(
+                    item.data
+                  )
+                ) {
+                  setProducts(
+                    item.data as Product[]
+                  );
+                }
+                break;
+
+              case 'orders':
+                if (
+                  Array.isArray(
+                    item.data
+                  )
+                ) {
+                  setOrders(
+                    item.data as Order[]
+                  );
+                }
+                break;
+
+              case 'custom_requests':
+                if (
+                  Array.isArray(
+                    item.data
+                  )
+                ) {
+                  setCustomRequests(
+                    item.data as CustomRequest[]
+                  );
+                }
+                break;
+
+              case 'reviews':
+                if (
+                  Array.isArray(
+                    item.data
+                  )
+                ) {
+                  setReviews(
+                    item.data as Review[]
+                  );
+                }
+                break;
+
+              case 'settings':
+                if (
+                  typeof item.data ===
+                    'object' &&
+                  !Array.isArray(
+                    item.data
+                  )
+                ) {
+                  setSettings({
+                    ...INITIAL_SETTINGS,
+                    ...(item.data as StoreSettings)
+                  });
+                }
+                break;
+            }
+          }
+        );
+
+        /*
+         * ========================================================
+         * CLOUD IS NOW SAFE TO USE
+         * ========================================================
+         */
+
         cloudInitialized.current =
           true;
 
         /*
-         * If Supabase is empty, upload the
-         * current local data once.
+         * ========================================================
+         * ONLY SEED IF THE ENTIRE TABLE IS EMPTY
+         * ========================================================
+         *
+         * We do NOT seed individual missing rows.
+         *
+         * This is extremely important.
          */
+
         if (
-          !cloudData ||
           cloudData.length === 0
         ) {
+          console.log(
+            'Supabase store_data is completely empty.'
+          );
+
+          console.log(
+            'Seeding initial store data.'
+          );
+
+          /*
+           * Mark these as intentionally created
+           * because the database is completely empty.
+           */
+          modifiedDataTypes.current.add(
+            'products'
+          );
+
+          modifiedDataTypes.current.add(
+            'orders'
+          );
+
+          modifiedDataTypes.current.add(
+            'custom_requests'
+          );
+
+          modifiedDataTypes.current.add(
+            'reviews'
+          );
+
+          modifiedDataTypes.current.add(
+            'settings'
+          );
+
           await Promise.all([
             saveStoreData(
               'products',
@@ -727,6 +891,17 @@ export const StoreProvider: React.FC<{
               settings
             )
           ]);
+        } else {
+          console.log(
+            'Supabase store data loaded successfully.'
+          );
+
+          console.log(
+            'Existing cloud data types:',
+            Array.from(
+              cloudDataTypes.current
+            )
+          );
         }
       };
 
@@ -754,12 +929,24 @@ export const StoreProvider: React.FC<{
           },
           (payload) => {
             /*
-             * DELETE events don't contain the same
-             * "new" data as INSERT/UPDATE events.
+             * Ignore DELETE events.
+             *
+             * DELETE events do not contain the same
+             * usable "new" data as INSERT/UPDATE.
              */
             if (
               payload.eventType ===
               'DELETE'
+            ) {
+              return;
+            }
+
+            /*
+             * Do not process realtime data
+             * before initial cloud loading.
+             */
+            if (
+              !cloudInitialized.current
             ) {
               return;
             }
@@ -788,6 +975,13 @@ export const StoreProvider: React.FC<{
 
             const data =
               newData.data;
+
+            /*
+             * Remember that this data type exists.
+             */
+            cloudDataTypes.current.add(
+              dataType
+            );
 
             const serialized =
               JSON.stringify(data);
@@ -877,10 +1071,15 @@ export const StoreProvider: React.FC<{
    */
 
   useEffect(() => {
-    saveStoreData(
-      'products',
-      products
-    );
+    if (
+      cloudInitialized.current &&
+      !cloudLoadFailed.current
+    ) {
+      saveStoreData(
+        'products',
+        products
+      );
+    }
 
     setSafeLocalStorage(
       'knot_bloom_products',
@@ -889,10 +1088,15 @@ export const StoreProvider: React.FC<{
   }, [products]);
 
   useEffect(() => {
-    saveStoreData(
-      'orders',
-      orders
-    );
+    if (
+      cloudInitialized.current &&
+      !cloudLoadFailed.current
+    ) {
+      saveStoreData(
+        'orders',
+        orders
+      );
+    }
 
     setSafeLocalStorage(
       'knot_bloom_orders',
@@ -901,10 +1105,15 @@ export const StoreProvider: React.FC<{
   }, [orders]);
 
   useEffect(() => {
-    saveStoreData(
-      'custom_requests',
-      customRequests
-    );
+    if (
+      cloudInitialized.current &&
+      !cloudLoadFailed.current
+    ) {
+      saveStoreData(
+        'custom_requests',
+        customRequests
+      );
+    }
 
     setSafeLocalStorage(
       'knot_bloom_custom_requests',
@@ -913,10 +1122,15 @@ export const StoreProvider: React.FC<{
   }, [customRequests]);
 
   useEffect(() => {
-    saveStoreData(
-      'reviews',
-      reviews
-    );
+    if (
+      cloudInitialized.current &&
+      !cloudLoadFailed.current
+    ) {
+      saveStoreData(
+        'reviews',
+        reviews
+      );
+    }
 
     setSafeLocalStorage(
       'knot_bloom_reviews',
@@ -925,10 +1139,15 @@ export const StoreProvider: React.FC<{
   }, [reviews]);
 
   useEffect(() => {
-    saveStoreData(
-      'settings',
-      settings
-    );
+    if (
+      cloudInitialized.current &&
+      !cloudLoadFailed.current
+    ) {
+      saveStoreData(
+        'settings',
+        settings
+      );
+    }
 
     setSafeLocalStorage(
       'knot_bloom_settings',
@@ -1415,6 +1634,16 @@ export const StoreProvider: React.FC<{
         'reviewCount'
     >
   ) => {
+    /*
+     * Mark products as intentionally modified.
+     *
+     * This allows creation of the products row
+     * if it did not previously exist in Supabase.
+     */
+    modifiedDataTypes.current.add(
+      'products'
+    );
+
     const newProduct: Product =
       {
         ...newProdData,
@@ -1439,6 +1668,10 @@ export const StoreProvider: React.FC<{
     id: string,
     updatedFields: Partial<Product>
   ) => {
+    modifiedDataTypes.current.add(
+      'products'
+    );
+
     setProducts(
       (prev) =>
         prev.map(
@@ -1461,6 +1694,10 @@ export const StoreProvider: React.FC<{
     id: string,
     newStock: number
   ) => {
+    modifiedDataTypes.current.add(
+      'products'
+    );
+
     setProducts(
       (prev) =>
         prev.map(
@@ -1488,6 +1725,10 @@ export const StoreProvider: React.FC<{
   const deleteProduct = (
     id: string
   ) => {
+    modifiedDataTypes.current.add(
+      'products'
+    );
+
     setProducts(
       (prev) =>
         prev.filter(
@@ -1515,6 +1756,10 @@ export const StoreProvider: React.FC<{
         'status'
     >
   ): Order => {
+    modifiedDataTypes.current.add(
+      'orders'
+    );
+
     const newOrder: Order =
       {
         ...orderData,
@@ -1569,6 +1814,10 @@ export const StoreProvider: React.FC<{
     id: string,
     status: OrderStatus
   ) => {
+    modifiedDataTypes.current.add(
+      'orders'
+    );
+
     setOrders(
       (prev) =>
         prev.map(
@@ -1591,6 +1840,10 @@ export const StoreProvider: React.FC<{
     id: string,
     isVerified: boolean
   ) => {
+    modifiedDataTypes.current.add(
+      'orders'
+    );
+
     setOrders(
       (prev) =>
         prev.map(
@@ -1639,6 +1892,10 @@ export const StoreProvider: React.FC<{
         'status'
     >
   ) => {
+    modifiedDataTypes.current.add(
+      'custom_requests'
+    );
+
     const newReq: CustomRequest =
       {
         ...reqData,
@@ -1673,6 +1930,10 @@ export const StoreProvider: React.FC<{
     status: CustomRequest['status'],
     quotedPrice?: number
   ) => {
+    modifiedDataTypes.current.add(
+      'custom_requests'
+    );
+
     setCustomRequests(
       (prev) =>
         prev.map(
@@ -1712,6 +1973,10 @@ export const StoreProvider: React.FC<{
         'verifiedStudent'
     >
   ) => {
+    modifiedDataTypes.current.add(
+      'reviews'
+    );
+
     const newRev: Review =
       {
         ...reviewData,
@@ -1741,6 +2006,10 @@ export const StoreProvider: React.FC<{
   const updateSettings = (
     newSettings: Partial<StoreSettings>
   ) => {
+    modifiedDataTypes.current.add(
+      'settings'
+    );
+
     setSettings(
       (prev) => ({
         ...prev,
@@ -1840,4 +2109,4 @@ export const useStore = () => {
   }
 
   return context;
-};
+}; 
