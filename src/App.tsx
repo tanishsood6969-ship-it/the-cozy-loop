@@ -77,7 +77,7 @@ const StoreContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-between relative bg-[var(--page-bg)] text-[var(--text-primary)] transition-colors duration-300">
+    <div className="min-h-screen flex flex-col justify-between relative bg-[var(--page-bg)]/50 text-[var(--text-primary)] transition-colors duration-300">
       
       {/* Toast Notification Floating Pill */}
       {toastMessage && (
@@ -184,11 +184,24 @@ const StoreContent: React.FC = () => {
     </div>
   );
 };
-
 export function App() {
   return (
     <StoreProvider>
-      <StoreContent />
+      <div className="relative min-h-screen">
+        <video
+  autoPlay
+  muted
+  loop
+  playsInline
+  className="fixed inset-0 w-full h-full object-cover -z-10 opacity-60"
+>
+  <source src="/background.mp4" type="video/mp4" />
+</video>
+
+<div className="fixed inset-0 -z-10 bg-white/55 dark:bg-black/35 pointer-events-none" />
+
+        <StoreContent />
+      </div>
     </StoreProvider>
   );
 }

@@ -38,7 +38,7 @@ export const OrderTrackerModal: React.FC = () => {
     { title: 'Delivered!', desc: 'Handed to student' }
   ];
 
-  const currentStepIndex = searchedOrder ? getStepIndex(searchedOrder.status) : 0;
+  const currentStepIndex = searchedOrder ? getStepIndex(searchedOrder.status || 'Pending') : 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm overflow-y-auto">

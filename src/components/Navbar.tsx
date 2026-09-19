@@ -1,18 +1,18 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import {
   ShoppingBag,
   Search,
   Sparkles,
-  Flower2,
   PackageCheck,
   User,
   LogOut,
+  X,
   Moon,
-  Sun
+  Sun,
 } from 'lucide-react';
 import type { ProductCategory } from '../types';
+import { YarnTitleAnimation } from './YarnTitleAnimation';
 
 export const Navbar: React.FC = () => {
   const {
@@ -25,14 +25,17 @@ export const Navbar: React.FC = () => {
     setSelectedCategory,
     searchQuery,
     setSearchQuery,
-    setActiveModal
+    setActiveModal,
+    isDarkMode,
+    toggleDarkMode,
   } = useStore();
 
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.getItem('cozy-loop-theme') === 'dark';
-  });
+  const [searchOpen, setSearchOpen] = useState(false);
 
-  const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalCartCount = cart.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
 
   const categories: ProductCategory[] = [
     'All',
@@ -41,206 +44,514 @@ export const Navbar: React.FC = () => {
     'Keychains',
     'Handbags & Pouches',
     'Plushies & Amigurumi',
-    'Wearables & Hair'
+    'Wearables & Hair',
   ];
 
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDarkMode);
-    localStorage.setItem('cozy-loop-theme', isDarkMode ? 'dark' : 'light');
-  }, [isDarkMode]);
-
-  const toggleTheme = () => {
-    setIsDarkMode(prev => !prev);
-  };
-
   return (
-    <header className="sticky top-0 z-40 w-full transition-all">
+    <header
+      className="
+        crochet-navbar
+        sticky
+        top-0
+        z-40
+        w-full
+        text-stone-900
+        dark:text-stone-100
+        shadow-sm
+        transition-all
+        relative
+        overflow-hidden
+      "
+    >
+      {/* Decorative Craft Background Accents across Navbar */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+        <span className="absolute left-6 top-2 text-sm opacity-25 animate-float-wool">🧶</span>
+        <span className="absolute right-12 top-2 text-sm opacity-25 animate-float-wool" style={{ animationDelay: '1.2s' }}>🧵</span>
+        <span className="absolute left-1/4 bottom-2 text-xs opacity-20 animate-float-wool" style={{ animationDelay: '2.4s' }}>🪡</span>
+        <span className="absolute right-1/4 top-3 text-xs opacity-20 animate-float-wool" style={{ animationDelay: '3.1s' }}>🌸</span>
+        <span className="absolute left-1/3 top-1 text-[10px] opacity-20 animate-pulse" style={{ animationDelay: '0.8s' }}>✨</span>
+        <span className="absolute right-1/3 bottom-1 text-[10px] opacity-20 animate-pulse" style={{ animationDelay: '1.8s' }}>✨</span>
+      </div>
 
-      {/* Announcement Ticker Bar */}
-      <div className="bg-gradient-to-r from-rose-600 via-pink-500 to-amber-500 text-white text-xs sm:text-sm font-bold py-2 px-4 text-center flex items-center justify-center gap-2 shadow-inner">
-        <Sparkles className="w-4 h-4 animate-pulse" />
-        <span>{settings.announcementText}</span>
+      {/* =====================================================
+          SECTION 1 — ANNOUNCEMENT BAR
+      ====================================================== */}
+      <div className="relative z-10 bg-gradient-to-r from-rose-600 via-pink-500 to-amber-500 text-white text-[11px] font-bold py-1.5 px-4 flex items-center justify-center gap-2 shadow-inner">
+        <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
 
-        <span className="hidden md:inline-block bg-white/20 px-2.5 py-0.5 rounded-full text-xs ml-2">
+        <span className="text-white">
+          {settings.announcementText}
+        </span>
+
+        <span
+          className="
+            hidden md:inline-block
+            bg-white/20
+            text-white
+            px-2
+            py-0.5
+            rounded-full
+            text-[10px]
+            ml-2
+          "
+        >
           📍 {settings.universityName}
         </span>
       </div>
 
-      {/* Main Navigation Bar */}
-      <div className="glass-nav px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4">
+      {/* =====================================================
+          SECTION 2 — ANIMATED TITLE / LOGO WITH WAVY ANIMATION
+      ====================================================== */}
+      <div
+        className="
+          py-2.5
+          px-4
+          flex
+          items-center
+          justify-center
+          border-b
+          border-stone-200/50
+          dark:border-stone-800/60
+          bg-white/35
+          dark:bg-stone-950/35
+          backdrop-blur-2xl
+          relative
+          z-10
+          overflow-visible
+        "
+      >
+        <YarnTitleAnimation
+          storeName={settings.storeName}
+          tagline={settings.tagline}
+          onCategoryReset={() => setSelectedCategory('All')}
+        />
+      </div>
 
-        {/* Brand Logo & Title */}
+      {/* =====================================================
+          SECTION 3 — CATEGORIES LEFT / ACTIONS RIGHT
+      ====================================================== */}
+      <div
+        className="
+          relative
+          z-10
+          w-full
+          px-4
+          sm:px-6
+          lg:px-8
+          py-2
+          bg-[#fffaf5]/90
+          dark:bg-stone-950/90
+          backdrop-blur-md
+          border-t
+          border-stone-200/60
+          dark:border-stone-800/60
+        "
+      >
         <div
-          className="flex items-center gap-3 cursor-pointer group"
-          onClick={() => setSelectedCategory('All')}
+          className="
+            w-full
+            flex
+            items-center
+            justify-between
+            gap-4
+          "
         >
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-rose-500 via-pink-500 to-amber-400 flex items-center justify-center text-white shadow-md shadow-rose-200 group-hover:scale-105 transition-transform">
-            <Flower2 className="w-6 h-6 animate-spin-slow" />
-          </div>
-
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-rose-600 via-pink-600 to-amber-600 bg-clip-text text-transparent leading-none">
-              {settings.storeName}
-            </h1>
-
-            <p className="text-xs text-stone-500 dark:text-stone-400 hidden sm:block mt-0.5 font-semibold">
-              🧶 {settings.tagline}
-            </p>
-          </div>
-        </div>
-
-        {/* Search Bar */}
-        <div className="hidden md:flex items-center flex-1 max-w-md mx-4 relative">
-          <Search className="w-4 h-4 absolute left-3.5 text-stone-400" />
-
-          <input
-            type="text"
-            placeholder="Search tulips, keychains, frog plushies..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-stone-100/90 dark:bg-stone-800/90 hover:bg-stone-100 dark:hover:bg-stone-800 focus:bg-white dark:focus:bg-stone-700 border border-stone-200 dark:border-stone-700 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 rounded-full pl-10 pr-4 py-2 text-xs font-semibold transition-all outline-none text-stone-900 dark:text-stone-100"
-          />
-
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 text-xs text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 bg-stone-200 dark:bg-stone-700 rounded-full w-4 h-4 flex items-center justify-center"
-            >
-              ×
-            </button>
-          )}
-        </div>
-
-        {/* Navigation Action Buttons */}
-        <div className="flex items-center gap-2 sm:gap-3">
-
-          {/* Dark / Light Mode Toggle */}
-          <button
-            onClick={toggleTheme}
-            className="w-9 h-9 rounded-full flex items-center justify-center bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-amber-300 hover:bg-rose-50 dark:hover:bg-stone-700 transition-all"
-            title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          {/* =================================================
+              EXTREME LEFT — CATEGORIES
+          ================================================== */}
+          <div
+            className="
+              flex
+              items-center
+              gap-1.5
+              overflow-x-auto
+              no-scrollbar
+              min-w-0
+              flex-1
+            "
           >
-            {isDarkMode ? (
-              <Sun className="w-4.5 h-4.5" />
+            {categories.map((cat) => {
+              const isActive = selectedCategory === cat;
+
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`
+                    px-3
+                    py-1
+                    rounded-full
+                    text-xs
+                    whitespace-nowrap
+                    flex-shrink-0
+                    transition-all
+                    font-semibold
+
+                    ${
+                      isActive
+                        ? `
+                          bg-rose-600
+                          text-white
+                          dark:bg-stone-100
+                          dark:text-stone-900
+                          shadow-sm
+                          font-bold
+                        `
+                        : `
+                          bg-white
+                          text-stone-900
+                          border
+                          border-stone-300
+                          hover:bg-rose-50
+                          hover:text-rose-700
+                          hover:border-rose-300
+
+                          dark:bg-stone-900
+                          dark:text-stone-100
+                          dark:border-stone-700
+                          dark:hover:bg-stone-800
+                          dark:hover:text-rose-300
+                        `
+                    }
+                  `}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* =================================================
+              EXTREME RIGHT — ACTION BUTTONS
+          ================================================== */}
+          <div
+            className="
+              flex
+              items-center
+              justify-end
+              gap-1.5
+              flex-shrink-0
+            "
+          >
+            {/* 1 — DARK MODE */}
+            <button
+              onClick={toggleDarkMode}
+              className="
+                p-2
+                rounded-full
+                bg-white
+                dark:bg-stone-900
+                border
+                border-stone-300
+                dark:border-stone-700
+                text-stone-900
+                dark:text-stone-100
+                hover:bg-rose-50
+                dark:hover:bg-stone-800
+                transition-all
+              "
+              title={
+                isDarkMode
+                  ? 'Switch to Light Mode'
+                  : 'Switch to Dark Mode'
+              }
+              aria-label="Toggle Dark Mode"
+            >
+              {isDarkMode ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-rose-600" />
+              )}
+            </button>
+
+            {/* 2 — SIGN IN / USER */}
+            {currentUser ? (
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-1
+                  bg-white
+                  dark:bg-stone-900
+                  border
+                  border-stone-300
+                  dark:border-stone-700
+                  rounded-full
+                  px-1
+                "
+              >
+                <button
+                  onClick={() => setActiveModal('userOrders')}
+                  className="
+                    flex
+                    items-center
+                    gap-1.5
+                    px-2
+                    py-1
+                    text-xs
+                    font-bold
+                    text-stone-900
+                    dark:text-stone-100
+                  "
+                >
+                  <div
+                    className="
+                      w-5
+                      h-5
+                      rounded-full
+                      bg-rose-500
+                      text-white
+                      flex
+                      items-center
+                      justify-center
+                      text-[10px]
+                      font-black
+                    "
+                  >
+                    {currentUser.name.charAt(0)}
+                  </div>
+
+                  <span className="hidden lg:inline">
+                    {currentUser.name}
+                  </span>
+                </button>
+
+                <button
+                  onClick={logoutUser}
+                  className="
+                    p-1
+                    text-stone-500
+                    hover:text-rose-600
+                    dark:text-stone-400
+                    dark:hover:text-rose-400
+                  "
+                  title="Logout"
+                >
+                  <LogOut className="w-3 h-3" />
+                </button>
+              </div>
             ) : (
-              <Moon className="w-4.5 h-4.5" />
-            )}
-          </button>
-
-          {/* Student Auth Profile Button */}
-          {currentUser ? (
-            <div className="flex items-center gap-1.5 bg-stone-100 dark:bg-stone-800 p-1 rounded-full border border-stone-200 dark:border-stone-700">
-
               <button
-                onClick={() => setActiveModal('userOrders')}
-                className="flex items-center gap-1.5 text-xs font-bold text-stone-800 dark:text-stone-100 hover:text-rose-600 px-2.5 py-1 transition-all"
+                onClick={() => setActiveModal('auth')}
+                className="
+                  flex
+                  items-center
+                  gap-1.5
+                  text-xs
+                  font-bold
+                  text-stone-900
+                  dark:text-stone-100
+                  bg-white
+                  dark:bg-stone-900
+                  border
+                  border-stone-300
+                  dark:border-stone-700
+                  hover:bg-rose-50
+                  hover:text-rose-700
+                  dark:hover:bg-stone-800
+                  dark:hover:text-rose-300
+                  rounded-full
+                  px-3
+                  py-1.5
+                  transition-all
+                "
               >
-                <div className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-[10px] font-black">
-                  {currentUser.name.charAt(0)}
-                </div>
-
-                <span className="hidden lg:inline">
-                  {currentUser.name}
-                </span>
+                <User className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+                <span>Sign In</span>
               </button>
+            )}
+
+            {/* 3 — TRACK ORDER */}
+            <button
+              onClick={() => setActiveModal('orderTracker')}
+              className="
+                flex
+                items-center
+                gap-1.5
+                text-xs
+                font-bold
+                text-stone-900
+                dark:text-stone-100
+                bg-white
+                dark:bg-stone-900
+                border
+                border-stone-300
+                dark:border-stone-700
+                hover:bg-amber-50
+                hover:text-amber-700
+                dark:hover:bg-stone-800
+                dark:hover:text-amber-400
+                rounded-full
+                px-3
+                py-1.5
+                transition-all
+              "
+            >
+              <PackageCheck
+                className="
+                  w-3.5
+                  h-3.5
+                  text-amber-600
+                  dark:text-amber-400
+                "
+              />
+
+              <span className="hidden md:inline">
+                Track Order
+              </span>
+            </button>
+
+            {/* 4 — CART */}
+            <button
+              onClick={() => setCartOpen(true)}
+              className="
+                relative
+                bg-gradient-to-r
+                from-rose-500
+                via-pink-500
+                to-amber-500
+                hover:from-rose-600
+                hover:to-amber-600
+                text-white
+                rounded-full
+                px-3
+                py-1.5
+                flex
+                items-center
+                gap-1.5
+                shadow-md
+                transition-all
+                active:scale-95
+              "
+            >
+              <ShoppingBag className="w-3.5 h-3.5 text-white" />
+
+              <span className="text-xs font-black text-white">
+                Cart
+              </span>
+
+              {totalCartCount > 0 && (
+                <span
+                  className="
+                    bg-amber-400
+                    text-stone-950
+                    font-black
+                    text-[10px]
+                    rounded-full
+                    w-4
+                    h-4
+                    flex
+                    items-center
+                    justify-center
+                  "
+                >
+                  {totalCartCount}
+                </span>
+              )}
+            </button>
+
+            {/* 5 — SEARCH */}
+            <div className="relative flex items-center">
+              {searchOpen && (
+                <div
+                  className="
+                    absolute
+                    right-11
+                    top-1/2
+                    -translate-y-1/2
+                    flex
+                    items-center
+                  "
+                >
+                  <Search
+                    className="
+                      absolute
+                      left-3
+                      w-3.5
+                      h-3.5
+                      text-stone-500
+                      dark:text-stone-400
+                    "
+                  />
+
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) =>
+                      setSearchQuery(e.target.value)
+                    }
+                    className="
+                      w-40
+                      lg:w-52
+                      bg-white
+                      dark:bg-stone-900
+                      border
+                      border-stone-300
+                      dark:border-stone-700
+                      rounded-full
+                      pl-9
+                      pr-8
+                      py-1.5
+                      text-xs
+                      font-semibold
+                      text-stone-900
+                      dark:text-stone-100
+                      placeholder:text-stone-500
+                      outline-none
+                      shadow-lg
+                      focus:border-rose-400
+                      focus:ring-2
+                      focus:ring-rose-100
+                      dark:focus:ring-rose-900/30
+                    "
+                  />
+
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="
+                        absolute
+                        right-2.5
+                        text-stone-400
+                        hover:text-stone-800
+                        dark:hover:text-white
+                      "
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              )}
 
               <button
-                onClick={logoutUser}
-                className="text-stone-400 hover:text-rose-600 p-1 rounded-full transition-colors"
-                title="Logout"
+                onClick={() => setSearchOpen(!searchOpen)}
+                className="
+                  p-2
+                  rounded-full
+                  bg-white
+                  dark:bg-stone-900
+                  border
+                  border-stone-300
+                  dark:border-stone-700
+                  text-stone-900
+                  dark:text-stone-100
+                  hover:bg-rose-50
+                  hover:text-rose-700
+                  dark:hover:bg-stone-800
+                  dark:hover:text-rose-300
+                  transition-all
+                "
+                title="Search"
+                aria-label="Search"
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <Search className="w-4 h-4" />
               </button>
             </div>
-          ) : (
-            <button
-              onClick={() => setActiveModal('auth')}
-              className="flex items-center gap-1.5 text-xs font-bold text-stone-700 dark:text-stone-200 bg-stone-100 dark:bg-stone-800 hover:bg-rose-50 dark:hover:bg-stone-700 hover:text-rose-600 border border-stone-200 dark:border-stone-700 rounded-full px-3 py-2 transition-all"
-            >
-              <User className="w-4 h-4 text-rose-500" />
-              <span className="hidden sm:inline">Sign In</span>
-            </button>
-          )}
-
-          {/* Order Tracker Link */}
-          <button
-            onClick={() => setActiveModal('orderTracker')}
-            className="hidden lg:flex items-center gap-1.5 text-xs font-bold text-stone-700 dark:text-stone-200 bg-stone-100 dark:bg-stone-800 hover:bg-rose-50 dark:hover:bg-stone-700 hover:text-rose-600 border border-stone-200 dark:border-stone-700 rounded-full px-3 py-2 transition-all"
-            title="Track my campus order"
-          >
-            <PackageCheck className="w-4 h-4 text-amber-500" />
-            <span>Track Order</span>
-          </button>
-
-          {/* Custom Order CTA */}
-          <button
-            onClick={() => setActiveModal('customOrder')}
-            className="flex items-center gap-1.5 text-xs font-extrabold text-rose-700 bg-rose-100/90 hover:bg-rose-200 border border-rose-200 rounded-full px-3.5 py-2 transition-all shadow-xs"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-rose-600" />
-            <span className="hidden sm:inline">Custom Request</span>
-            <span className="sm:hidden">Custom</span>
-          </button>
-
-          {/* Shopping Cart Drawer */}
-          <button
-            onClick={() => setCartOpen(true)}
-            className="relative bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-full p-2.5 sm:px-4 sm:py-2 flex items-center gap-2 shadow-md shadow-rose-200 transition-all active:scale-95"
-          >
-            <ShoppingBag className="w-5 h-5" />
-
-            <span className="hidden sm:inline text-xs font-black">
-              Cart
-            </span>
-
-            {totalCartCount > 0 && (
-              <span className="bg-amber-400 text-stone-900 font-black text-xs rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
-                {totalCartCount}
-              </span>
-            )}
-          </button>
+          </div>
         </div>
-      </div>
-
-      {/* Mobile Search Bar */}
-      <div className="md:hidden px-4 py-2 bg-stone-50 dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800">
-        <div className="relative">
-
-          <Search className="w-4 h-4 absolute left-3 top-2.5 text-stone-400" />
-
-          <input
-            type="text"
-            placeholder="Search tulips, keychains, frog plushies..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 focus:border-rose-400 rounded-full pl-9 pr-4 py-1.5 text-xs outline-none text-stone-900 dark:text-stone-100"
-          />
-        </div>
-      </div>
-
-      {/* Category Pills Bar */}
-      <div className="bg-white/90 dark:bg-stone-900/90 border-b border-stone-200/80 dark:border-stone-800 px-4 py-2.5 overflow-x-auto no-scrollbar flex items-center gap-2">
-
-        <span className="text-xs font-bold text-stone-400 uppercase tracking-wider hidden sm:inline mr-2 flex-shrink-0">
-          Categories:
-        </span>
-
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0 ${
-              selectedCategory === cat
-                ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-sm scale-105'
-                : 'bg-stone-100 dark:bg-stone-800 hover:bg-rose-50 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-300 hover:text-rose-600'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
       </div>
     </header>
   );
 };
-

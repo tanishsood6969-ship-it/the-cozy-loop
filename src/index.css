@@ -1,14 +1,22 @@
-
 @import "tailwindcss";
+
+/* =========================================================
+   THE COZY LOOP — GLOBAL THEME
+   ========================================================= */
+
 :root {
   --page-bg: #fffaf5;
   --surface: #ffffff;
   --surface-soft: #faf7f4;
   --surface-hover: #f5f5f4;
+
   --text-primary: #1c1917;
   --text-secondary: #78716c;
+
   --border: #e7e5e4;
   --border-soft: #ffe4e6;
+
+  --hero-description: #3b2520;
 }
 
 html.dark {
@@ -16,116 +24,280 @@ html.dark {
   --surface: #211d1a;
   --surface-soft: #29231f;
   --surface-hover: #332b27;
+
   --text-primary: #f5f1ed;
   --text-secondary: #b8ada5;
+
   --border: #403732;
   --border-soft: #55383d;
+
+  --hero-description: #e7ddd7;
 }
 
 
+/* =========================================================
+   BASE
+   ========================================================= */
+
 @layer base {
   body {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family:
+      "Plus Jakarta Sans",
+      -apple-system,
+      BlinkMacSystemFont,
+      sans-serif;
+
     background-color: var(--page-bg);
+
     background-image:
-      radial-gradient(#fecdd3 0.75px, transparent 0.75px),
-      radial-gradient(#fed7aa 0.75px, #fffaf5 0.75px);
+      radial-gradient(
+        #fecdd3 0.75px,
+        transparent 0.75px
+      ),
+      radial-gradient(
+        #fed7aa 0.75px,
+        #fffaf5 0.75px
+      );
+
     background-size: 30px 30px;
     background-position: 0 0, 15px 15px;
+
     color: var(--text-primary);
-    transition: background-color 0.25s ease, color 0.25s ease;
+
+    transition:
+      background-color 0.25s ease,
+      color 0.25s ease;
   }
 
   html.dark body {
     background-color: #171412;
+
     background-image:
-      radial-gradient(#3f3030 0.75px, transparent 0.75px),
-      radial-gradient(#29221e 0.75px, #171412 0.75px);
+      radial-gradient(
+        #3f3030 0.75px,
+        transparent 0.75px
+      ),
+      radial-gradient(
+        #29221e 0.75px,
+        #171412 0.75px
+      );
+
     color: #f5f5f4;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', sans-serif;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Outfit", sans-serif;
   }
 }
 
-/* Glassmorphism & Yarn Card Utilities */
+
+/* =========================================================
+   GLOBAL TEXT
+   ========================================================= */
+
+body {
+  color: var(--text-primary);
+}
+
+.text-stone-500,
+.text-stone-600,
+.text-stone-700 {
+  color: var(--text-secondary) !important;
+}
+
+/* Cozy Loop description text */
+.text-\[var\(--text-secondary\)\] {
+  color: #3b2520 !important;
+}
+
+html.dark .text-\[var\(--text-secondary\)\] {
+  color: #e7ddd7 !important;
+}
+
+
+/* =========================================================
+   HERO TEXT
+   ========================================================= */
+
+html.dark .hero-theme-text {
+  color: #ffffff !important;
+}
+
+html.dark .hero-theme-muted {
+  color: #d6d3d1 !important;
+}
+
+html.dark {
+  --text-secondary: #d6ccc5;
+}
+
+
+/* =========================================================
+   GLASS PANELS
+   ========================================================= */
 
 .glass-panel {
   background: rgba(255, 255, 255, 0.88);
+
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+
   border: 1px solid rgba(255, 255, 255, 0.7);
 }
 
 .dark .glass-panel {
-  background: rgba(41, 34, 30, 0.90);
-  border-color: rgba(255, 255, 255, 0.10);
+  background: rgba(41, 34, 30, 0.9);
+
+  border-color: rgba(255, 255, 255, 0.1);
 }
+
+
+/* =========================================================
+   GLASS NAV
+   Kept as a reusable utility.
+   Navbar.tsx does not depend on this.
+   ========================================================= */
 
 .glass-nav {
   background: rgba(255, 250, 245, 0.92);
+
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 2px solid rgba(251, 113, 133, 0.2);
+
+  border-bottom: none;
 }
 
 .dark .glass-nav {
   background: rgba(28, 25, 23, 0.94);
-  border-bottom-color: rgba(251, 113, 133, 0.25);
+
+  border-bottom: none;
 }
+
+
+/* =========================================================
+   GLASS CARDS
+   ========================================================= */
 
 .glass-card {
   background: rgba(255, 255, 255, 0.95);
+
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
   border: 2px solid #ffe4e6;
-  box-shadow: 0 12px 30px -5px rgba(244, 63, 94, 0.1),
-              0 4px 12px -2px rgba(251, 146, 60, 0.08);
+
+  box-shadow:
+    0 12px 30px -5px rgba(244, 63, 94, 0.1),
+    0 4px 12px -2px rgba(251, 146, 60, 0.08);
 }
 
 .dark .glass-card {
   background: rgba(41, 34, 30, 0.96);
+
   border-color: #4a3538;
-  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.35);
+
+  box-shadow:
+    0 12px 30px -5px rgba(0, 0, 0, 0.35);
 }
 
 .glass-card:hover {
   border-color: #f43f5e;
-  box-shadow: 0 20px 35px -5px rgba(244, 63, 94, 0.2),
-              0 8px 16px -2px rgba(251, 146, 60, 0.15);
+
+  box-shadow:
+    0 20px 35px -5px rgba(244, 63, 94, 0.2),
+    0 8px 16px -2px rgba(251, 146, 60, 0.15);
 }
 
-/* Yarn & Wool Specific Aesthetic Gradients */
+
+/* =========================================================
+   YARN HERO GRADIENTS
+   ========================================================= */
 
 .yarn-gradient-hero {
-  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 30%, #fef3c7 65%, #f0fdf4 100%);
+  background:
+    linear-gradient(
+      135deg,
+      #fff1f2 0%,
+      #ffe4e6 30%,
+      #fef3c7 65%,
+      #f0fdf4 100%
+    );
+
   background-image:
-    radial-gradient(#f472b6 0.8px, transparent 0.8px),
-    radial-gradient(#fbbf24 0.8px, transparent 0.8px);
+    radial-gradient(
+      #f472b6 0.8px,
+      transparent 0.8px
+    ),
+    radial-gradient(
+      #fbbf24 0.8px,
+      transparent 0.8px
+    );
+
   background-size: 24px 24px;
   background-position: 0 0, 12px 12px;
 }
 
 .dark .yarn-gradient-hero {
-  background: linear-gradient(135deg, #3a2028 0%, #38242b 30%, #39301f 65%, #1e3028 100%);
+  background:
+    linear-gradient(
+      135deg,
+      #3a2028 0%,
+      #38242b 30%,
+      #39301f 65%,
+      #1e3028 100%
+    );
+
   background-image:
-    radial-gradient(#9d4c68 0.8px, transparent 0.8px),
-    radial-gradient(#9a7620 0.8px, transparent 0.8px);
+    radial-gradient(
+      #9d4c68 0.8px,
+      transparent 0.8px
+    ),
+    radial-gradient(
+      #9a7620 0.8px,
+      transparent 0.8px
+    );
 }
 
 .yarn-gradient-vibrant {
-  background: linear-gradient(135deg, #e11d48 0%, #f43f5e 40%, #fb7185 70%, #f59e0b 100%);
+  background:
+    linear-gradient(
+      135deg,
+      #e11d48 0%,
+      #f43f5e 40%,
+      #fb7185 70%,
+      #f59e0b 100%
+    );
 }
 
 .yarn-gradient-sunflower {
-  background: linear-gradient(135deg, #fef08a 0%, #f59e0b 60%, #ea580c 100%);
+  background:
+    linear-gradient(
+      135deg,
+      #fef08a 0%,
+      #f59e0b 60%,
+      #ea580c 100%
+    );
 }
 
 .yarn-gradient-lavender {
-  background: linear-gradient(135deg, #e9d5ff 0%, #c084fc 60%, #9333ea 100%);
+  background:
+    linear-gradient(
+      135deg,
+      #e9d5ff 0%,
+      #c084fc 60%,
+      #9333ea 100%
+    );
 }
 
-/* Craft Stitch Borders */
+
+/* =========================================================
+   CROCHET / STITCH BORDERS
+   ========================================================= */
 
 .yarn-stitch-border {
   border: 3px dashed #f43f5e;
@@ -136,19 +308,43 @@ html.dark {
 }
 
 .yarn-tag-pill {
-  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.15);
+  box-shadow:
+    0 2px 8px rgba(244, 63, 94, 0.15);
 }
 
-/* Animations */
+
+/* =========================================================
+   GENERAL WOOL ANIMATIONS
+   ========================================================= */
 
 @keyframes float-wool {
-  0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
-  50% { transform: translateY(-12px) rotate(6deg) scale(1.05); }
+  0%,
+  100% {
+    transform:
+      translateY(0px)
+      rotate(0deg)
+      scale(1);
+  }
+
+  50% {
+    transform:
+      translateY(-12px)
+      rotate(6deg)
+      scale(1.05);
+  }
 }
 
 @keyframes pulse-subtle {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.9; transform: scale(1.02); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
 }
 
 .animate-float-wool {
@@ -159,7 +355,460 @@ html.dark {
   animation: pulse-subtle 2s infinite;
 }
 
-/* Custom Wool Scrollbar */
+
+/* =========================================================
+   THE COZY LOOP — BRAND SECTION
+   ========================================================= */
+
+.cozy-brand-section {
+  position: relative;
+
+  width: 100%;
+  min-height: 105px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  padding: 12px 20px;
+}
+
+
+/* Main title */
+
+.cozy-brand-title {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 14px;
+
+  z-index: 2;
+}
+
+
+/* Title */
+
+.cozy-title-text {
+  font-family:
+    "Arial Rounded MT Bold",
+    "Trebuchet MS",
+    sans-serif;
+
+  font-size: clamp(32px, 4vw, 52px);
+
+  font-weight: 900;
+
+  letter-spacing: 2px;
+
+  color: #3b2520;
+
+  animation:
+    cozyTitleFloat 3.5s ease-in-out infinite;
+}
+
+html.dark .cozy-title-text {
+  color: #f5e9e4;
+}
+
+
+/* =========================================================
+   YARN BALLS
+   ========================================================= */
+
+.cozy-thread {
+  font-size: 28px;
+
+  display: inline-block;
+
+  animation:
+    yarnBounce 2.5s ease-in-out infinite;
+}
+
+.cozy-thread:last-child {
+  animation-delay: 0.4s;
+}
+
+
+/* =========================================================
+   BRAND TAGLINE
+   ========================================================= */
+
+.cozy-brand-tagline {
+  margin-top: 2px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 1.5px;
+
+  color: #6b4f47;
+
+  animation:
+    taglineFloat 3s ease-in-out infinite;
+}
+
+html.dark .cozy-brand-tagline {
+  color: #cdbeb7;
+}
+
+
+/* =========================================================
+   YARN LINES
+   ========================================================= */
+
+.cozy-yarn-line {
+  position: absolute;
+
+  width: 180px;
+  height: 3px;
+
+  border-radius: 999px;
+
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #d9778c 0px,
+      #d9778c 8px,
+      transparent 8px,
+      transparent 14px
+    );
+
+  top: 48%;
+
+  opacity: 0.9;
+}
+
+.cozy-yarn-left {
+  right: calc(50% + 210px);
+
+  transform-origin: right center;
+
+  animation:
+    threadComeLeft 2.5s ease-in-out infinite;
+}
+
+.cozy-yarn-right {
+  left: calc(50% + 210px);
+
+  transform-origin: left center;
+
+  animation:
+    threadComeRight 2.5s ease-in-out infinite;
+}
+
+html.dark .cozy-yarn-line {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #e8899f 0px,
+      #e8899f 8px,
+      transparent 8px,
+      transparent 14px
+    );
+}
+
+
+/* =========================================================
+   BRAND ANIMATIONS
+   ========================================================= */
+
+@keyframes cozyTitleFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes yarnBounce {
+  0%,
+  100% {
+    transform:
+      rotate(-5deg)
+      translateY(0);
+  }
+
+  50% {
+    transform:
+      rotate(5deg)
+      translateY(-5px);
+  }
+}
+
+@keyframes threadComeLeft {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  60%,
+  100% {
+    opacity: 0.8;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes threadComeRight {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  60%,
+  100% {
+    opacity: 0.8;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes taglineFloat {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+
+/* =========================================================
+   SVG YARN THREAD ANIMATIONS
+   ========================================================= */
+
+@keyframes threadStitch {
+  0% {
+    stroke-dashoffset: 600;
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes threadWaveLeft {
+  0%,
+  100% {
+    transform:
+      translateX(0px)
+      translateY(0px);
+
+    opacity: 0.6;
+  }
+
+  50% {
+    transform:
+      translateX(12px)
+      translateY(-4px);
+
+    opacity: 0.9;
+  }
+}
+
+@keyframes threadWaveRight {
+  0%,
+  100% {
+    transform:
+      translateX(0px)
+      translateY(0px);
+
+    opacity: 0.6;
+  }
+
+  50% {
+    transform:
+      translateX(-12px)
+      translateY(4px);
+
+    opacity: 0.9;
+  }
+}
+
+@keyframes yarnLetterAssemble {
+  0% {
+    opacity: 0;
+
+    transform:
+      scale(0.2)
+      translateY(24px)
+      rotate(-15deg);
+
+    filter: blur(4px);
+  }
+
+  70% {
+    transform:
+      scale(1.15)
+      translateY(-4px)
+      rotate(4deg);
+
+    filter: blur(0px);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform:
+      scale(1)
+      translateY(0px)
+      rotate(0deg);
+
+    filter: blur(0px);
+  }
+}
+
+
+/* =========================================================
+   SVG THREAD PATHS
+   ========================================================= */
+
+.yarn-thread-path-1 {
+  animation:
+    threadStitch
+    1.4s
+    cubic-bezier(0.25, 1, 0.5, 1)
+    forwards;
+
+  animation-delay: 0.05s;
+}
+
+.yarn-thread-path-2 {
+  animation:
+    threadStitch
+    1.4s
+    cubic-bezier(0.25, 1, 0.5, 1)
+    forwards;
+
+  animation-delay: 0.2s;
+}
+
+.yarn-thread-path-3 {
+  animation:
+    threadStitch
+    1.4s
+    cubic-bezier(0.25, 1, 0.5, 1)
+    forwards;
+
+  animation-delay: 0.35s;
+}
+
+.yarn-thread-path-4 {
+  animation:
+    threadStitch
+    1.4s
+    cubic-bezier(0.25, 1, 0.5, 1)
+    forwards;
+
+  animation-delay: 0.5s;
+}
+
+.yarn-thread-wave-left {
+  animation:
+    threadWaveLeft
+    4s
+    ease-in-out
+    infinite;
+}
+
+.yarn-thread-wave-right {
+  animation:
+    threadWaveRight
+    4.5s
+    ease-in-out
+    infinite;
+}
+
+
+/* =========================================================
+   COMPACT THREAD ANIMATIONS
+   ========================================================= */
+
+@keyframes compactStitch {
+  0% {
+    stroke-dashoffset: 350;
+    opacity: 0.2;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes yarnCompactLetter {
+  0% {
+    opacity: 0;
+
+    transform:
+      scale(0.4)
+      translateY(10px);
+  }
+
+  70% {
+    transform:
+      scale(1.1)
+      translateY(-2px);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform:
+      scale(1)
+      translateY(0);
+  }
+}
+
+.yarn-compact-path-1 {
+  animation:
+    compactStitch
+    1.2s
+    cubic-bezier(0.25, 1, 0.5, 1)
+    forwards;
+}
+
+.yarn-compact-path-2 {
+  animation:
+    compactStitch
+    1.2s
+    cubic-bezier(0.25, 1, 0.5, 1)
+    forwards;
+
+  animation-delay: 0.2s;
+}
+
+
+/* =========================================================
+   CUSTOM WOOL SCROLLBAR
+   ========================================================= */
 
 ::-webkit-scrollbar {
   width: 10px;
@@ -174,8 +823,15 @@ html.dark {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #f43f5e 0%, #f59e0b 100%);
+  background:
+    linear-gradient(
+      180deg,
+      #f43f5e 0%,
+      #f59e0b 100%
+    );
+
   border-radius: 9999px;
+
   border: 2px solid #fffaf5;
 }
 
@@ -186,11 +842,40 @@ html.dark {
 ::-webkit-scrollbar-thumb:hover {
   background: #be123c;
 }
-/* Hero text automatically switches between light and dark mode */
-html.dark .hero-theme-text {
-  color: #ffffff !important;
-}
 
-html.dark .hero-theme-muted {
-  color: #d6d3d1 !important;
+
+/* =========================================================
+   MOBILE BRAND
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .cozy-brand-section {
+    min-height: 85px;
+    padding: 10px;
+  }
+
+  .cozy-title-text {
+    font-size: 30px;
+  }
+
+  .cozy-thread {
+    font-size: 20px;
+  }
+
+  .cozy-brand-tagline {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+
+  .cozy-yarn-line {
+    width: 70px;
+  }
+
+  .cozy-yarn-left {
+    right: calc(50% + 145px);
+  }
+
+  .cozy-yarn-right {
+    left: calc(50% + 145px);
+  }
 }

@@ -55,6 +55,7 @@ export type OrderStatus = 'Pending' | 'Crocheting' | 'Ready for Pickup' | 'Deliv
 export interface Order {
   id: string;
   createdAt: string;
+  status?: OrderStatus;
   customerName: string;
   phone: string;
   dormOrBuilding: string;
@@ -79,8 +80,6 @@ export interface Order {
   upiTransactionId?: string;
   paymentScreenshotUrl?: string;
    paymentVerificationStatus?: 'Pending Owner Verification' | 'Payment Verified ✅' | 'Payment Rejected ❌';
-
-  status: 'Pending' | 'Crocheting' | 'Ready for Pickup' | 'Delivered' | 'Cancelled';
 }
 
 export interface CustomRequest {

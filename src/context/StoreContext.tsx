@@ -99,6 +99,9 @@ interface StoreContextType {
   lastCreatedOrder: Order | null;
   setLastCreatedOrder: (ord: Order | null) => void;
 
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
+
   toastMessage: string | null;
   showToast: (msg: string) => void;
 
@@ -246,6 +249,21 @@ export const StoreProvider: React.FC<{
     useState<ProductCategory>('All');
 
   const [searchQuery, setSearchQuery] = useState('');
+
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    return localStorage.getItem('cozy_dark_mode') === 'true';
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('cozy_dark_mode', String(isDarkMode));
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => setIsDarkMode(prev => !prev);
 
   const [cartOpen, setCartOpen] = useState(false);
 
@@ -1234,6 +1252,8 @@ export const StoreProvider: React.FC<{
         setSelectedProduct,
         lastCreatedOrder,
         setLastCreatedOrder,
+        isDarkMode,
+        toggleDarkMode,
         toastMessage,
         showToast,
 

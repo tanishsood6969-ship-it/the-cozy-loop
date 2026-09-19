@@ -38,7 +38,7 @@ export const Hero: React.FC = () => {
             </span>
           </h2>
 
-         <p className="text-[var(--text-secondary)] text-sm sm:text-base max-w-xl mx-auto lg:mx-0 leading-relaxed font-semibold">
+         <p className="text-[var(--hero-description)] text-sm sm:text-base max-w-xl mx-auto lg:mx-0 leading-relaxed font-semibold">
             Brighten your dorm desk, gift your best friends, or order a custom bouquet! Every tulip stem, plush frog keychain, and daisy bag is individually crocheted by hand using soft milk cotton & wool yarn.
           </p>
 
@@ -118,13 +118,6 @@ export const Hero: React.FC = () => {
                   src="https://imgs.search.brave.com/49PPffm7k_l1g1i5UBvIj-nVC4kL-m8YnunmNJvkrYM/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pLmV0/c3lzdGF0aWMuY29t/LzY3MDcxODM1L3Iv/aWwvNWMwOTkxLzg0/MjQ0NzU3MjEvaWxf/MzAweDMwMC44NDI0/NDc1NzIxX2x6aHMu/anBn" 
                   className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-500" 
                 />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                 <h3 className="font-extrabold text-[var(--text-primary)] dark:text-white text-base">Grand Sunflower Bouquet</h3>
-                  <p className="text-xs text-[var(--text-secondary)] font-semibold">Includes rustic kraft wrap & gift note</p>
-                </div>
               </div>
             </div>
 
