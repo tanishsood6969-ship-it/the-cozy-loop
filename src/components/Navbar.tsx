@@ -34,7 +34,6 @@ export const Navbar: React.FC = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileCategoriesOpen, setMobileCategoriesOpen] =
     useState(false);
-   
 
   const totalCartCount = cart.reduce(
     (sum, item) => sum + item.quantity,
@@ -59,26 +58,23 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-  <>
-    <header
-      className="
-        crochet-navbar
-        w-full
-        max-w-full
-        text-stone-900
-        dark:text-stone-100
-        shadow-sm
-        transition-all
-        relative
-        overflow-visible
-        z-40
-      "
-    >
-      
-        {/* =====================================================
-            DECORATIVE CRAFT BACKGROUND
-        ====================================================== */}
-
+    <>
+      {/* ==================== HEADER ==================== */}
+      <header
+        className="
+          crochet-navbar
+          w-full
+          max-w-full
+          text-stone-900
+          dark:text-stone-100
+          shadow-sm
+          transition-all
+          relative
+          overflow-visible
+          z-40
+        "
+      >
+        {/* decorative craft background */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
           <span className="absolute left-3 sm:left-6 top-2 text-sm opacity-25 animate-float-wool">
             🧶
@@ -120,30 +116,20 @@ export const Navbar: React.FC = () => {
           </span>
         </div>
 
-        {/* =====================================================
-            SECTION 1 — ANNOUNCEMENT
-        ====================================================== */}
-
+        {/* ==================== ANNOUNCEMENT ==================== */}
         <div
           className="
-            relative
-            z-10
-            bg-gradient-to-r
-            from-rose-600
-            via-pink-500
-            to-amber-500
+            relative z-10
+            bg-gradient-to-r from-rose-600 via-pink-500 to-amber-500
             text-white
-            text-[10px]
-            sm:text-[11px]
+            text-[10px] sm:text-[11px]
             font-bold
             py-1.5
-            px-3
-            sm:px-4
+            px-3 sm:px-4
             flex
             items-center
             justify-center
-            gap-1.5
-            sm:gap-2
+            gap-1.5 sm:gap-2
             text-center
             min-h-[30px]
           "
@@ -156,8 +142,7 @@ export const Navbar: React.FC = () => {
 
           <span
             className="
-              hidden
-              md:inline-block
+              hidden md:inline-block
               bg-white/20
               text-white
               px-2
@@ -172,24 +157,19 @@ export const Navbar: React.FC = () => {
           </span>
         </div>
 
-        {/* =====================================================
-            SECTION 2 — LOGO
-        ====================================================== */}
-
+        {/* ==================== LOGO ==================== */}
         <div
           className="
-            py-2
-            sm:py-2.5
-            px-3
-            sm:px-4
+            py-2 sm:py-2.5
+            px-3 sm:px-4
             flex
             items-center
             justify-center
             border-b
             border-stone-200/50
             dark:border-stone-800/60
-            bg-white/35
-            dark:bg-stone-950/35
+            bg-white/40
+            dark:bg-stone-950/40
             backdrop-blur-2xl
             relative
             z-10
@@ -200,80 +180,43 @@ export const Navbar: React.FC = () => {
           <YarnTitleAnimation
             storeName={settings.storeName}
             tagline={settings.tagline}
-            onCategoryReset={() =>
-              setSelectedCategory('All')
-            }
+            onCategoryReset={() => setSelectedCategory('All')}
           />
         </div>
       </header>
 
-      {/* =====================================================
-          STICKY DESKTOP NAVIGATION
-          
-          IMPORTANT:
-          This is OUTSIDE the header.
-          
-          Therefore sticky now works correctly.
-      ====================================================== */}
+      {/* ==================== DESKTOP NAV ==================== */}
+      <div
+        className="
+          hidden
+          md:flex
+          md:sticky
+          md:top-0
+          md:z-50
+          w-full
+          px-4 sm:px-6 lg:px-8
+          py-2
+          bg-[#fffaf5]/70
+          dark:bg-stone-950/70
+          backdrop-blur-xl
+          border-t
+          border-b
+          border-stone-200/60
+          dark:border-stone-800/60
+          shadow-sm
+        "
+      >
+        <div className="w-full flex items-center justify-between gap-4">
 
-  
-
-<div
-  className="
-    hidden
-    md:flex
-    md:sticky
-    md:top-0
-    md:z-50
-    w-full
-    px-4
-    sm:px-6
-    lg:px-8
-    py-2
-    bg-[#fffaf5]/95
-    dark:bg-stone-950/95
-    backdrop-blur-xl
-    border-t
-    border-b
-    border-stone-200/60
-    dark:border-stone-800/60
-    shadow-sm
-  "
->
-        <div
-          className="
-            w-full
-            flex
-            items-center
-            justify-between
-            gap-4
-          "
-        >
-          {/* =================================================
-              DESKTOP CATEGORIES
-          ================================================== */}
-
-          <div
-            className="
-              flex
-              items-center
-              gap-1.5
-              overflow-x-auto
-              no-scrollbar
-              min-w-0
-              flex-1
-            "
-          >
+          {/* ==================== DESKTOP CATEGORIES ==================== */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar min-w-0 flex-1">
             {categories.map((cat) => {
-              const isActive =
-                selectedCategory === cat;
+              const isActive = selectedCategory === cat;
 
               return (
                 <button
                   key={cat}
-                  onClick={() =>
-                    setSelectedCategory(cat)
-                  }
+                  onClick={() => setSelectedCategory(cat)}
                   className={`
                     px-3
                     py-1
@@ -295,15 +238,14 @@ export const Navbar: React.FC = () => {
                           font-bold
                         `
                         : `
-                          bg-white
+                          bg-white/70
                           text-stone-900
                           border
                           border-stone-300
                           hover:bg-rose-50
                           hover:text-rose-700
                           hover:border-rose-300
-
-                          dark:bg-stone-900
+                          dark:bg-stone-900/70
                           dark:text-stone-100
                           dark:border-stone-700
                           dark:hover:bg-stone-800
@@ -318,28 +260,17 @@ export const Navbar: React.FC = () => {
             })}
           </div>
 
-          {/* =================================================
-              DESKTOP ACTIONS
-          ================================================== */}
+          {/* ==================== DESKTOP ACTIONS ==================== */}
+          <div className="flex items-center justify-end gap-1.5 flex-shrink-0">
 
-          <div
-            className="
-              flex
-              items-center
-              justify-end
-              gap-1.5
-              flex-shrink-0
-            "
-          >
-            {/* DARK MODE */}
-
+            {/* dark mode */}
             <button
               onClick={toggleDarkMode}
               className="
                 p-2
                 rounded-full
-                bg-white
-                dark:bg-stone-900
+                bg-white/70
+                dark:bg-stone-900/70
                 border
                 border-stone-300
                 dark:border-stone-700
@@ -363,16 +294,15 @@ export const Navbar: React.FC = () => {
               )}
             </button>
 
-            {/* USER */}
-
+            {/* user */}
             {currentUser ? (
               <div
                 className="
                   flex
                   items-center
                   gap-1
-                  bg-white
-                  dark:bg-stone-900
+                  bg-white/70
+                  dark:bg-stone-900/70
                   border
                   border-stone-300
                   dark:border-stone-700
@@ -381,9 +311,7 @@ export const Navbar: React.FC = () => {
                 "
               >
                 <button
-                  onClick={() =>
-                    setActiveModal('userOrders')
-                  }
+                  onClick={() => setActiveModal('userOrders')}
                   className="
                     flex
                     items-center
@@ -434,9 +362,7 @@ export const Navbar: React.FC = () => {
               </div>
             ) : (
               <button
-                onClick={() =>
-                  setActiveModal('auth')
-                }
+                onClick={() => setActiveModal('auth')}
                 className="
                   flex
                   items-center
@@ -445,8 +371,8 @@ export const Navbar: React.FC = () => {
                   font-bold
                   text-stone-900
                   dark:text-stone-100
-                  bg-white
-                  dark:bg-stone-900
+                  bg-white/70
+                  dark:bg-stone-900/70
                   border
                   border-stone-300
                   dark:border-stone-700
@@ -461,17 +387,13 @@ export const Navbar: React.FC = () => {
                 "
               >
                 <User className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-
                 <span>Sign In</span>
               </button>
             )}
 
-            {/* TRACK ORDER */}
-
+            {/* track order */}
             <button
-              onClick={() =>
-                setActiveModal('orderTracker')
-              }
+              onClick={() => setActiveModal('orderTracker')}
               className="
                 flex
                 items-center
@@ -480,8 +402,8 @@ export const Navbar: React.FC = () => {
                 font-bold
                 text-stone-900
                 dark:text-stone-100
-                bg-white
-                dark:bg-stone-900
+                bg-white/70
+                dark:bg-stone-900/70
                 border
                 border-stone-300
                 dark:border-stone-700
@@ -495,20 +417,11 @@ export const Navbar: React.FC = () => {
                 transition-all
               "
             >
-              <PackageCheck
-                className="
-                  w-3.5
-                  h-3.5
-                  text-amber-600
-                  dark:text-amber-400
-                "
-              />
-
+              <PackageCheck className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               <span>Track Order</span>
             </button>
 
-            {/* CART */}
-
+            {/* cart */}
             <button
               onClick={() => setCartOpen(true)}
               className="
@@ -557,8 +470,7 @@ export const Navbar: React.FC = () => {
               )}
             </button>
 
-            {/* SEARCH */}
-
+            {/* search */}
             <div className="relative flex items-center">
               {searchOpen && (
                 <div
@@ -587,9 +499,7 @@ export const Navbar: React.FC = () => {
                     type="text"
                     placeholder="Search..."
                     value={searchQuery}
-                    onChange={(e) =>
-                      setSearchQuery(e.target.value)
-                    }
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className="
                       w-40
                       lg:w-52
@@ -618,9 +528,7 @@ export const Navbar: React.FC = () => {
 
                   {searchQuery && (
                     <button
-                      onClick={() =>
-                        setSearchQuery('')
-                      }
+                      onClick={() => setSearchQuery('')}
                       className="
                         absolute
                         right-2.5
@@ -636,14 +544,12 @@ export const Navbar: React.FC = () => {
               )}
 
               <button
-                onClick={() =>
-                  setSearchOpen(!searchOpen)
-                }
+                onClick={() => setSearchOpen(!searchOpen)}
                 className="
                   p-2
                   rounded-full
-                  bg-white
-                  dark:bg-stone-900
+                  bg-white/70
+                  dark:bg-stone-900/70
                   border
                   border-stone-300
                   dark:border-stone-700
@@ -664,12 +570,8 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
       </div>
-    
 
-      {/* =====================================================
-          STICKY MOBILE NAVIGATION
-      ====================================================== */}
-
+      {/* ==================== MOBILE NAV ==================== */}
       <div
         className="
           md:hidden
@@ -679,8 +581,8 @@ export const Navbar: React.FC = () => {
           w-full
           px-3
           py-2
-          bg-[#fffaf5]/95
-          dark:bg-stone-950/95
+          bg-[#fffaf5]/70
+          dark:bg-stone-950/70
           backdrop-blur-xl
           border-t
           border-b
@@ -689,15 +591,12 @@ export const Navbar: React.FC = () => {
           shadow-sm
         "
       >
-        {/* MOBILE CATEGORY DROPDOWN */}
-
+        {/* mobile category dropdown */}
         <div className="relative w-full">
           <button
             type="button"
             onClick={() =>
-              setMobileCategoriesOpen(
-                !mobileCategoriesOpen
-              )
+              setMobileCategoriesOpen(!mobileCategoriesOpen)
             }
             className="
               w-full
@@ -709,8 +608,8 @@ export const Navbar: React.FC = () => {
               items-center
               justify-between
               gap-3
-              bg-white
-              dark:bg-stone-900
+              bg-white/70
+              dark:bg-stone-900/70
               border
               border-stone-300
               dark:border-stone-700
@@ -743,7 +642,17 @@ export const Navbar: React.FC = () => {
               </span>
 
               <div className="text-left min-w-0">
-                <span className="block text-[9px] uppercase tracking-wider font-bold text-stone-400 dark:text-stone-500">
+                <span
+                  className="
+                    block
+                    text-[9px]
+                    uppercase
+                    tracking-wider
+                    font-bold
+                    text-stone-400
+                    dark:text-stone-500
+                  "
+                >
                   Browse
                 </span>
 
@@ -762,16 +671,10 @@ export const Navbar: React.FC = () => {
                 dark:text-stone-400
                 transition-transform
                 duration-200
-                ${
-                  mobileCategoriesOpen
-                    ? 'rotate-180'
-                    : ''
-                }
+                ${mobileCategoriesOpen ? 'rotate-180' : ''}
               `}
             />
           </button>
-
-          {/* MOBILE DROPDOWN */}
 
           {mobileCategoriesOpen && (
             <div
@@ -793,16 +696,13 @@ export const Navbar: React.FC = () => {
             >
               <div className="max-h-[55vh] overflow-y-auto p-1.5">
                 {categories.map((cat) => {
-                  const isActive =
-                    selectedCategory === cat;
+                  const isActive = selectedCategory === cat;
 
                   return (
                     <button
                       key={cat}
                       type="button"
-                      onClick={() =>
-                        handleCategorySelect(cat)
-                      }
+                      onClick={() => handleCategorySelect(cat)}
                       className={`
                         w-full
                         text-left
@@ -819,10 +719,7 @@ export const Navbar: React.FC = () => {
 
                         ${
                           isActive
-                            ? `
-                              bg-rose-600
-                              text-white
-                            `
+                            ? `bg-rose-600 text-white`
                             : `
                               text-stone-800
                               dark:text-stone-100
@@ -837,9 +734,7 @@ export const Navbar: React.FC = () => {
                       <span>{cat}</span>
 
                       {isActive && (
-                        <span className="text-xs">
-                          ✓
-                        </span>
+                        <span className="text-xs">✓</span>
                       )}
                     </button>
                   );
@@ -849,21 +744,10 @@ export const Navbar: React.FC = () => {
           )}
         </div>
 
-        {/* =================================================
-            MOBILE ACTIONS
-        ================================================== */}
+        {/* ==================== MOBILE ACTIONS ==================== */}
+        <div className="mt-2 flex items-center gap-2 w-full">
 
-        <div
-          className="
-            mt-2
-            flex
-            items-center
-            gap-2
-            w-full
-          "
-        >
-          {/* DARK MODE */}
-
+          {/* dark mode */}
           <button
             onClick={toggleDarkMode}
             className="
@@ -871,8 +755,8 @@ export const Navbar: React.FC = () => {
               h-10
               flex-shrink-0
               rounded-xl
-              bg-white
-              dark:bg-stone-900
+              bg-white/70
+              dark:bg-stone-900/70
               border
               border-stone-300
               dark:border-stone-700
@@ -896,8 +780,7 @@ export const Navbar: React.FC = () => {
             )}
           </button>
 
-          {/* USER */}
-
+          {/* user */}
           <button
             onClick={() =>
               currentUser
@@ -910,8 +793,8 @@ export const Navbar: React.FC = () => {
               h-10
               px-3
               rounded-xl
-              bg-white
-              dark:bg-stone-900
+              bg-white/70
+              dark:bg-stone-900/70
               border
               border-stone-300
               dark:border-stone-700
@@ -960,19 +843,16 @@ export const Navbar: React.FC = () => {
             )}
           </button>
 
-          {/* TRACK ORDER */}
-
+          {/* track */}
           <button
-            onClick={() =>
-              setActiveModal('orderTracker')
-            }
+            onClick={() => setActiveModal('orderTracker')}
             className="
               w-10
               h-10
               flex-shrink-0
               rounded-xl
-              bg-white
-              dark:bg-stone-900
+              bg-white/70
+              dark:bg-stone-900/70
               border
               border-stone-300
               dark:border-stone-700
@@ -985,18 +865,10 @@ export const Navbar: React.FC = () => {
             title="Track Order"
             aria-label="Track Order"
           >
-            <PackageCheck
-              className="
-                w-4
-                h-4
-                text-amber-600
-                dark:text-amber-400
-              "
-            />
+            <PackageCheck className="w-4 h-4 text-amber-600 dark:text-amber-400" />
           </button>
 
-          {/* CART */}
-
+          {/* cart */}
           <button
             onClick={() => setCartOpen(true)}
             className="
@@ -1049,19 +921,16 @@ export const Navbar: React.FC = () => {
             )}
           </button>
 
-          {/* SEARCH */}
-
+          {/* search */}
           <button
-            onClick={() =>
-              setSearchOpen(!searchOpen)
-            }
+            onClick={() => setSearchOpen(!searchOpen)}
             className="
               w-10
               h-10
               flex-shrink-0
               rounded-xl
-              bg-white
-              dark:bg-stone-900
+              bg-white/70
+              dark:bg-stone-900/70
               border
               border-stone-300
               dark:border-stone-700
@@ -1084,10 +953,7 @@ export const Navbar: React.FC = () => {
           </button>
         </div>
 
-        {/* =================================================
-            MOBILE SEARCH INPUT
-        ================================================== */}
-
+        {/* ==================== MOBILE SEARCH ==================== */}
         {searchOpen && (
           <div className="mt-2 relative w-full">
             <Search
@@ -1108,9 +974,7 @@ export const Navbar: React.FC = () => {
               type="text"
               placeholder="Search products..."
               value={searchQuery}
-              onChange={(e) =>
-                setSearchQuery(e.target.value)
-              }
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="
                 w-full
                 h-10
@@ -1137,9 +1001,7 @@ export const Navbar: React.FC = () => {
 
             {searchQuery && (
               <button
-                onClick={() =>
-                  setSearchQuery('')
-                }
+                onClick={() => setSearchQuery('')}
                 className="
                   absolute
                   right-3
