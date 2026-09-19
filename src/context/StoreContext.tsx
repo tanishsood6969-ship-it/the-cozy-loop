@@ -251,20 +251,27 @@ export const StoreProvider: React.FC<{
   const [searchQuery, setSearchQuery] = useState('');
 
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    return localStorage.getItem('cozy_dark_mode') === 'true';
-  });
+  return localStorage.getItem('cozy_dark_mode') === 'true';
+});
 
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('cozy_dark_mode', String(isDarkMode));
-  }, [isDarkMode]);
+useEffect(() => {
+  const root = document.documentElement;
 
-  const toggleDarkMode = () => setIsDarkMode(prev => !prev);
+  root.classList.remove('dark');
 
+  if (isDarkMode) {
+    root.classList.add('dark');
+  }
+
+  localStorage.setItem(
+    'cozy_dark_mode',
+    isDarkMode ? 'true' : 'false'
+  );
+}, [isDarkMode]);
+
+const toggleDarkMode = () => {
+  setIsDarkMode(prev => !prev);
+};
   const [cartOpen, setCartOpen] = useState(false);
 
   const [activeModal, setActiveModal] = useState<

@@ -7,6 +7,124 @@ interface ProductCardProps {
   product: Product;
 }
 
+/**
+ * Returns styling based on the color name.
+ * This makes each color option visually match its label.
+ */
+const getColorStyle = (colorName: string) => {
+  const color = colorName.toLowerCase().trim();
+
+  if (
+    color.includes('red') ||
+    color.includes('crimson') ||
+    color.includes('scarlet')
+  ) {
+    return 'bg-red-500 border-red-600 text-white';
+  }
+
+  if (
+    color.includes('pink') ||
+    color.includes('rose') ||
+    color.includes('blush')
+  ) {
+    return 'bg-pink-400 border-pink-500 text-white';
+  }
+
+  if (
+    color.includes('orange') ||
+    color.includes('peach') ||
+    color.includes('coral')
+  ) {
+    return 'bg-orange-400 border-orange-500 text-white';
+  }
+
+  if (
+    color.includes('yellow') ||
+    color.includes('mustard')
+  ) {
+    return 'bg-yellow-300 border-yellow-500 text-stone-900';
+  }
+
+  if (
+    color.includes('green') ||
+    color.includes('olive') ||
+    color.includes('mint') ||
+    color.includes('sage')
+  ) {
+    return 'bg-green-500 border-green-600 text-white';
+  }
+
+  if (
+    color.includes('blue') ||
+    color.includes('navy') ||
+    color.includes('sky')
+  ) {
+    return 'bg-blue-500 border-blue-600 text-white';
+  }
+
+  if (
+    color.includes('purple') ||
+    color.includes('violet') ||
+    color.includes('lavender')
+  ) {
+    return 'bg-purple-500 border-purple-600 text-white';
+  }
+
+  if (
+    color.includes('brown') ||
+    color.includes('chocolate') ||
+    color.includes('coffee')
+  ) {
+    return 'bg-amber-800 border-amber-900 text-white';
+  }
+
+  if (
+    color.includes('black') ||
+    color.includes('charcoal')
+  ) {
+    return 'bg-black border-stone-700 text-white';
+  }
+
+  if (
+    color.includes('white') ||
+    color.includes('ivory') ||
+    color.includes('cream')
+  ) {
+    return 'bg-white border-stone-300 text-stone-800';
+  }
+
+  if (
+    color.includes('gray') ||
+    color.includes('grey') ||
+    color.includes('silver')
+  ) {
+    return 'bg-gray-400 border-gray-500 text-white';
+  }
+
+  if (
+    color.includes('beige') ||
+    color.includes('tan')
+  ) {
+    return 'bg-[#D8C3A5] border-[#B8A184] text-stone-800';
+  }
+
+  if (
+    color.includes('teal') ||
+    color.includes('turquoise')
+  ) {
+    return 'bg-teal-500 border-teal-600 text-white';
+  }
+
+  if (
+    color.includes('gold')
+  ) {
+    return 'bg-yellow-500 border-yellow-600 text-white';
+  }
+
+  // Default color when the product has an unknown/custom color name
+  return 'bg-stone-100 border-stone-300 text-stone-700';
+};
+
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart, setSelectedProduct, setActiveModal } = useStore();
 
@@ -20,13 +138,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <div className="group glass-card rounded-3xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col justify-between border border-stone-200/80">
+      
       {/* Product Image Container */}
-      <div className="relative aspect-square w-full overflow-hidden bg-stone-100 cursor-pointer" onClick={handleCardClick}>
-        <img 
-          src={product.imageUrl} 
+      <div
+        className="relative aspect-square w-full overflow-hidden bg-stone-100 cursor-pointer"
+        onClick={handleCardClick}
+      >
+        <img
+          src={product.imageUrl}
           alt={product.name}
           className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-          loading="lazy" 
+          loading="lazy"
         />
 
         {/* Badges Overlay */}
@@ -36,6 +158,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               ✨ Bestseller
             </span>
           )}
+
           {product.isNew && (
             <span className="bg-amber-400 text-stone-900 font-bold text-[10px] sm:text-xs px-2.5 py-1 rounded-full shadow-sm">
               🌟 New Arrival
@@ -62,7 +185,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Quick View Button Hover Overlay */}
         <div className="absolute inset-0 bg-stone-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-          <button 
+          <button
             onClick={handleCardClick}
             className="bg-white/95 text-stone-800 font-semibold text-xs px-4 py-2 rounded-full shadow-lg flex items-center gap-1.5 hover:bg-rose-50 hover:text-rose-600 transition-all transform translate-y-2 group-hover:translate-y-0"
           >
@@ -75,11 +198,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* Product Content Details */}
       <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
         <div>
+          
           {/* Category & Lead Time */}
           <div className="flex items-center justify-between text-xs text-stone-500 mb-1">
             <span className="font-semibold text-rose-500 uppercase tracking-wider text-[10px]">
               {product.category}
             </span>
+
             <span className="flex items-center gap-1 text-[11px]">
               <Clock className="w-3 h-3 text-stone-400" />
               {product.leadTimeDays}d lead
@@ -87,9 +212,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
 
           {/* Product Name */}
-          <h3 
+          <h3
             onClick={handleCardClick}
-           className="font-bold text-[var(--text-primary)] text-base sm:text-lg leading-snug cursor-pointer hover:text-rose-600 transition-colors line-clamp-1"
+            className="font-bold text-[var(--text-primary)] text-base sm:text-lg leading-snug cursor-pointer hover:text-rose-600 transition-colors line-clamp-1"
           >
             {product.name}
           </h3>
@@ -99,25 +224,39 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <div className="flex items-center text-amber-400">
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
             </div>
-           <span className="font-bold text-[var(--text-primary)]">{product.rating.toFixed(1)}</span>
-            <span className="text-stone-400">({product.reviewCount})</span>
+
+            <span className="font-bold text-[var(--text-primary)]">
+              {product.rating.toFixed(1)}
+            </span>
+
+            <span className="text-stone-400">
+              ({product.reviewCount})
+            </span>
           </div>
         </div>
 
         {/* Color Palette Indicators */}
         <div className="flex items-center gap-1.5 pt-1">
-          <span className="text-[11px] text-stone-400 mr-1">Colors:</span>
+          <span className="text-[11px] text-stone-400 mr-1">
+            Colors:
+          </span>
+
           {product.colorsAvailable.slice(0, 4).map((color, idx) => (
-            <span 
-              key={idx} 
-              className="text-[10px] bg-stone-100 border border-stone-200 text-stone-600 px-2 py-0.5 rounded-md truncate max-w-[80px]"
+            <span
+              key={idx}
+              className={`text-[10px] font-semibold px-2 py-0.5 rounded-md truncate max-w-[80px] border shadow-sm transition-all hover:scale-105 ${getColorStyle(
+                color
+              )}`}
               title={color}
             >
               {color}
             </span>
           ))}
+
           {product.colorsAvailable.length > 4 && (
-            <span className="text-[10px] text-stone-400">+{product.colorsAvailable.length - 4}</span>
+            <span className="text-[10px] text-stone-400">
+              +{product.colorsAvailable.length - 4}
+            </span>
           )}
         </div>
 
@@ -128,6 +267,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <span className="text-lg sm:text-xl font-extrabold text-[var(--text-primary)]">
                 ₹{product.price}
               </span>
+
               {product.originalPrice && (
                 <span className="text-xs text-stone-400 line-through">
                   ₹{product.originalPrice}
@@ -143,7 +283,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             }}
             disabled={isOutOfStock}
             className={`px-3.5 py-2 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all ${
-              isOutOfStock 
+              isOutOfStock
                 ? 'bg-stone-200 text-stone-400 cursor-not-allowed'
                 : 'bg-rose-500 hover:bg-rose-600 text-white shadow-md shadow-rose-200 active:scale-95'
             }`}
