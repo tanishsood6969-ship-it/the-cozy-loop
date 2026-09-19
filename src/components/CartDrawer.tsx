@@ -16,7 +16,6 @@ export const CartDrawer: React.FC = () => {
     setCartOpen,
     updateCartQuantity,
     removeFromCart,
-    settings,
     setActiveModal,
     isDarkMode,
   } = useStore();
@@ -28,15 +27,9 @@ export const CartDrawer: React.FC = () => {
     0
   );
 
-  const freeDeliveryNeeded = Math.max(
-    0,
-    settings.freeDeliveryThreshold - subtotal
-  );
-
-  const freeDeliveryProgress = Math.min(
-    100,
-    (subtotal / settings.freeDeliveryThreshold) * 100
-  );
+  // Delivery is FREE for every order
+  const deliveryFee = 0;
+  const total = subtotal + deliveryFee;
 
   const handleProceedToCheckout = () => {
     setCartOpen(false);
@@ -65,7 +58,6 @@ export const CartDrawer: React.FC = () => {
     ? 'text-stone-400'
     : 'text-stone-500';
 
- 
   const itemClass = isDarkMode
     ? 'bg-stone-900 border-stone-800 hover:bg-stone-800'
     : 'bg-stone-50/50 border-stone-200 hover:bg-white';
@@ -93,10 +85,6 @@ export const CartDrawer: React.FC = () => {
   const footerClass = isDarkMode
     ? 'bg-stone-900 border-stone-800'
     : 'bg-stone-50/90 border-stone-200';
-
-  const progressBackground = isDarkMode
-    ? 'bg-stone-700'
-    : 'bg-stone-200';
 
   const closeButtonClass = isDarkMode
     ? 'text-stone-400 hover:text-stone-100 hover:bg-stone-800'
@@ -139,7 +127,7 @@ export const CartDrawer: React.FC = () => {
         </div>
 
         {/* =========================
-            FREE DELIVERY PROGRESS
+            FREE DELIVERY BANNER
         ========================== */}
         <div
           className={`p-4 border-b ${
@@ -149,35 +137,28 @@ export const CartDrawer: React.FC = () => {
           }`}
         >
           <div
-            className={`flex items-center justify-between text-xs font-semibold mb-1.5 ${
+            className={`flex items-center justify-center text-xs font-semibold ${
               isDarkMode ? 'text-stone-200' : 'text-stone-800'
             }`}
           >
             <span className="flex items-center gap-1.5">
-              <Truck className="w-4 h-4 text-rose-500" />
+              <Truck className="w-4 h-4 text-emerald-500" />
 
-              {freeDeliveryNeeded === 0 ? (
-                <span className="text-emerald-500 font-bold">
-                  🎉 You unlocked FREE Campus Dorm Delivery!
-                </span>
-              ) : (
-                <span>
-                  Add ₹{freeDeliveryNeeded} more for FREE Campus Delivery!
-                </span>
-              )}
-            </span>
-
-            <span className={secondaryText}>
-              {Math.round(freeDeliveryProgress)}%
+              <span className="text-emerald-500 font-bold">
+                🎉 FREE Campus Delivery on Every Order!
+              </span>
             </span>
           </div>
 
+          {/* Full progress bar because delivery is always free */}
           <div
-            className={`w-full h-2 rounded-full overflow-hidden ${progressBackground}`}
+            className={`w-full h-2 rounded-full overflow-hidden mt-2 ${
+              isDarkMode ? 'bg-stone-700' : 'bg-stone-200'
+            }`}
           >
             <div
-              className="h-full bg-gradient-to-r from-amber-400 to-rose-500 transition-all duration-500"
-              style={{ width: `${freeDeliveryProgress}%` }}
+              className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500"
+              style={{ width: '100%' }}
             />
           </div>
         </div>
@@ -361,12 +342,10 @@ export const CartDrawer: React.FC = () => {
 
               {/* Delivery */}
               <div className="flex justify-between">
-                <span>Campus Delivery Fee:</span>
+                <span>Campus Delivery:</span>
 
                 <span className="font-bold text-emerald-500">
-                  {subtotal >= settings.freeDeliveryThreshold
-                    ? 'FREE'
-                    : '₹30'}
+                  FREE
                 </span>
               </div>
 
@@ -381,10 +360,7 @@ export const CartDrawer: React.FC = () => {
                 <span>Total Amount:</span>
 
                 <span className="text-rose-500">
-                  ₹
-                  {subtotal >= settings.freeDeliveryThreshold
-                    ? subtotal
-                    : subtotal + 30}
+                  ₹{total}
                 </span>
               </div>
             </div>
