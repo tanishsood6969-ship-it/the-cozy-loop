@@ -38,7 +38,12 @@ interface StoreContextType {
 
   currentUser: User | null;
   registeredUsers: User[];
-  loginUserWithPassword: (loginId: string, password: string) => boolean;
+
+  loginUserWithPassword: (
+    loginId: string,
+    password: string
+  ) => boolean;
+
   signupUserWithPassword: (
     name: string,
     email: string,
@@ -47,25 +52,36 @@ interface StoreContextType {
     dormOrBuilding?: string,
     roomOrSpot?: string
   ) => User;
+
   sendOtpCode: (identifier: string) => string;
+
   verifyOtpCode: (
     identifier: string,
     code: string,
     generatedCode: string
   ) => boolean;
+
   loginUserDirect: (user: User) => void;
   logoutUser: () => void;
 
   isAdmin: boolean;
   setIsAdmin: (val: boolean) => void;
+
   adminAuthenticated: boolean;
-  loginAdminWithCredentials: (username: string, pin: string) => boolean;
+
+  loginAdminWithCredentials: (
+    username: string,
+    pin: string
+  ) => boolean;
+
   logoutAdmin: () => void;
 
   selectedCategory: ProductCategory;
   setSelectedCategory: (cat: ProductCategory) => void;
+
   searchQuery: string;
   setSearchQuery: (q: string) => void;
+
   cartOpen: boolean;
   setCartOpen: (val: boolean) => void;
 
@@ -113,7 +129,11 @@ interface StoreContextType {
     giftNote?: string
   ) => void;
 
-  updateCartQuantity: (index: number, quantity: number) => void;
+  updateCartQuantity: (
+    index: number,
+    quantity: number
+  ) => void;
+
   removeFromCart: (index: number) => void;
   clearCart: () => void;
 
@@ -121,16 +141,31 @@ interface StoreContextType {
     product: Omit<Product, 'id' | 'rating' | 'reviewCount'>
   ) => void;
 
-  updateProduct: (id: string, updatedFields: Partial<Product>) => void;
-  updateStock: (id: string, newStock: number) => void;
+  updateProduct: (
+    id: string,
+    updatedFields: Partial<Product>
+  ) => void;
+
+  updateStock: (
+    id: string,
+    newStock: number
+  ) => void;
+
   deleteProduct: (id: string) => void;
 
   createOrder: (
     orderData: Omit<Order, 'id' | 'createdAt' | 'status'>
   ) => Order;
 
-  updateOrderStatus: (id: string, status: OrderStatus) => void;
-  verifyOrderPayment: (id: string, isVerified: boolean) => void;
+  updateOrderStatus: (
+    id: string,
+    status: OrderStatus
+  ) => void;
+
+  verifyOrderPayment: (
+    id: string,
+    isVerified: boolean
+  ) => void;
 
   createCustomRequest: (
     reqData: Omit<CustomRequest, 'id' | 'createdAt' | 'status'>
@@ -146,10 +181,103 @@ interface StoreContextType {
     reviewData: Omit<Review, 'id' | 'date' | 'verifiedStudent'>
   ) => void;
 
-  updateSettings: (newSettings: Partial<StoreSettings>) => void;
+  updateSettings: (
+    newSettings: Partial<StoreSettings>
+  ) => void;
 }
 
-const StoreContext = createContext<StoreContextType | undefined>(undefined);
+const StoreContext =
+  createContext<StoreContextType | undefined>(undefined);
+
+/*
+ * ============================================================
+ * SAFE LOCAL STORAGE HELPERS
+ * ============================================================
+ */
+
+/*
+ * Safely reads JSON data from localStorage.
+ *
+ * If the stored value is:
+ * - missing
+ * - "undefined"
+ * - "null"
+ * - corrupted JSON
+ *
+ * the fallback value is returned instead of crashing the app.
+ */
+const getSafeLocalStorage = <T,>(
+  key: string,
+  fallback: T
+): T => {
+  try {
+    const saved = localStorage.getItem(key);
+
+    if (
+      !saved ||
+      saved === 'undefined' ||
+      saved === 'null'
+    ) {
+      return fallback;
+    }
+
+    return JSON.parse(saved) as T;
+  } catch (error) {
+    console.error(
+      `Failed to load ${key} from localStorage:`,
+      error
+    );
+
+    /*
+     * Remove corrupted data so it cannot break
+     * the application again on the next refresh.
+     */
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Ignore localStorage removal errors.
+    }
+
+    return fallback;
+  }
+};
+
+/*
+ * Safely saves data to localStorage.
+ *
+ * Most importantly, undefined is NEVER saved as:
+ *
+ * "undefined"
+ *
+ * because that value cannot later be parsed by JSON.parse().
+ */
+const setSafeLocalStorage = (
+  key: string,
+  value: unknown
+) => {
+  try {
+    if (value === undefined) {
+      localStorage.removeItem(key);
+      return;
+    }
+
+    localStorage.setItem(
+      key,
+      JSON.stringify(value)
+    );
+  } catch (error) {
+    console.error(
+      `Failed to save ${key} to localStorage:`,
+      error
+    );
+  }
+};
+
+/*
+ * ============================================================
+ * DEMO USER
+ * ============================================================
+ */
 
 const INITIAL_DEMO_USERS: User[] = [
   {
@@ -163,6 +291,12 @@ const INITIAL_DEMO_USERS: User[] = [
   }
 ];
 
+/*
+ * ============================================================
+ * STORE PROVIDER
+ * ============================================================
+ */
+
 export const StoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
@@ -174,55 +308,78 @@ export const StoreProvider: React.FC<{
    * ============================================================
    */
 
-  const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('knot_bloom_products');
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-  });
+  const [products, setProducts] =
+    useState<Product[]>(() =>
+      getSafeLocalStorage(
+        'knot_bloom_products',
+        INITIAL_PRODUCTS
+      )
+    );
 
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const saved = localStorage.getItem('knot_bloom_orders');
-    return saved ? JSON.parse(saved) : INITIAL_ORDERS;
-  });
+  const [orders, setOrders] =
+    useState<Order[]>(() =>
+      getSafeLocalStorage(
+        'knot_bloom_orders',
+        INITIAL_ORDERS
+      )
+    );
 
-  const [customRequests, setCustomRequests] = useState<CustomRequest[]>(
-    () => {
-      const saved = localStorage.getItem('knot_bloom_custom_requests');
-      return saved ? JSON.parse(saved) : INITIAL_CUSTOM_REQUESTS;
-    }
-  );
+  const [customRequests, setCustomRequests] =
+    useState<CustomRequest[]>(() =>
+      getSafeLocalStorage(
+        'knot_bloom_custom_requests',
+        INITIAL_CUSTOM_REQUESTS
+      )
+    );
 
-  const [reviews, setReviews] = useState<Review[]>(() => {
-    const saved = localStorage.getItem('knot_bloom_reviews');
-    return saved ? JSON.parse(saved) : INITIAL_REVIEWS;
-  });
+  const [reviews, setReviews] =
+    useState<Review[]>(() =>
+      getSafeLocalStorage(
+        'knot_bloom_reviews',
+        INITIAL_REVIEWS
+      )
+    );
 
-  const [settings, setSettings] = useState<StoreSettings>(() => {
-    const saved = localStorage.getItem('knot_bloom_settings');
-    const parsed = saved ? JSON.parse(saved) : INITIAL_SETTINGS;
+  const [settings, setSettings] =
+    useState<StoreSettings>(() => {
+      const parsed = getSafeLocalStorage(
+        'knot_bloom_settings',
+        INITIAL_SETTINGS
+      );
 
-    return {
-      ...INITIAL_SETTINGS,
-      ...parsed
-    };
-  });
+      return {
+        ...INITIAL_SETTINGS,
+        ...parsed
+      };
+    });
 
   /*
    * Cart and logged-in user remain device-specific.
    */
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('knot_bloom_cart');
-    return saved ? JSON.parse(saved) : [];
-  });
 
-  const [registeredUsers, setRegisteredUsers] = useState<User[]>(() => {
-    const saved = localStorage.getItem('knot_bloom_registered_users');
-    return saved ? JSON.parse(saved) : INITIAL_DEMO_USERS;
-  });
+  const [cart, setCart] =
+    useState<CartItem[]>(() =>
+      getSafeLocalStorage(
+        'knot_bloom_cart',
+        []
+      )
+    );
 
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('knot_bloom_current_user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [registeredUsers, setRegisteredUsers] =
+    useState<User[]>(() =>
+      getSafeLocalStorage(
+        'knot_bloom_registered_users',
+        INITIAL_DEMO_USERS
+      )
+    );
+
+  const [currentUser, setCurrentUser] =
+    useState<User | null>(() =>
+      getSafeLocalStorage(
+        'knot_bloom_current_user',
+        null
+      )
+    );
 
   /*
    * ============================================================
@@ -230,12 +387,15 @@ export const StoreProvider: React.FC<{
    * ============================================================
    */
 
-  const [isAdmin, setIsAdminState] = useState(false);
+  const [isAdmin, setIsAdminState] =
+    useState(false);
 
   const [adminAuthenticated, setAdminAuthenticated] =
     useState<boolean>(() => {
       return (
-        sessionStorage.getItem('knot_bloom_admin_auth') === 'true'
+        sessionStorage.getItem(
+          'knot_bloom_admin_auth'
+        ) === 'true'
       );
     });
 
@@ -248,43 +408,55 @@ export const StoreProvider: React.FC<{
   const [selectedCategory, setSelectedCategory] =
     useState<ProductCategory>('All');
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] =
+    useState('');
 
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-  return localStorage.getItem('cozy_dark_mode') === 'true';
-});
+  const [isDarkMode, setIsDarkMode] =
+    useState<boolean>(() => {
+      return (
+        localStorage.getItem(
+          'cozy_dark_mode'
+        ) === 'true'
+      );
+    });
 
-useEffect(() => {
-  const root = document.documentElement;
+  useEffect(() => {
+    const root =
+      document.documentElement;
 
-  root.classList.remove('dark');
+    root.classList.remove('dark');
 
-  if (isDarkMode) {
-    root.classList.add('dark');
-  }
+    if (isDarkMode) {
+      root.classList.add('dark');
+    }
 
-  localStorage.setItem(
-    'cozy_dark_mode',
-    isDarkMode ? 'true' : 'false'
-  );
-}, [isDarkMode]);
+    localStorage.setItem(
+      'cozy_dark_mode',
+      isDarkMode ? 'true' : 'false'
+    );
+  }, [isDarkMode]);
 
-const toggleDarkMode = () => {
-  setIsDarkMode(prev => !prev);
-};
-  const [cartOpen, setCartOpen] = useState(false);
+  const toggleDarkMode = () => {
+    setIsDarkMode(
+      (prev) => !prev
+    );
+  };
 
-  const [activeModal, setActiveModal] = useState<
-    | 'product'
-    | 'customOrder'
-    | 'checkout'
-    | 'orderSuccess'
-    | 'orderTracker'
-    | 'auth'
-    | 'adminAuth'
-    | 'userOrders'
-    | null
-  >(null);
+  const [cartOpen, setCartOpen] =
+    useState(false);
+
+  const [activeModal, setActiveModal] =
+    useState<
+      | 'product'
+      | 'customOrder'
+      | 'checkout'
+      | 'orderSuccess'
+      | 'orderTracker'
+      | 'auth'
+      | 'adminAuth'
+      | 'userOrders'
+      | null
+    >(null);
 
   const [selectedProduct, setSelectedProduct] =
     useState<Product | null>(null);
@@ -301,27 +473,30 @@ const toggleDarkMode = () => {
    * ============================================================
    */
 
-  const cloudInitialized = useRef(false);
+  const cloudInitialized =
+    useRef(false);
 
-  /*
-   * Prevents a realtime update from immediately being written
-   * back to Supabase again.
-   */
-  const lastCloudData = useRef<Record<string, string>>({});
+  const lastCloudData =
+    useRef<Record<string, string>>({});
 
   /*
    * ============================================================
-   * LOAD ALL SHARED DATA FROM SUPABASE
+   * LOAD STORE DATA FROM SUPABASE
    * ============================================================
    */
 
   const loadStoreData = async () => {
-    const { data, error } = await supabase
-      .from('store_data')
-      .select('data_type, data');
+    const { data, error } =
+      await supabase
+        .from('store_data')
+        .select('data_type, data');
 
     if (error) {
-      console.error('Error loading store data:', error);
+      console.error(
+        'Error loading store data:',
+        error
+      );
+
       return null;
     }
 
@@ -330,7 +505,7 @@ const toggleDarkMode = () => {
 
   /*
    * ============================================================
-   * SAVE SHARED DATA TO SUPABASE
+   * SAVE STORE DATA TO SUPABASE
    * ============================================================
    */
 
@@ -342,31 +517,57 @@ const toggleDarkMode = () => {
       return;
     }
 
-    const serialized = JSON.stringify(data);
-
     /*
-     * If this exact data came from Supabase, don't immediately
-     * write it back and create a realtime loop.
+     * NEVER save undefined/null values.
      */
-    if (lastCloudData.current[dataType] === serialized) {
-      delete lastCloudData.current[dataType];
+    if (
+      data === undefined ||
+      data === null
+    ) {
+      console.warn(
+        `Skipping cloud save for ${dataType}: data is empty`
+      );
+
       return;
     }
 
-    console.log('Saving to cloud:', dataType);
+    const serialized =
+      JSON.stringify(data);
 
-    const { error } = await supabase
-      .from('store_data')
-      .upsert(
-        {
-          data_type: dataType,
-          data,
-          updated_at: new Date().toISOString()
-        },
-        {
-          onConflict: 'data_type'
-        }
-      );
+    /*
+     * Prevent realtime loops.
+     */
+    if (
+      lastCloudData.current[dataType] ===
+      serialized
+    ) {
+      delete lastCloudData.current[
+        dataType
+      ];
+
+      return;
+    }
+
+    console.log(
+      'Saving to cloud:',
+      dataType
+    );
+
+    const { error } =
+      await supabase
+        .from('store_data')
+        .upsert(
+          {
+            data_type: dataType,
+            data,
+            updated_at:
+              new Date().toISOString()
+          },
+          {
+            onConflict:
+              'data_type'
+          }
+        );
 
     if (error) {
       console.error(
@@ -387,65 +588,147 @@ const toggleDarkMode = () => {
    */
 
   useEffect(() => {
-    const initializeCloudData = async () => {
-      const cloudData = await loadStoreData();
+    const initializeCloudData =
+      async () => {
+        const cloudData =
+          await loadStoreData();
 
-      if (cloudData && cloudData.length > 0) {
-        cloudData.forEach((item) => {
-          const serialized = JSON.stringify(item.data);
+        if (
+          cloudData &&
+          cloudData.length > 0
+        ) {
+          cloudData.forEach(
+            (item) => {
+              /*
+               * Ignore malformed Supabase rows.
+               */
+              if (
+                !item?.data_type ||
+                item.data ===
+                  undefined ||
+                item.data === null
+              ) {
+                return;
+              }
 
-          lastCloudData.current[item.data_type] =
-            serialized;
+              const serialized =
+                JSON.stringify(
+                  item.data
+                );
 
-          switch (item.data_type) {
-            case 'products':
-              setProducts(item.data as Product[]);
-              break;
+              lastCloudData.current[
+                item.data_type
+              ] = serialized;
 
-            case 'orders':
-              setOrders(item.data as Order[]);
-              break;
+              switch (
+                item.data_type
+              ) {
+                case 'products':
+                  if (
+                    Array.isArray(
+                      item.data
+                    )
+                  ) {
+                    setProducts(
+                      item.data as Product[]
+                    );
+                  }
+                  break;
 
-            case 'custom_requests':
-              setCustomRequests(
-                item.data as CustomRequest[]
-              );
-              break;
+                case 'orders':
+                  if (
+                    Array.isArray(
+                      item.data
+                    )
+                  ) {
+                    setOrders(
+                      item.data as Order[]
+                    );
+                  }
+                  break;
 
-            case 'reviews':
-              setReviews(item.data as Review[]);
-              break;
+                case 'custom_requests':
+                  if (
+                    Array.isArray(
+                      item.data
+                    )
+                  ) {
+                    setCustomRequests(
+                      item.data as CustomRequest[]
+                    );
+                  }
+                  break;
 
-            case 'settings':
-              setSettings(item.data as StoreSettings);
-              break;
-          }
-        });
-      }
+                case 'reviews':
+                  if (
+                    Array.isArray(
+                      item.data
+                    )
+                  ) {
+                    setReviews(
+                      item.data as Review[]
+                    );
+                  }
+                  break;
 
-      /*
-       * Only after cloud data has been loaded do we allow
-       * changes to be saved.
-       */
-      cloudInitialized.current = true;
+                case 'settings':
+                  if (
+                    typeof item.data ===
+                      'object' &&
+                    !Array.isArray(
+                      item.data
+                    )
+                  ) {
+                    setSettings({
+                      ...INITIAL_SETTINGS,
+                      ...(item.data as StoreSettings)
+                    });
+                  }
+                  break;
+              }
+            }
+          );
+        }
 
-      /*
-       * If this is a brand-new Supabase database, upload the
-       * existing local data once.
-       */
-      if (!cloudData || cloudData.length === 0) {
-        await Promise.all([
-          saveStoreData('products', products),
-          saveStoreData('orders', orders),
-          saveStoreData(
-            'custom_requests',
-            customRequests
-          ),
-          saveStoreData('reviews', reviews),
-          saveStoreData('settings', settings)
-        ]);
-      }
-    };
+        /*
+         * Only after cloud data has been loaded
+         * do we allow changes to be saved.
+         */
+        cloudInitialized.current =
+          true;
+
+        /*
+         * If Supabase is empty, upload the
+         * current local data once.
+         */
+        if (
+          !cloudData ||
+          cloudData.length === 0
+        ) {
+          await Promise.all([
+            saveStoreData(
+              'products',
+              products
+            ),
+            saveStoreData(
+              'orders',
+              orders
+            ),
+            saveStoreData(
+              'custom_requests',
+              customRequests
+            ),
+            saveStoreData(
+              'reviews',
+              reviews
+            ),
+            saveStoreData(
+              'settings',
+              settings
+            )
+          ]);
+        }
+      };
 
     initializeCloudData();
   }, []);
@@ -457,95 +740,163 @@ const toggleDarkMode = () => {
    */
 
   useEffect(() => {
-    const channel = supabase
-      .channel('store-data-sync')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'store_data'
-        },
-        (payload) => {
-          const newData = payload.new as {
-            data_type?: string;
-            data?: unknown;
-          };
+    const channel =
+      supabase
+        .channel(
+          'store-data-sync'
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'store_data'
+          },
+          (payload) => {
+            /*
+             * DELETE events don't contain the same
+             * "new" data as INSERT/UPDATE events.
+             */
+            if (
+              payload.eventType ===
+              'DELETE'
+            ) {
+              return;
+            }
 
-          if (!newData?.data_type) {
-            return;
+            const newData =
+              payload.new as {
+                data_type?: string;
+                data?: unknown;
+              };
+
+            /*
+             * Never update React state with
+             * undefined/null cloud data.
+             */
+            if (
+              !newData?.data_type ||
+              newData.data ===
+                undefined ||
+              newData.data === null
+            ) {
+              return;
+            }
+
+            const dataType =
+              newData.data_type;
+
+            const data =
+              newData.data;
+
+            const serialized =
+              JSON.stringify(data);
+
+            lastCloudData.current[
+              dataType
+            ] = serialized;
+
+            switch (
+              dataType
+            ) {
+              case 'products':
+                if (
+                  Array.isArray(data)
+                ) {
+                  setProducts(
+                    data as Product[]
+                  );
+                }
+                break;
+
+              case 'orders':
+                if (
+                  Array.isArray(data)
+                ) {
+                  setOrders(
+                    data as Order[]
+                  );
+                }
+                break;
+
+              case 'custom_requests':
+                if (
+                  Array.isArray(data)
+                ) {
+                  setCustomRequests(
+                    data as CustomRequest[]
+                  );
+                }
+                break;
+
+              case 'reviews':
+                if (
+                  Array.isArray(data)
+                ) {
+                  setReviews(
+                    data as Review[]
+                  );
+                }
+                break;
+
+              case 'settings':
+                if (
+                  typeof data ===
+                    'object' &&
+                  !Array.isArray(data)
+                ) {
+                  setSettings({
+                    ...INITIAL_SETTINGS,
+                    ...(data as StoreSettings)
+                  });
+                }
+                break;
+            }
           }
-
-          const dataType = newData.data_type;
-          const data = newData.data;
-
-          const serialized = JSON.stringify(data);
-
-          /*
-           * Remember that this data came from cloud so the
-           * corresponding save effect doesn't send it back.
-           */
-          lastCloudData.current[dataType] =
-            serialized;
-
-          switch (dataType) {
-            case 'products':
-              setProducts(data as Product[]);
-              break;
-
-            case 'orders':
-              setOrders(data as Order[]);
-              break;
-
-            case 'custom_requests':
-              setCustomRequests(
-                data as CustomRequest[]
-              );
-              break;
-
-            case 'reviews':
-              setReviews(data as Review[]);
-              break;
-
-            case 'settings':
-              setSettings(data as StoreSettings);
-              break;
+        )
+        .subscribe(
+          (status) => {
+            console.log(
+              'Supabase realtime status:',
+              status
+            );
           }
-        }
-      )
-      .subscribe((status) => {
-        console.log(
-          'Supabase realtime status:',
-          status
         );
-      });
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(
+        channel
+      );
     };
   }, []);
 
   /*
    * ============================================================
-   * SHARED DATA → SUPABASE
+   * SHARED DATA → SUPABASE + LOCAL CACHE
    * ============================================================
    */
 
   useEffect(() => {
-    saveStoreData('products', products);
+    saveStoreData(
+      'products',
+      products
+    );
 
-    localStorage.setItem(
+    setSafeLocalStorage(
       'knot_bloom_products',
-      JSON.stringify(products)
+      products
     );
   }, [products]);
 
   useEffect(() => {
-    saveStoreData('orders', orders);
+    saveStoreData(
+      'orders',
+      orders
+    );
 
-    localStorage.setItem(
+    setSafeLocalStorage(
       'knot_bloom_orders',
-      JSON.stringify(orders)
+      orders
     );
   }, [orders]);
 
@@ -555,27 +906,33 @@ const toggleDarkMode = () => {
       customRequests
     );
 
-    localStorage.setItem(
+    setSafeLocalStorage(
       'knot_bloom_custom_requests',
-      JSON.stringify(customRequests)
+      customRequests
     );
   }, [customRequests]);
 
   useEffect(() => {
-    saveStoreData('reviews', reviews);
+    saveStoreData(
+      'reviews',
+      reviews
+    );
 
-    localStorage.setItem(
+    setSafeLocalStorage(
       'knot_bloom_reviews',
-      JSON.stringify(reviews)
+      reviews
     );
   }, [reviews]);
 
   useEffect(() => {
-    saveStoreData('settings', settings);
+    saveStoreData(
+      'settings',
+      settings
+    );
 
-    localStorage.setItem(
+    setSafeLocalStorage(
       'knot_bloom_settings',
-      JSON.stringify(settings)
+      settings
     );
   }, [settings]);
 
@@ -586,24 +943,24 @@ const toggleDarkMode = () => {
    */
 
   useEffect(() => {
-    localStorage.setItem(
+    setSafeLocalStorage(
       'knot_bloom_cart',
-      JSON.stringify(cart)
+      cart
     );
   }, [cart]);
 
   useEffect(() => {
-    localStorage.setItem(
+    setSafeLocalStorage(
       'knot_bloom_registered_users',
-      JSON.stringify(registeredUsers)
+      registeredUsers
     );
   }, [registeredUsers]);
 
   useEffect(() => {
     if (currentUser) {
-      localStorage.setItem(
+      setSafeLocalStorage(
         'knot_bloom_current_user',
-        JSON.stringify(currentUser)
+        currentUser
       );
     } else {
       localStorage.removeItem(
@@ -618,7 +975,9 @@ const toggleDarkMode = () => {
    * ============================================================
    */
 
-  const showToast = (msg: string) => {
+  const showToast = (
+    msg: string
+  ) => {
     setToastMessage(msg);
 
     setTimeout(() => {
@@ -636,26 +995,39 @@ const toggleDarkMode = () => {
     loginId: string,
     pass: string
   ): boolean => {
-    const cleanId = loginId.trim().toLowerCase();
+    const cleanId =
+      loginId
+        .trim()
+        .toLowerCase();
 
-    const cleanPhone = loginId
-      .replaceAll(' ', '')
-      .replaceAll('-', '');
+    const cleanPhone =
+      loginId
+        .replaceAll(' ', '')
+        .replaceAll('-', '');
 
-    const found = registeredUsers.find(
-      (u) =>
-        u.email.toLowerCase() === cleanId ||
-        u.phone
-          .replaceAll(' ', '')
-          .replaceAll('-', '') === cleanPhone
-    );
+    const found =
+      registeredUsers.find(
+        (u) =>
+          u.email.toLowerCase() ===
+            cleanId ||
+          u.phone
+            .replaceAll(' ', '')
+            .replaceAll('-', '') ===
+            cleanPhone
+      );
 
-    if (found && found.password === pass) {
+    if (
+      found &&
+      found.password === pass
+    ) {
       setCurrentUser(found);
+
       showToast(
         `🌸 Welcome back, ${found.name}!`
       );
+
       setActiveModal(null);
+
       return true;
     }
 
@@ -684,12 +1056,16 @@ const toggleDarkMode = () => {
       roomOrSpot
     };
 
-    setRegisteredUsers((prev) => [
-      ...prev,
-      newUser
-    ]);
+    setRegisteredUsers(
+      (prev) => [
+        ...prev,
+        newUser
+      ]
+    );
 
-    setCurrentUser(newUser);
+    setCurrentUser(
+      newUser
+    );
 
     showToast(
       `✨ Account created successfully! Welcome ${name}`
@@ -703,9 +1079,12 @@ const toggleDarkMode = () => {
   const sendOtpCode = (
     identifier: string
   ): string => {
-    const otp = Math.floor(
-      1000 + Math.random() * 9000
-    ).toString();
+    const otp =
+      Math.floor(
+        1000 +
+          Math.random() *
+            9000
+      ).toString();
 
     showToast(
       `📱 SMS/Email OTP Verification Code sent to ${identifier}: ${otp}`
@@ -720,41 +1099,59 @@ const toggleDarkMode = () => {
     generatedCode: string
   ): boolean => {
     if (
-      code.trim() === generatedCode.trim() ||
+      code.trim() ===
+        generatedCode.trim() ||
       code.trim() === '7892' ||
       code.trim() === '1234'
     ) {
-      const cleanId = identifier
-        .trim()
-        .toLowerCase();
+      const cleanId =
+        identifier
+          .trim()
+          .toLowerCase();
 
-      const existing = registeredUsers.find(
-        (u) =>
-          u.email.toLowerCase() === cleanId ||
-          u.phone.includes(identifier)
-      );
+      const existing =
+        registeredUsers.find(
+          (u) =>
+            u.email.toLowerCase() ===
+              cleanId ||
+            u.phone.includes(
+              identifier
+            )
+        );
 
       if (existing) {
-        setCurrentUser(existing);
+        setCurrentUser(
+          existing
+        );
       } else {
         const otpUser: User = {
           id: `usr-otp-${Date.now()}`,
-          name: identifier.split('@')[0],
-          email: identifier.includes('@')
-            ? identifier
-            : `${identifier}@student.edu`,
-          phone: identifier.includes('@')
-            ? '+91 98765 43210'
-            : identifier,
-          dormOrBuilding: 'Hostel Block A'
+          name:
+            identifier.split(
+              '@'
+            )[0],
+          email:
+            identifier.includes('@')
+              ? identifier
+              : `${identifier}@student.edu`,
+          phone:
+            identifier.includes('@')
+              ? '+91 98765 43210'
+              : identifier,
+          dormOrBuilding:
+            'Hostel Block A'
         };
 
-        setRegisteredUsers((prev) => [
-          ...prev,
-          otpUser
-        ]);
+        setRegisteredUsers(
+          (prev) => [
+            ...prev,
+            otpUser
+          ]
+        );
 
-        setCurrentUser(otpUser);
+        setCurrentUser(
+          otpUser
+        );
       }
 
       showToast(
@@ -773,15 +1170,24 @@ const toggleDarkMode = () => {
     return false;
   };
 
-  const loginUserDirect = (user: User) => {
+  const loginUserDirect = (
+    user: User
+  ) => {
     setCurrentUser(user);
-    showToast(`Logged in as ${user.name}`);
+
+    showToast(
+      `Logged in as ${user.name}`
+    );
+
     setActiveModal(null);
   };
 
   const logoutUser = () => {
     setCurrentUser(null);
-    showToast('Logged out of student account');
+
+    showToast(
+      'Logged out of student account'
+    );
   };
 
   /*
@@ -790,9 +1196,17 @@ const toggleDarkMode = () => {
    * ============================================================
    */
 
-  const setIsAdmin = (val: boolean) => {
-    if (val && !adminAuthenticated) {
-      setActiveModal('adminAuth');
+  const setIsAdmin = (
+    val: boolean
+  ) => {
+    if (
+      val &&
+      !adminAuthenticated
+    ) {
+      setActiveModal(
+        'adminAuth'
+      );
+
       return;
     }
 
@@ -804,24 +1218,35 @@ const toggleDarkMode = () => {
     pin: string
   ): boolean => {
     const validUsername =
-      settings.adminUsername || 'admin';
+      settings.adminUsername ||
+      'admin';
 
     const validPin =
-      settings.adminPin || 'admin123';
+      settings.adminPin ||
+      'admin123';
 
     if (
-      username.trim().toLowerCase() ===
-        validUsername.toLowerCase() &&
-      pin.trim() === validPin
+      username
+        .trim()
+        .toLowerCase() ===
+        validUsername
+          .toLowerCase() &&
+      pin.trim() ===
+        validPin
     ) {
-      setAdminAuthenticated(true);
+      setAdminAuthenticated(
+        true
+      );
 
       sessionStorage.setItem(
         'knot_bloom_admin_auth',
         'true'
       );
 
-      setIsAdminState(true);
+      setIsAdminState(
+        true
+      );
+
       setActiveModal(null);
 
       showToast(
@@ -839,15 +1264,21 @@ const toggleDarkMode = () => {
   };
 
   const logoutAdmin = () => {
-    setAdminAuthenticated(false);
+    setAdminAuthenticated(
+      false
+    );
 
     sessionStorage.removeItem(
       'knot_bloom_admin_auth'
     );
 
-    setIsAdminState(false);
+    setIsAdminState(
+      false
+    );
 
-    showToast('Logged out of Admin Portal');
+    showToast(
+      'Logged out of Admin Portal'
+    );
   };
 
   /*
@@ -863,44 +1294,59 @@ const toggleDarkMode = () => {
     wrapPaperColor?: string,
     giftNote?: string
   ) => {
-    if (product.stock <= 0) {
+    if (
+      product.stock <= 0
+    ) {
       showToast(
         '⚠️ Sorry, this item is currently out of stock!'
       );
+
       return;
     }
 
-    setCart((prev) => {
-      const existingIndex = prev.findIndex(
-        (item) =>
-          item.product.id === product.id &&
-          item.selectedColor ===
-            (selectedColor ||
-              product.colorsAvailable[0])
-      );
+    setCart(
+      (prev) => {
+        const existingIndex =
+          prev.findIndex(
+            (item) =>
+              item.product.id ===
+                product.id &&
+              item.selectedColor ===
+                (selectedColor ||
+                  product
+                    .colorsAvailable[0])
+          );
 
-      if (existingIndex > -1) {
-        const updated = [...prev];
+        if (
+          existingIndex >
+          -1
+        ) {
+          const updated =
+            [...prev];
 
-        updated[existingIndex].quantity +=
-          quantity;
+          updated[
+            existingIndex
+          ].quantity +=
+            quantity;
 
-        return updated;
-      }
-
-      return [
-        ...prev,
-        {
-          product,
-          quantity,
-          selectedColor:
-            selectedColor ||
-            product.colorsAvailable[0],
-          wrapPaperColor,
-          giftNote
+          return updated;
         }
-      ];
-    });
+
+        return [
+          ...prev,
+          {
+            product,
+            quantity,
+            selectedColor:
+              selectedColor ||
+              product
+                .colorsAvailable[0],
+            wrapPaperColor,
+            giftNote
+          }
+        ];
+      }
+    );
 
     showToast(
       `🌸 Added "${product.name}" to your cart!`
@@ -911,29 +1357,44 @@ const toggleDarkMode = () => {
     index: number,
     quantity: number
   ) => {
-    setCart((prev) => {
-      if (quantity <= 0) {
-        return prev.filter(
-          (_, i) => i !== index
-        );
+    setCart(
+      (prev) => {
+        if (
+          quantity <= 0
+        ) {
+          return prev.filter(
+            (_, i) =>
+              i !== index
+          );
+        }
+
+        const updated =
+          [...prev];
+
+        updated[
+          index
+        ].quantity =
+          quantity;
+
+        return updated;
       }
-
-      const updated = [...prev];
-
-      updated[index].quantity = quantity;
-
-      return updated;
-    });
+    );
   };
 
   const removeFromCart = (
     index: number
   ) => {
-    setCart((prev) =>
-      prev.filter((_, i) => i !== index)
+    setCart(
+      (prev) =>
+        prev.filter(
+          (_, i) =>
+            i !== index
+        )
     );
 
-    showToast('Removed item from cart');
+    showToast(
+      'Removed item from cart'
+    );
   };
 
   const clearCart = () => {
@@ -949,20 +1410,25 @@ const toggleDarkMode = () => {
   const addProduct = (
     newProdData: Omit<
       Product,
-      'id' | 'rating' | 'reviewCount'
+      'id' |
+        'rating' |
+        'reviewCount'
     >
   ) => {
-    const newProduct: Product = {
-      ...newProdData,
-      id: `prod-${Date.now()}`,
-      rating: 5.0,
-      reviewCount: 0
-    };
+    const newProduct: Product =
+      {
+        ...newProdData,
+        id: `prod-${Date.now()}`,
+        rating: 5.0,
+        reviewCount: 0
+      };
 
-    setProducts((prev) => [
-      newProduct,
-      ...prev
-    ]);
+    setProducts(
+      (prev) => [
+        newProduct,
+        ...prev
+      ]
+    );
 
     showToast(
       `✨ Added "${newProduct.name}" to catalog!`
@@ -973,12 +1439,17 @@ const toggleDarkMode = () => {
     id: string,
     updatedFields: Partial<Product>
   ) => {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? { ...p, ...updatedFields }
-          : p
-      )
+    setProducts(
+      (prev) =>
+        prev.map(
+          (p) =>
+            p.id === id
+              ? {
+                  ...p,
+                  ...updatedFields
+                }
+              : p
+        )
     );
 
     showToast(
@@ -990,15 +1461,20 @@ const toggleDarkMode = () => {
     id: string,
     newStock: number
   ) => {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? {
-              ...p,
-              stock: Math.max(0, newStock)
-            }
-          : p
-      )
+    setProducts(
+      (prev) =>
+        prev.map(
+          (p) =>
+            p.id === id
+              ? {
+                  ...p,
+                  stock: Math.max(
+                    0,
+                    newStock
+                  )
+                }
+              : p
+        )
     );
 
     showToast(
@@ -1012,8 +1488,12 @@ const toggleDarkMode = () => {
   const deleteProduct = (
     id: string
   ) => {
-    setProducts((prev) =>
-      prev.filter((p) => p.id !== id)
+    setProducts(
+      (prev) =>
+        prev.filter(
+          (p) =>
+            p.id !== id
+        )
     );
 
     showToast(
@@ -1030,36 +1510,57 @@ const toggleDarkMode = () => {
   const createOrder = (
     orderData: Omit<
       Order,
-      'id' | 'createdAt' | 'status'
+      'id' |
+        'createdAt' |
+        'status'
     >
   ): Order => {
-    const newOrder: Order = {
-      ...orderData,
-      id: `ORD-${Math.floor(
-        1000 + Math.random() * 9000
-      )}`,
-      createdAt:
-        new Date().toISOString(),
-      status: 'Pending',
-      userId: currentUser?.id
-    };
+    const newOrder: Order =
+      {
+        ...orderData,
 
-    setOrders((prev) => [
-      newOrder,
-      ...prev
-    ]);
+        id: `ORD-${Math.floor(
+          1000 +
+            Math.random() *
+              9000
+        )}`,
 
-    orderData.items.forEach((item) => {
-      updateStock(
-        item.productId,
-        (products.find(
-          (p) => p.id === item.productId
-        )?.stock || 1) - item.quantity
-      );
-    });
+        createdAt:
+          new Date().toISOString(),
+
+        status: 'Pending',
+
+        userId:
+          currentUser?.id
+      };
+
+    setOrders(
+      (prev) => [
+        newOrder,
+        ...prev
+      ]
+    );
+
+    orderData.items.forEach(
+      (item) => {
+        updateStock(
+          item.productId,
+          (products.find(
+            (p) =>
+              p.id ===
+              item.productId
+          )?.stock ||
+            1) -
+            item.quantity
+        );
+      }
+    );
 
     clearCart();
-    setLastCreatedOrder(newOrder);
+
+    setLastCreatedOrder(
+      newOrder
+    );
 
     return newOrder;
   };
@@ -1068,12 +1569,17 @@ const toggleDarkMode = () => {
     id: string,
     status: OrderStatus
   ) => {
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === id
-          ? { ...o, status }
-          : o
-      )
+    setOrders(
+      (prev) =>
+        prev.map(
+          (o) =>
+            o.id === id
+              ? {
+                  ...o,
+                  status
+                }
+              : o
+        )
     );
 
     showToast(
@@ -1085,23 +1591,31 @@ const toggleDarkMode = () => {
     id: string,
     isVerified: boolean
   ) => {
-    setOrders((prev) =>
-      prev.map((o) => {
-        if (o.id === id) {
-          return {
-            ...o,
-            paymentStatus: isVerified
-              ? 'Payment Verified ✅'
-              : 'Pay on Pickup',
-            paymentVerificationStatus:
-              isVerified
-                ? 'Payment Verified ✅'
-                : 'Payment Rejected ❌'
-          };
-        }
+    setOrders(
+      (prev) =>
+        prev.map(
+          (o) => {
+            if (
+              o.id === id
+            ) {
+              return {
+                ...o,
 
-        return o;
-      })
+                paymentStatus:
+                  isVerified
+                    ? 'Payment Verified ✅'
+                    : 'Pay on Pickup',
+
+                paymentVerificationStatus:
+                  isVerified
+                    ? 'Payment Verified ✅'
+                    : 'Payment Rejected ❌'
+              };
+            }
+
+            return o;
+          }
+        )
     );
 
     showToast(
@@ -1120,23 +1634,34 @@ const toggleDarkMode = () => {
   const createCustomRequest = (
     reqData: Omit<
       CustomRequest,
-      'id' | 'createdAt' | 'status'
+      'id' |
+        'createdAt' |
+        'status'
     >
   ) => {
-    const newReq: CustomRequest = {
-      ...reqData,
-      id: `REQ-${Math.floor(
-        100 + Math.random() * 900
-      )}`,
-      createdAt:
-        new Date().toISOString(),
-      status: 'Pending Quote'
-    };
+    const newReq: CustomRequest =
+      {
+        ...reqData,
 
-    setCustomRequests((prev) => [
-      newReq,
-      ...prev
-    ]);
+        id: `REQ-${Math.floor(
+          100 +
+            Math.random() *
+              900
+        )}`,
+
+        createdAt:
+          new Date().toISOString(),
+
+        status:
+          'Pending Quote'
+      };
+
+    setCustomRequests(
+      (prev) => [
+        newReq,
+        ...prev
+      ]
+    );
 
     showToast(
       '✨ Custom commission request submitted to studio!'
@@ -1148,18 +1673,24 @@ const toggleDarkMode = () => {
     status: CustomRequest['status'],
     quotedPrice?: number
   ) => {
-    setCustomRequests((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? {
-              ...r,
-              status,
-              ...(quotedPrice !== undefined
-                ? { quotedPrice }
-                : {})
-            }
-          : r
-      )
+    setCustomRequests(
+      (prev) =>
+        prev.map(
+          (r) =>
+            r.id === id
+              ? {
+                  ...r,
+                  status,
+
+                  ...(quotedPrice !==
+                  undefined
+                    ? {
+                        quotedPrice
+                      }
+                    : {})
+                }
+              : r
+        )
     );
 
     showToast(
@@ -1176,20 +1707,25 @@ const toggleDarkMode = () => {
   const addReview = (
     reviewData: Omit<
       Review,
-      'id' | 'date' | 'verifiedStudent'
+      'id' |
+        'date' |
+        'verifiedStudent'
     >
   ) => {
-    const newRev: Review = {
-      ...reviewData,
-      id: `rev-${Date.now()}`,
-      date: 'Just now',
-      verifiedStudent: true
-    };
+    const newRev: Review =
+      {
+        ...reviewData,
+        id: `rev-${Date.now()}`,
+        date: 'Just now',
+        verifiedStudent: true
+      };
 
-    setReviews((prev) => [
-      newRev,
-      ...prev
-    ]);
+    setReviews(
+      (prev) => [
+        newRev,
+        ...prev
+      ]
+    );
 
     showToast(
       'Thank you for your review!'
@@ -1205,10 +1741,12 @@ const toggleDarkMode = () => {
   const updateSettings = (
     newSettings: Partial<StoreSettings>
   ) => {
-    setSettings((prev) => ({
-      ...prev,
-      ...newSettings
-    }));
+    setSettings(
+      (prev) => ({
+        ...prev,
+        ...newSettings
+      })
+    );
 
     showToast(
       'Store settings saved successfully!'
@@ -1292,7 +1830,8 @@ const toggleDarkMode = () => {
 };
 
 export const useStore = () => {
-  const context = useContext(StoreContext);
+  const context =
+    useContext(StoreContext);
 
   if (!context) {
     throw new Error(
