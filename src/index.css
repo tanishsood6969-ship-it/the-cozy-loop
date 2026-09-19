@@ -881,6 +881,8 @@ html.dark .cozy-yarn-line {
     left: calc(50% + 145px);
   }
 }
+
+/* Prevent horizontal overflow */
 html,
 body,
 #root {
@@ -899,6 +901,10 @@ video,
 iframe {
   max-width: 100%;
 }
+
+/* =========================
+   TOAST ANIMATIONS
+   ========================= */
 
 @keyframes toast-pop {
   0% {
@@ -943,6 +949,7 @@ iframe {
   animation: toast-icon 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Shine animation */
 @keyframes toast-shine {
   0% {
     transform: translateX(-120%);
@@ -955,5 +962,47 @@ iframe {
 
 .animate-toast-shine {
   animation: toast-shine 1.5s ease-in-out infinite;
+}
+
+/* =========================
+   MOBILE PERFORMANCE
+   ========================= */
+
+@media (max-width: 700px) {
+  /*
+   * Stop the continuous shine on phones.
+   * The toast pop/icon animations still work normally.
+   */
+  .animate-toast-shine {
+    animation: none;
+  }
+}
+
+/* Respect devices that request reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* =========================================================
+   NAVBAR THEME BACKGROUND
+   Explicitly controlled by html.dark
+========================================================= */
+
+.navbar-theme-bg {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.dark .navbar-theme-bg {
+  background: rgba(28, 25, 23, 0.70) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
 }
 

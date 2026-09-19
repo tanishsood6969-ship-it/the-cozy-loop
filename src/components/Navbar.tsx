@@ -165,9 +165,6 @@ export const Navbar: React.FC = () => {
             flex
             items-center
             justify-center
-            border-b
-            border-stone-200/50
-            dark:border-stone-800/60
             bg-white/40
             dark:bg-stone-950/40
             backdrop-blur-2xl
@@ -186,26 +183,29 @@ export const Navbar: React.FC = () => {
       </header>
 
       {/* ==================== DESKTOP NAV ==================== */}
-      <div
-        className="
-          hidden
-          md:flex
-          md:sticky
-          md:top-0
-          md:z-50
-          w-full
-          px-4 sm:px-6 lg:px-8
-          py-2
-          bg-[#fffaf5]/70
-          dark:bg-stone-950/70
-          backdrop-blur-xl
-          border-t
-          border-b
-          border-stone-200/60
-          dark:border-stone-800/60
-          shadow-sm
-        "
-      >
+     <div
+  className="
+    hidden
+    md:flex
+    md:sticky
+    md:top-0
+    md:z-50
+    w-full
+    px-4 sm:px-6 lg:px-8
+    py-2
+    shadow-sm
+  "
+  style={{
+  backgroundColor: isDarkMode
+    ? 'rgba(28, 25, 23, 0.5)'
+    : 'rgba(255, 255, 255, 0.10)',
+  backdropFilter: 'blur(5px)',
+  WebkitBackdropFilter: 'blur(5px)',
+  borderTop: 'none',
+  borderBottom: 'none',
+}}
+>
+      
         <div className="w-full flex items-center justify-between gap-4">
 
           {/* ==================== DESKTOP CATEGORIES ==================== */}
@@ -238,7 +238,7 @@ export const Navbar: React.FC = () => {
                           font-bold
                         `
                         : `
-                          bg-white/70
+                          bg-white
                           text-stone-900
                           border
                           border-stone-300
@@ -269,7 +269,7 @@ export const Navbar: React.FC = () => {
               className="
                 p-2
                 rounded-full
-                bg-white/70
+                bg-white
                 dark:bg-stone-900/70
                 border
                 border-stone-300
@@ -301,7 +301,7 @@ export const Navbar: React.FC = () => {
                   flex
                   items-center
                   gap-1
-                  bg-white/70
+                  bg-white
                   dark:bg-stone-900/70
                   border
                   border-stone-300
@@ -371,7 +371,7 @@ export const Navbar: React.FC = () => {
                   font-bold
                   text-stone-900
                   dark:text-stone-100
-                  bg-white/70
+                  bg-white
                   dark:bg-stone-900/70
                   border
                   border-stone-300
@@ -402,7 +402,7 @@ export const Navbar: React.FC = () => {
                 font-bold
                 text-stone-900
                 dark:text-stone-100
-                bg-white/70
+                bg-white
                 dark:bg-stone-900/70
                 border
                 border-stone-300
@@ -499,7 +499,9 @@ export const Navbar: React.FC = () => {
                     type="text"
                     placeholder="Search..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) =>
+                      setSearchQuery(e.target.value)
+                    }
                     className="
                       w-40
                       lg:w-52
@@ -548,7 +550,7 @@ export const Navbar: React.FC = () => {
                 className="
                   p-2
                   rounded-full
-                  bg-white/70
+                  bg-white
                   dark:bg-stone-900/70
                   border
                   border-stone-300
@@ -573,24 +575,26 @@ export const Navbar: React.FC = () => {
 
       {/* ==================== MOBILE NAV ==================== */}
       <div
-        className="
-          md:hidden
-          sticky
-          top-0
-          z-50
-          w-full
-          px-3
-          py-2
-          bg-[#fffaf5]/70
-          dark:bg-stone-950/70
-          backdrop-blur-xl
-          border-t
-          border-b
-          border-stone-200/60
-          dark:border-stone-800/60
-          shadow-sm
-        "
-      >
+  className="
+    md:hidden
+    sticky
+    top-0
+    z-50
+    w-full
+    px-3
+    py-2
+    shadow-sm
+  "
+ style={{
+  backgroundColor: isDarkMode
+    ? 'rgba(28, 25, 23, 0.5)'
+    : 'rgba(255, 255, 255, 0.10)',
+  backdropFilter: 'blur(5px)',
+  WebkitBackdropFilter: 'blur(5px)',
+  borderTop: 'none',
+  borderBottom: 'none',
+}}
+>
         {/* mobile category dropdown */}
         <div className="relative w-full">
           <button
@@ -608,7 +612,7 @@ export const Navbar: React.FC = () => {
               items-center
               justify-between
               gap-3
-              bg-white/70
+              bg-white
               dark:bg-stone-900/70
               border
               border-stone-300
@@ -755,7 +759,7 @@ export const Navbar: React.FC = () => {
               h-10
               flex-shrink-0
               rounded-xl
-              bg-white/70
+              bg-white
               dark:bg-stone-900/70
               border
               border-stone-300
@@ -793,7 +797,7 @@ export const Navbar: React.FC = () => {
               h-10
               px-3
               rounded-xl
-              bg-white/70
+              bg-white
               dark:bg-stone-900/70
               border
               border-stone-300
@@ -837,7 +841,6 @@ export const Navbar: React.FC = () => {
             ) : (
               <>
                 <User className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0" />
-
                 <span>Sign In</span>
               </>
             )}
@@ -851,7 +854,7 @@ export const Navbar: React.FC = () => {
               h-10
               flex-shrink-0
               rounded-xl
-              bg-white/70
+              bg-white
               dark:bg-stone-900/70
               border
               border-stone-300
@@ -929,7 +932,7 @@ export const Navbar: React.FC = () => {
               h-10
               flex-shrink-0
               rounded-xl
-              bg-white/70
+              bg-white
               dark:bg-stone-900/70
               border
               border-stone-300
