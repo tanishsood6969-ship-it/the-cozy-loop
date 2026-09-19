@@ -34,6 +34,7 @@ export const Navbar: React.FC = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileCategoriesOpen, setMobileCategoriesOpen] =
     useState(false);
+   
 
   const totalCartCount = cart.reduce(
     (sum, item) => sum + item.quantity,
@@ -50,18 +51,18 @@ export const Navbar: React.FC = () => {
     'Wearables & Hair',
   ];
 
-  const handleCategorySelect = (category: ProductCategory) => {
+  const handleCategorySelect = (
+    category: ProductCategory
+  ) => {
     setSelectedCategory(category);
     setMobileCategoriesOpen(false);
   };
 
   return (
+  <>
     <header
       className="
         crochet-navbar
-        sticky
-        top-0
-        z-40
         w-full
         max-w-full
         text-stone-900
@@ -70,157 +71,173 @@ export const Navbar: React.FC = () => {
         transition-all
         relative
         overflow-visible
+        z-40
       "
     >
-      {/* =====================================================
-          DECORATIVE CRAFT BACKGROUND
-      ====================================================== */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
-        <span className="absolute left-3 sm:left-6 top-2 text-sm opacity-25 animate-float-wool">
-          🧶
-        </span>
+      
+        {/* =====================================================
+            DECORATIVE CRAFT BACKGROUND
+        ====================================================== */}
 
-        <span
-          className="absolute right-6 sm:right-12 top-2 text-sm opacity-25 animate-float-wool"
-          style={{ animationDelay: '1.2s' }}
-        >
-          🧵
-        </span>
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          <span className="absolute left-3 sm:left-6 top-2 text-sm opacity-25 animate-float-wool">
+            🧶
+          </span>
 
-        <span
-          className="absolute left-1/4 bottom-2 text-xs opacity-20 animate-float-wool"
-          style={{ animationDelay: '2.4s' }}
-        >
-          🪡
-        </span>
+          <span
+            className="absolute right-6 sm:right-12 top-2 text-sm opacity-25 animate-float-wool"
+            style={{ animationDelay: '1.2s' }}
+          >
+            🧵
+          </span>
 
-        <span
-          className="absolute right-1/4 top-3 text-xs opacity-20 animate-float-wool"
-          style={{ animationDelay: '3.1s' }}
-        >
-          🌸
-        </span>
+          <span
+            className="absolute left-1/4 bottom-2 text-xs opacity-20 animate-float-wool"
+            style={{ animationDelay: '2.4s' }}
+          >
+            🪡
+          </span>
 
-        <span
-          className="absolute left-1/3 top-1 text-[10px] opacity-20 animate-pulse"
-          style={{ animationDelay: '0.8s' }}
-        >
-          ✨
-        </span>
+          <span
+            className="absolute right-1/4 top-3 text-xs opacity-20 animate-float-wool"
+            style={{ animationDelay: '3.1s' }}
+          >
+            🌸
+          </span>
 
-        <span
-          className="absolute right-1/3 bottom-1 text-[10px] opacity-20 animate-pulse"
-          style={{ animationDelay: '1.8s' }}
-        >
-          ✨
-        </span>
-      </div>
+          <span
+            className="absolute left-1/3 top-1 text-[10px] opacity-20 animate-pulse"
+            style={{ animationDelay: '0.8s' }}
+          >
+            ✨
+          </span>
 
-      {/* =====================================================
-          SECTION 1 — ANNOUNCEMENT BAR
-      ====================================================== */}
-      <div
-        className="
-          relative
-          z-10
-          bg-gradient-to-r
-          from-rose-600
-          via-pink-500
-          to-amber-500
-          text-white
-          text-[10px]
-          sm:text-[11px]
-          font-bold
-          py-1.5
-          px-3
-          sm:px-4
-          flex
-          items-center
-          justify-center
-          gap-1.5
-          sm:gap-2
-          text-center
-          min-h-[30px]
-        "
-      >
-        <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white animate-pulse flex-shrink-0" />
+          <span
+            className="absolute right-1/3 bottom-1 text-[10px] opacity-20 animate-pulse"
+            style={{ animationDelay: '1.8s' }}
+          >
+            ✨
+          </span>
+        </div>
 
-        <span className="text-white truncate max-w-[85vw]">
-          {settings.announcementText}
-        </span>
+        {/* =====================================================
+            SECTION 1 — ANNOUNCEMENT
+        ====================================================== */}
 
-        <span
+        <div
           className="
-            hidden
-            md:inline-block
-            bg-white/20
+            relative
+            z-10
+            bg-gradient-to-r
+            from-rose-600
+            via-pink-500
+            to-amber-500
             text-white
-            px-2
-            py-0.5
-            rounded-full
             text-[10px]
-            ml-2
-            flex-shrink-0
+            sm:text-[11px]
+            font-bold
+            py-1.5
+            px-3
+            sm:px-4
+            flex
+            items-center
+            justify-center
+            gap-1.5
+            sm:gap-2
+            text-center
+            min-h-[30px]
           "
         >
-          📍 {settings.universityName}
-        </span>
-      </div>
+          <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white animate-pulse flex-shrink-0" />
+
+          <span className="text-white truncate max-w-[85vw]">
+            {settings.announcementText}
+          </span>
+
+          <span
+            className="
+              hidden
+              md:inline-block
+              bg-white/20
+              text-white
+              px-2
+              py-0.5
+              rounded-full
+              text-[10px]
+              ml-2
+              flex-shrink-0
+            "
+          >
+            📍 {settings.universityName}
+          </span>
+        </div>
+
+        {/* =====================================================
+            SECTION 2 — LOGO
+        ====================================================== */}
+
+        <div
+          className="
+            py-2
+            sm:py-2.5
+            px-3
+            sm:px-4
+            flex
+            items-center
+            justify-center
+            border-b
+            border-stone-200/50
+            dark:border-stone-800/60
+            bg-white/35
+            dark:bg-stone-950/35
+            backdrop-blur-2xl
+            relative
+            z-10
+            overflow-visible
+            min-w-0
+          "
+        >
+          <YarnTitleAnimation
+            storeName={settings.storeName}
+            tagline={settings.tagline}
+            onCategoryReset={() =>
+              setSelectedCategory('All')
+            }
+          />
+        </div>
+      </header>
 
       {/* =====================================================
-          SECTION 2 — LOGO
+          STICKY DESKTOP NAVIGATION
+          
+          IMPORTANT:
+          This is OUTSIDE the header.
+          
+          Therefore sticky now works correctly.
       ====================================================== */}
-      <div
-        className="
-          py-2
-          sm:py-2.5
-          px-3
-          sm:px-4
-          flex
-          items-center
-          justify-center
-          border-b
-          border-stone-200/50
-          dark:border-stone-800/60
-          bg-white/35
-          dark:bg-stone-950/35
-          backdrop-blur-2xl
-          relative
-          z-10
-          overflow-visible
-          min-w-0
-        "
-      >
-        <YarnTitleAnimation
-          storeName={settings.storeName}
-          tagline={settings.tagline}
-          onCategoryReset={() => setSelectedCategory('All')}
-        />
-      </div>
 
-      {/* =====================================================
-          DESKTOP NAVIGATION
-          Visible from md and above
-      ====================================================== */}
-      <div
-        className="
-          hidden
-          md:block
-          relative
-          z-10
-          w-full
-          px-4
-          sm:px-6
-          lg:px-8
-          py-2
-          bg-[#fffaf5]/90
-          dark:bg-stone-950/90
-          backdrop-blur-md
-          border-t
-          border-stone-200/60
-          dark:border-stone-800/60
-        "
-      >
+  
+
+        <div
+          className="
+            sticky
+            top-0
+            z-50
+            w-full
+            px-4
+            sm:px-6
+            lg:px-8
+            py-2
+            bg-[#fffaf5]/95
+            dark:bg-stone-950/95
+            backdrop-blur-xl
+            border-t
+            border-b
+            border-stone-200/60
+            dark:border-stone-800/60
+            shadow-sm
+          "
+        >
         <div
           className="
             w-full
@@ -230,7 +247,10 @@ export const Navbar: React.FC = () => {
             gap-4
           "
         >
-          {/* DESKTOP CATEGORIES */}
+          {/* =================================================
+              DESKTOP CATEGORIES
+          ================================================== */}
+
           <div
             className="
               flex
@@ -243,12 +263,15 @@ export const Navbar: React.FC = () => {
             "
           >
             {categories.map((cat) => {
-              const isActive = selectedCategory === cat;
+              const isActive =
+                selectedCategory === cat;
 
               return (
                 <button
                   key={cat}
-                  onClick={() => setSelectedCategory(cat)}
+                  onClick={() =>
+                    setSelectedCategory(cat)
+                  }
                   className={`
                     px-3
                     py-1
@@ -293,7 +316,10 @@ export const Navbar: React.FC = () => {
             })}
           </div>
 
-          {/* DESKTOP ACTIONS */}
+          {/* =================================================
+              DESKTOP ACTIONS
+          ================================================== */}
+
           <div
             className="
               flex
@@ -304,6 +330,7 @@ export const Navbar: React.FC = () => {
             "
           >
             {/* DARK MODE */}
+
             <button
               onClick={toggleDarkMode}
               className="
@@ -335,6 +362,7 @@ export const Navbar: React.FC = () => {
             </button>
 
             {/* USER */}
+
             {currentUser ? (
               <div
                 className="
@@ -351,7 +379,9 @@ export const Navbar: React.FC = () => {
                 "
               >
                 <button
-                  onClick={() => setActiveModal('userOrders')}
+                  onClick={() =>
+                    setActiveModal('userOrders')
+                  }
                   className="
                     flex
                     items-center
@@ -402,7 +432,9 @@ export const Navbar: React.FC = () => {
               </div>
             ) : (
               <button
-                onClick={() => setActiveModal('auth')}
+                onClick={() =>
+                  setActiveModal('auth')
+                }
                 className="
                   flex
                   items-center
@@ -427,13 +459,17 @@ export const Navbar: React.FC = () => {
                 "
               >
                 <User className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+
                 <span>Sign In</span>
               </button>
             )}
 
             {/* TRACK ORDER */}
+
             <button
-              onClick={() => setActiveModal('orderTracker')}
+              onClick={() =>
+                setActiveModal('orderTracker')
+              }
               className="
                 flex
                 items-center
@@ -470,6 +506,7 @@ export const Navbar: React.FC = () => {
             </button>
 
             {/* CART */}
+
             <button
               onClick={() => setCartOpen(true)}
               className="
@@ -519,6 +556,7 @@ export const Navbar: React.FC = () => {
             </button>
 
             {/* SEARCH */}
+
             <div className="relative flex items-center">
               {searchOpen && (
                 <div
@@ -578,7 +616,9 @@ export const Navbar: React.FC = () => {
 
                   {searchQuery && (
                     <button
-                      onClick={() => setSearchQuery('')}
+                      onClick={() =>
+                        setSearchQuery('')
+                      }
                       className="
                         absolute
                         right-2.5
@@ -594,7 +634,9 @@ export const Navbar: React.FC = () => {
               )}
 
               <button
-                onClick={() => setSearchOpen(!searchOpen)}
+                onClick={() =>
+                  setSearchOpen(!searchOpen)
+                }
                 className="
                   p-2
                   rounded-full
@@ -620,28 +662,33 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
       </div>
+    
 
       {/* =====================================================
-          MOBILE NAVIGATION
-          Visible below md
+          STICKY MOBILE NAVIGATION
       ====================================================== */}
+
       <div
         className="
           md:hidden
-          relative
-          z-20
+          sticky
+          top-0
+          z-50
           w-full
           px-3
           py-2
           bg-[#fffaf5]/95
           dark:bg-stone-950/95
-          backdrop-blur-md
+          backdrop-blur-xl
           border-t
+          border-b
           border-stone-200/60
           dark:border-stone-800/60
+          shadow-sm
         "
       >
         {/* MOBILE CATEGORY DROPDOWN */}
+
         <div className="relative w-full">
           <button
             type="button"
@@ -722,7 +769,8 @@ export const Navbar: React.FC = () => {
             />
           </button>
 
-          {/* DROPDOWN */}
+          {/* MOBILE DROPDOWN */}
+
           {mobileCategoriesOpen && (
             <div
               className="
@@ -730,7 +778,7 @@ export const Navbar: React.FC = () => {
                 left-0
                 right-0
                 top-[calc(100%+6px)]
-                z-50
+                z-[60]
                 rounded-xl
                 overflow-hidden
                 bg-white
@@ -799,7 +847,10 @@ export const Navbar: React.FC = () => {
           )}
         </div>
 
-        {/* MOBILE ACTIONS */}
+        {/* =================================================
+            MOBILE ACTIONS
+        ================================================== */}
+
         <div
           className="
             mt-2
@@ -810,6 +861,7 @@ export const Navbar: React.FC = () => {
           "
         >
           {/* DARK MODE */}
+
           <button
             onClick={toggleDarkMode}
             className="
@@ -843,6 +895,7 @@ export const Navbar: React.FC = () => {
           </button>
 
           {/* USER */}
+
           <button
             onClick={() =>
               currentUser
@@ -899,12 +952,14 @@ export const Navbar: React.FC = () => {
             ) : (
               <>
                 <User className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0" />
+
                 <span>Sign In</span>
               </>
             )}
           </button>
 
           {/* TRACK ORDER */}
+
           <button
             onClick={() =>
               setActiveModal('orderTracker')
@@ -939,6 +994,7 @@ export const Navbar: React.FC = () => {
           </button>
 
           {/* CART */}
+
           <button
             onClick={() => setCartOpen(true)}
             className="
@@ -992,8 +1048,11 @@ export const Navbar: React.FC = () => {
           </button>
 
           {/* SEARCH */}
+
           <button
-            onClick={() => setSearchOpen(!searchOpen)}
+            onClick={() =>
+              setSearchOpen(!searchOpen)
+            }
             className="
               w-10
               h-10
@@ -1023,7 +1082,10 @@ export const Navbar: React.FC = () => {
           </button>
         </div>
 
-        {/* MOBILE SEARCH INPUT */}
+        {/* =================================================
+            MOBILE SEARCH INPUT
+        ================================================== */}
+
         {searchOpen && (
           <div className="mt-2 relative w-full">
             <Search
@@ -1073,7 +1135,9 @@ export const Navbar: React.FC = () => {
 
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() =>
+                  setSearchQuery('')
+                }
                 className="
                   absolute
                   right-3
@@ -1091,6 +1155,6 @@ export const Navbar: React.FC = () => {
           </div>
         )}
       </div>
-    </header>
+    </>
   );
 };

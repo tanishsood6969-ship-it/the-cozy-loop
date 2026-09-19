@@ -255,6 +255,23 @@ export const ProductModal: React.FC = () => {
     setReviewComment('');
   };
 
+  const getRatingLabel = () => {
+    switch (ratingVal) {
+      case 1:
+        return 'Needs Improvement';
+      case 2:
+        return 'Could Be Better';
+      case 3:
+        return 'Pretty Good';
+      case 4:
+        return 'Loved It';
+      case 5:
+        return 'Absolutely Loved It!';
+      default:
+        return 'Choose a rating';
+    }
+  };
+
   return (
     <>
       {/* =====================================================
@@ -953,9 +970,28 @@ export const ProductModal: React.FC = () => {
                             {rev.customerName}
                           </span>
 
-                          <span className="text-amber-500 font-bold flex-shrink-0">
-                            ★ {rev.rating}/5
-                          </span>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <div className="flex items-center">
+                              {[1, 2, 3, 4, 5].map(
+                                star => (
+                                  <Star
+                                    key={star}
+                                    className={`w-3 h-3 ${
+                                      star <= rev.rating
+                                        ? 'fill-amber-400 text-amber-400'
+                                        : isDarkMode
+                                          ? 'text-stone-600'
+                                          : 'text-stone-300'
+                                    }`}
+                                  />
+                                )
+                              )}
+                            </div>
+
+                            <span className="text-amber-500 font-bold text-[10px]">
+                              {rev.rating}/5
+                            </span>
+                          </div>
                         </div>
 
                         <p
@@ -1051,55 +1087,92 @@ export const ProductModal: React.FC = () => {
                       required
                     />
 
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`
-                          text-xs
+                    {/* =================================================
+                        NEW STAR RATING SYSTEM
+                    ================================================== */}
 
-                          ${
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className={`text-xs font-semibold ${
                             isDarkMode
                               ? 'text-stone-400'
                               : 'text-stone-500'
-                          }
-                        `}
+                          }`}
+                        >
+                          Your Rating:
+                        </span>
+
+                        <span
+                          className={`text-xs font-bold ${
+                            ratingVal >= 4
+                              ? 'text-amber-500'
+                              : ratingVal === 3
+                                ? 'text-orange-500'
+                                : 'text-rose-500'
+                          }`}
+                        >
+                          {getRatingLabel()}
+                        </span>
+                      </div>
+
+                      <div
+                        className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2 ${
+                          isDarkMode
+                            ? 'bg-stone-800 border-stone-700'
+                            : 'bg-stone-50 border-stone-200'
+                        }`}
                       >
-                        Rating:
-                      </span>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map(
+                            star => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() =>
+                                  setRatingVal(star)
+                                }
+                                className="group p-0.5 transition-all active:scale-90"
+                                aria-label={`Give ${star} star${
+                                  star > 1
+                                    ? 's'
+                                    : ''
+                                }`}
+                              >
+                                <Star
+                                  className={`w-6 h-6 sm:w-7 sm:h-7 transition-all duration-200 ${
+                                    star <= ratingVal
+                                      ? 'fill-amber-400 text-amber-400 scale-105'
+                                      : isDarkMode
+                                        ? 'fill-transparent text-stone-600 group-hover:text-amber-500'
+                                        : 'fill-transparent text-stone-300 group-hover:text-amber-400'
+                                  }`}
+                                />
+                              </button>
+                            )
+                          )}
+                        </div>
 
-                      <select
-                        value={ratingVal}
-                        onChange={e =>
-                          setRatingVal(
-                            Number(e.target.value)
-                          )
-                        }
-                        className={`
-                          border
-                          rounded-lg
-                          px-2
-                          py-1
-                          text-xs
-                          max-w-full
-
-                          ${
+                        <div
+                          className={`text-xs font-black ${
                             isDarkMode
-                              ? 'bg-stone-800 border-stone-700 text-white'
-                              : 'bg-white border-stone-200 text-stone-900'
-                          }
-                        `}
+                              ? 'text-stone-200'
+                              : 'text-stone-700'
+                          }`}
+                        >
+                          {ratingVal}/5
+                        </div>
+                      </div>
+
+                      <p
+                        className={`text-[10px] ${
+                          isDarkMode
+                            ? 'text-stone-500'
+                            : 'text-stone-400'
+                        }`}
                       >
-                        <option value={5}>
-                          5 ★★★★★
-                        </option>
-
-                        <option value={4}>
-                          4 ★★★★☆
-                        </option>
-
-                        <option value={3}>
-                          3 ★★★☆☆
-                        </option>
-                      </select>
+                        Tap a star to choose your rating
+                      </p>
                     </div>
 
                     <textarea

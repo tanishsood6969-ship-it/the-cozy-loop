@@ -220,13 +220,6 @@ const getSafeLocalStorage = <T,>(
       error
     );
 
-    /*
-     * IMPORTANT:
-     *
-     * Do NOT delete corrupted data here.
-     * This prevents accidental permanent loss
-     * of locally stored data.
-     */
     return fallback;
   }
 };
@@ -281,10 +274,6 @@ const INITIAL_DEMO_USERS: User[] = [
 export const StoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  console.log(
-    'STORE PROVIDER IS RUNNING'
-  );
-
   /*
    * ============================================================
    * LOCAL STATE
@@ -424,7 +413,7 @@ export const StoreProvider: React.FC<{
 
   const toggleDarkMode = () => {
     setIsDarkMode(
-      (prev) => !prev
+      prev => !prev
     );
   };
 
@@ -457,21 +446,6 @@ export const StoreProvider: React.FC<{
    * ============================================================
    * CLOUD SYNC CONTROL
    * ============================================================
-   *
-   * cloudInitialized:
-   * Prevents ANY cloud save before the initial
-   * Supabase request has finished.
-   *
-   * cloudLoadFailed:
-   * If Supabase could not be read, nothing is
-   * allowed to overwrite the cloud.
-   *
-   * cloudDataTypes:
-   * Stores which rows actually existed in Supabase.
-   *
-   * modifiedDataTypes:
-   * Stores which data types the user actually
-   * changed during this session.
    */
 
   const cloudInitialized =
@@ -496,30 +470,227 @@ export const StoreProvider: React.FC<{
     );
 
   /*
+   * Keep the latest reviews available to callbacks/effects
+   * that are created only once.
+   */
+  const reviewsRef =
+    useRef<Review[]>(reviews);
+
+  useEffect(() => {
+    reviewsRef.current = reviews;
+  }, [reviews]);
+
+  /*
+   * ============================================================
+   * SAVE QUEUE
+   * ============================================================
+   *
+   * Prevents multiple Supabase writes of the same data type
+   * from racing against each other.
+   * ============================================================
+   */
+
+  const saveQueues =
+    useRef<Record<string, Promise<void>>>(
+      {}
+    );
+
+  /*
+   * ============================================================
+   * REVIEW HELPERS
+   * ============================================================
+   */
+
+  const mergeReviews = (
+    existing: Review[],
+    incoming: Review[]
+  ): Review[] => {
+    const merged =
+      new Map<string, Review>();
+
+    /*
+     * Add cloud reviews first.
+     */
+    incoming.forEach(
+      review => {
+        if (
+          review?.id
+        ) {
+          merged.set(
+            String(review.id),
+            review
+          );
+        }
+      }
+    );
+
+    /*
+     * Add current/local reviews AFTER cloud reviews.
+     *
+     * This is extremely important.
+     *
+     * If an old Supabase snapshot does not contain a review
+     * that currently exists locally, the local review remains.
+     *
+     * If both contain the same review, the current/local
+     * version wins.
+     */
+    existing.forEach(
+      review => {
+        if (
+          review?.id
+        ) {
+          merged.set(
+            String(review.id),
+            review
+          );
+        }
+      }
+    );
+
+    /*
+     * Newest generated review IDs are shown first.
+     */
+    return Array.from(
+      merged.values()
+    ).sort(
+      (a, b) => {
+        const aTime =
+          Number(
+            String(a.id)
+              .replace(/\D/g, '')
+          ) || 0;
+
+        const bTime =
+          Number(
+            String(b.id)
+              .replace(/\D/g, '')
+          ) || 0;
+
+        return bTime - aTime;
+      }
+    );
+  };
+
+  /*
+   * ============================================================
+   * RECALCULATE PRODUCT RATINGS
+   * ============================================================
+   */
+
+  const recalculateProductRatings = (
+    productList: Product[],
+    reviewList: Review[]
+  ): Product[] => {
+    return productList.map(
+      product => {
+        const productName =
+          product.name
+            ?.trim()
+            .toLowerCase();
+
+        const productReviews =
+          reviewList.filter(
+            review =>
+              review.productName
+                ?.trim()
+                .toLowerCase() ===
+              productName
+          );
+
+        /*
+         * No reviews = preserve existing product rating.
+         */
+        if (
+          productReviews.length ===
+          0
+        ) {
+          return product;
+        }
+
+        const ratings =
+          productReviews
+            .map(
+              review =>
+                Number(
+                  review.rating
+                )
+            )
+            .filter(
+              rating =>
+                Number.isFinite(
+                  rating
+                ) &&
+                rating >= 1 &&
+                rating <= 5
+            );
+
+        if (
+          ratings.length ===
+          0
+        ) {
+          return product;
+        }
+
+        const total =
+          ratings.reduce(
+            (
+              sum,
+              rating
+            ) =>
+              sum + rating,
+            0
+          );
+
+        const average =
+          total /
+          ratings.length;
+
+        const rounded =
+          Math.round(
+            average * 10
+          ) / 10;
+
+        return {
+          ...product,
+          rating:
+            rounded,
+          reviewCount:
+            ratings.length
+        };
+      }
+    );
+  };
+
+  /*
    * ============================================================
    * LOAD STORE DATA FROM SUPABASE
    * ============================================================
    */
 
-  const loadStoreData = async () => {
-    const { data, error } =
-      await supabase
-        .from('store_data')
-        .select(
-          'data_type, data'
+  const loadStoreData =
+    async () => {
+      const {
+        data,
+        error
+      } =
+        await supabase
+          .from('store_data')
+          .select(
+            'data_type, data'
+          );
+
+      if (error) {
+        console.error(
+          'Error loading store data:',
+          error
         );
 
-    if (error) {
-      console.error(
-        'Error loading store data:',
-        error
-      );
+        return null;
+      }
 
-      return null;
-    }
-
-    return data;
-  };
+      return data;
+    };
 
   /*
    * ============================================================
@@ -531,20 +702,12 @@ export const StoreProvider: React.FC<{
     dataType: string,
     data: unknown
   ) => {
-    /*
-     * NEVER save before the initial
-     * Supabase load has completed.
-     */
     if (
       !cloudInitialized.current
     ) {
       return;
     }
 
-    /*
-     * If the initial cloud request failed,
-     * NEVER overwrite Supabase.
-     */
     if (
       cloudLoadFailed.current
     ) {
@@ -555,29 +718,13 @@ export const StoreProvider: React.FC<{
       return;
     }
 
-    /*
-     * Never save undefined/null.
-     */
     if (
       data === undefined ||
       data === null
     ) {
-      console.warn(
-        `Skipping cloud save for ${dataType}: data is empty`
-      );
-
       return;
     }
 
-    /*
-     * IMPORTANT:
-     *
-     * If this data type did NOT exist in Supabase
-     * and the user has NOT actually modified it,
-     * do not create a row from local/demo fallback data.
-     *
-     * This is what protects INITIAL_PRODUCTS.
-     */
     if (
       !cloudDataTypes.current.has(
         dataType
@@ -586,79 +733,103 @@ export const StoreProvider: React.FC<{
         dataType
       )
     ) {
-      console.log(
-        `Skipping ${dataType}: no existing cloud row and no user modification.`
-      );
-
       return;
     }
-
-    const serialized =
-      JSON.stringify(data);
 
     /*
-     * Prevent realtime loops.
+     * Serialize writes for each data type.
      */
-    if (
-      lastCloudData.current[
+    const previousQueue =
+      saveQueues.current[
         dataType
-      ] === serialized
-    ) {
-      delete lastCloudData.current[
-        dataType
-      ];
+      ] || Promise.resolve();
 
-      return;
-    }
+    const currentSave =
+      previousQueue
+        .catch(() => {})
+        .then(
+          async () => {
+            const serialized =
+              JSON.stringify(
+                data
+              );
 
-    console.log(
-      'Saving to cloud:',
-      dataType
-    );
+            /*
+             * Realtime already delivered this exact data.
+             * No need to write it again.
+             */
+            if (
+              lastCloudData.current[
+                dataType
+              ] === serialized
+            ) {
+              delete lastCloudData.current[
+                dataType
+              ];
 
-    const { error } =
-      await supabase
-        .from('store_data')
-        .upsert(
-          {
-            data_type:
-              dataType,
-            data,
-            updated_at:
-              new Date().toISOString()
-          },
-          {
-            onConflict:
-              'data_type'
+              return;
+            }
+
+            console.log(
+              'Saving to cloud:',
+              dataType
+            );
+
+            const {
+              error
+            } =
+              await supabase
+                .from(
+                  'store_data'
+                )
+                .upsert(
+                  {
+                    data_type:
+                      dataType,
+                    data,
+                    updated_at:
+                      new Date().toISOString()
+                  },
+                  {
+                    onConflict:
+                      'data_type'
+                  }
+                );
+
+            if (
+              error
+            ) {
+              console.error(
+                `Error saving ${dataType}:`,
+                error
+              );
+
+              return;
+            }
+
+            cloudDataTypes.current.add(
+              dataType
+            );
+
+            modifiedDataTypes.current.delete(
+              dataType
+            );
+
+            lastCloudData.current[
+              dataType
+            ] = serialized;
+
+            console.log(
+              `Successfully saved ${dataType} to Supabase`
+            );
           }
         );
 
-    if (error) {
-      console.error(
-        `Error saving ${dataType}:`,
-        error
-      );
-
-      return;
-    }
-
-    /*
-     * The row now definitely exists.
-     */
-    cloudDataTypes.current.add(
+    saveQueues.current[
       dataType
-    );
+    ] = currentSave;
 
-    /*
-     * The change has now been persisted.
-     */
-    modifiedDataTypes.current.delete(
-      dataType
-    );
-
-    console.log(
-      `Successfully saved ${dataType} to Supabase`
-    );
+    await currentSave;
   };
 
   /*
@@ -668,26 +839,22 @@ export const StoreProvider: React.FC<{
    */
 
   useEffect(() => {
+    let cancelled = false;
+
     const initializeCloudData =
       async () => {
         const cloudData =
           await loadStoreData();
 
-        /*
-         * ========================================================
-         * SUPABASE REQUEST FAILED
-         * ========================================================
-         *
-         * DO NOT upload local/demo data.
-         */
+        if (
+          cancelled
+        ) {
+          return;
+        }
 
         if (!cloudData) {
           console.error(
             'Cloud data could not be loaded.'
-          );
-
-          console.error(
-            'Cloud saving is disabled for this session.'
           );
 
           cloudLoadFailed.current =
@@ -696,14 +863,8 @@ export const StoreProvider: React.FC<{
           return;
         }
 
-        /*
-         * ========================================================
-         * RECORD EXISTING CLOUD DATA TYPES
-         * ========================================================
-         */
-
         cloudData.forEach(
-          (item) => {
+          item => {
             if (
               item?.data_type &&
               item.data !==
@@ -719,15 +880,16 @@ export const StoreProvider: React.FC<{
 
         /*
          * ========================================================
-         * LOAD VALID CLOUD DATA INTO REACT
+         * COLLECT CLOUD DATA
          * ========================================================
          */
 
+        let cloudReviews: Review[] = [];
+
+       let cloudProducts: Product[] = [];
+
         cloudData.forEach(
-          (item) => {
-            /*
-             * Ignore malformed rows.
-             */
+          item => {
             if (
               !item?.data_type ||
               item.data ===
@@ -755,9 +917,8 @@ export const StoreProvider: React.FC<{
                     item.data
                   )
                 ) {
-                  setProducts(
-                    item.data as Product[]
-                  );
+                  cloudProducts =
+                    item.data as Product[];
                 }
                 break;
 
@@ -791,9 +952,8 @@ export const StoreProvider: React.FC<{
                     item.data
                   )
                 ) {
-                  setReviews(
-                    item.data as Review[]
-                  );
+                  cloudReviews =
+                    item.data as Review[];
                 }
                 break;
 
@@ -817,7 +977,90 @@ export const StoreProvider: React.FC<{
 
         /*
          * ========================================================
-         * CLOUD IS NOW SAFE TO USE
+         * MERGE REVIEWS
+         * ========================================================
+         *
+         * IMPORTANT:
+         * Use reviewsRef.current rather than `reviews`.
+         *
+         * `reviews` inside this effect would be the value from
+         * the first render because this effect runs only once.
+         *
+         * If a user submits a review while the cloud request is
+         * still loading, reviewsRef.current contains that new
+         * review and it will NOT be lost.
+         * ========================================================
+         */
+
+        const currentReviews =
+          reviewsRef.current;
+
+        let finalReviews =
+          currentReviews;
+
+       if (cloudReviews.length > 0) {
+  finalReviews =
+    mergeReviews(
+      currentReviews,
+      cloudReviews
+    );
+
+  setReviews(
+    finalReviews
+  );
+
+  const cloudIds =
+    new Set<string>();
+
+  for (
+    const review of cloudReviews
+  ) {
+    cloudIds.add(
+      String(review.id)
+    );
+  }
+
+  const hasLocalReviewsMissingFromCloud =
+    currentReviews.some(
+      review =>
+        !cloudIds.has(
+          String(
+            review.id
+          )
+        )
+    );
+
+  if (
+    hasLocalReviewsMissingFromCloud
+  ) {
+    modifiedDataTypes.current.add(
+      'reviews'
+    );
+  }
+}
+        /*
+         * ========================================================
+         * PRODUCTS
+         * ========================================================
+         */
+
+        if (
+          cloudProducts
+        ) {
+          const productsWithRatings =
+            recalculateProductRatings(
+              cloudProducts,
+              finalReviews
+            );
+
+          setProducts(
+            productsWithRatings
+          );
+        }
+
+        /*
+         * ========================================================
+         * CLOUD INITIALIZED
          * ========================================================
          */
 
@@ -826,29 +1069,18 @@ export const StoreProvider: React.FC<{
 
         /*
          * ========================================================
-         * ONLY SEED IF THE ENTIRE TABLE IS EMPTY
+         * EMPTY TABLE SEED
          * ========================================================
-         *
-         * We do NOT seed individual missing rows.
-         *
-         * This is extremely important.
          */
 
         if (
-          cloudData.length === 0
+          cloudData.length ===
+          0
         ) {
           console.log(
             'Supabase store_data is completely empty.'
           );
 
-          console.log(
-            'Seeding initial store data.'
-          );
-
-          /*
-           * Mark these as intentionally created
-           * because the database is completely empty.
-           */
           modifiedDataTypes.current.add(
             'products'
           );
@@ -869,6 +1101,9 @@ export const StoreProvider: React.FC<{
             'settings'
           );
 
+          /*
+           * Use the latest refs/state values.
+           */
           await Promise.all([
             saveStoreData(
               'products',
@@ -884,7 +1119,7 @@ export const StoreProvider: React.FC<{
             ),
             saveStoreData(
               'reviews',
-              reviews
+              reviewsRef.current
             ),
             saveStoreData(
               'settings',
@@ -906,6 +1141,10 @@ export const StoreProvider: React.FC<{
       };
 
     initializeCloudData();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   /*
@@ -927,12 +1166,9 @@ export const StoreProvider: React.FC<{
             schema: 'public',
             table: 'store_data'
           },
-          (payload) => {
+          payload => {
             /*
              * Ignore DELETE events.
-             *
-             * DELETE events do not contain the same
-             * usable "new" data as INSERT/UPDATE.
              */
             if (
               payload.eventType ===
@@ -942,8 +1178,7 @@ export const StoreProvider: React.FC<{
             }
 
             /*
-             * Do not process realtime data
-             * before initial cloud loading.
+             * Ignore realtime events before initialization.
              */
             if (
               !cloudInitialized.current
@@ -957,10 +1192,6 @@ export const StoreProvider: React.FC<{
                 data?: unknown;
               };
 
-            /*
-             * Never update React state with
-             * undefined/null cloud data.
-             */
             if (
               !newData?.data_type ||
               newData.data ===
@@ -976,15 +1207,178 @@ export const StoreProvider: React.FC<{
             const data =
               newData.data;
 
-            /*
-             * Remember that this data type exists.
-             */
             cloudDataTypes.current.add(
               dataType
             );
 
             const serialized =
               JSON.stringify(data);
+
+            /*
+             * ========================================================
+             * REVIEWS
+             * ========================================================
+             *
+             * NEVER blindly replace reviews with the realtime
+             * snapshot.
+             * ========================================================
+             */
+
+            if (
+              dataType ===
+              'reviews'
+            ) {
+              if (
+                Array.isArray(
+                  data
+                )
+              ) {
+                const incomingReviews =
+                  data as Review[];
+
+                setReviews(
+                  currentReviews => {
+                    const merged =
+                      mergeReviews(
+                        currentReviews,
+                        incomingReviews
+                      );
+
+                    /*
+                     * Check whether the current local state contains
+                     * reviews missing from the cloud event.
+                     */
+                    const incomingIds =
+                      new Set(
+                        incomingReviews.map(
+                          review =>
+                            String(
+                              review.id
+                            )
+                        )
+                      );
+
+                    const localReviewMissingFromCloud =
+                      currentReviews.some(
+                        review =>
+                          !incomingIds.has(
+                            String(
+                              review.id
+                            )
+                          )
+                      );
+
+                    if (
+                      localReviewMissingFromCloud
+                    ) {
+                      modifiedDataTypes.current.add(
+                        'reviews'
+                      );
+                    }
+
+                    return merged;
+                  }
+                );
+
+                /*
+                 * Only use this as a record of what Supabase
+                 * actually sent. The merge above protects local
+                 * reviews from being deleted.
+                 */
+                lastCloudData.current[
+                  dataType
+                ] = serialized;
+              }
+
+              return;
+            }
+
+            /*
+             * ========================================================
+             * PRODUCTS
+             * ========================================================
+             */
+
+            if (
+              dataType ===
+              'products'
+            ) {
+              if (
+                Array.isArray(
+                  data
+                )
+              ) {
+                setProducts(
+                  currentProducts => {
+                    const incomingProducts =
+                      data as Product[];
+
+                    /*
+                     * Use the latest reviews from the ref,
+                     * NOT the stale `reviews` closure.
+                     */
+                    const updatedProducts =
+                      recalculateProductRatings(
+                        incomingProducts,
+                        reviewsRef.current
+                      );
+
+                    /*
+                     * If there are no reviews for a product,
+                     * preserve the locally known rating/count.
+                     */
+                    return updatedProducts.map(
+                      product => {
+                        const localProduct =
+                          currentProducts.find(
+                            current =>
+                              current.id ===
+                              product.id
+                          );
+
+                        const hasReviews =
+                          reviewsRef.current.some(
+                            review =>
+                              review.productName
+                                ?.trim()
+                                .toLowerCase() ===
+                              product.name
+                                ?.trim()
+                                .toLowerCase()
+                          );
+
+                        if (
+                          !hasReviews &&
+                          localProduct
+                        ) {
+                          return {
+                            ...product,
+                            rating:
+                              localProduct.rating,
+                            reviewCount:
+                              localProduct.reviewCount
+                          };
+                        }
+
+                        return product;
+                      }
+                    );
+                  }
+                );
+              }
+
+              lastCloudData.current[
+                dataType
+              ] = serialized;
+
+              return;
+            }
+
+            /*
+             * ========================================================
+             * OTHER DATA
+             * ========================================================
+             */
 
             lastCloudData.current[
               dataType
@@ -993,19 +1387,11 @@ export const StoreProvider: React.FC<{
             switch (
               dataType
             ) {
-              case 'products':
-                if (
-                  Array.isArray(data)
-                ) {
-                  setProducts(
-                    data as Product[]
-                  );
-                }
-                break;
-
               case 'orders':
                 if (
-                  Array.isArray(data)
+                  Array.isArray(
+                    data
+                  )
                 ) {
                   setOrders(
                     data as Order[]
@@ -1015,20 +1401,12 @@ export const StoreProvider: React.FC<{
 
               case 'custom_requests':
                 if (
-                  Array.isArray(data)
+                  Array.isArray(
+                    data
+                  )
                 ) {
                   setCustomRequests(
                     data as CustomRequest[]
-                  );
-                }
-                break;
-
-              case 'reviews':
-                if (
-                  Array.isArray(data)
-                ) {
-                  setReviews(
-                    data as Review[]
                   );
                 }
                 break;
@@ -1037,7 +1415,9 @@ export const StoreProvider: React.FC<{
                 if (
                   typeof data ===
                     'object' &&
-                  !Array.isArray(data)
+                  !Array.isArray(
+                    data
+                  )
                 ) {
                   setSettings({
                     ...INITIAL_SETTINGS,
@@ -1049,7 +1429,7 @@ export const StoreProvider: React.FC<{
           }
         )
         .subscribe(
-          (status) => {
+          status => {
             console.log(
               'Supabase realtime status:',
               status
@@ -1063,6 +1443,29 @@ export const StoreProvider: React.FC<{
       );
     };
   }, []);
+
+  /*
+   * ============================================================
+   * RECALCULATE RATINGS WHEN REVIEWS CHANGE
+   * ============================================================
+   */
+
+  useEffect(() => {
+    if (
+      reviews.length ===
+      0
+    ) {
+      return;
+    }
+
+    setProducts(
+      currentProducts =>
+        recalculateProductRatings(
+          currentProducts,
+          reviews
+        )
+    );
+  }, [reviews]);
 
   /*
    * ============================================================
@@ -1226,7 +1629,7 @@ export const StoreProvider: React.FC<{
 
     const found =
       registeredUsers.find(
-        (u) =>
+        u =>
           u.email.toLowerCase() ===
             cleanId ||
           u.phone
@@ -1276,7 +1679,7 @@ export const StoreProvider: React.FC<{
     };
 
     setRegisteredUsers(
-      (prev) => [
+      prev => [
         ...prev,
         newUser
       ]
@@ -1330,7 +1733,7 @@ export const StoreProvider: React.FC<{
 
       const existing =
         registeredUsers.find(
-          (u) =>
+          u =>
             u.email.toLowerCase() ===
               cleanId ||
             u.phone.includes(
@@ -1362,7 +1765,7 @@ export const StoreProvider: React.FC<{
         };
 
         setRegisteredUsers(
-          (prev) => [
+          prev => [
             ...prev,
             otpUser
           ]
@@ -1506,78 +1909,84 @@ export const StoreProvider: React.FC<{
    * ============================================================
    */
 
-  const addToCart = (
-    product: Product,
-    quantity = 1,
-    selectedColor?: string,
-    wrapPaperColor?: string,
-    giftNote?: string
-  ) => {
-    if (
-      product.stock <= 0
-    ) {
-      showToast(
-        '⚠️ Sorry, this item is currently out of stock!'
+
+const addToCart = (
+  product: Product,
+  quantity = 1,
+  selectedColor?: string,
+  wrapPaperColor?: string,
+  giftNote?: string
+) => {
+  if (product.stock <= 0) {
+    showToast(
+      '⚠️ Sorry, this item is currently out of stock!'
+    );
+
+    return;
+  }
+
+  const finalColor =
+    selectedColor ||
+    product.colorsAvailable[0];
+
+  setCart(prev => {
+    const existingIndex =
+      prev.findIndex(
+        item =>
+          item.product.id === product.id &&
+          item.selectedColor === finalColor
       );
 
-      return;
+    /*
+     * If this product/color is already in the cart,
+     * create a NEW CartItem object instead of mutating
+     * the existing object.
+     *
+     * This is important for React Strict Mode and prevents
+     * the quantity from being accidentally increased twice.
+     */
+    if (existingIndex > -1) {
+      return prev.map(
+        (item, index) =>
+          index === existingIndex
+            ? {
+                ...item,
+                quantity:
+                  item.quantity + quantity
+              }
+            : item
+      );
     }
 
-    setCart(
-      (prev) => {
-        const existingIndex =
-          prev.findIndex(
-            (item) =>
-              item.product.id ===
-                product.id &&
-              item.selectedColor ===
-                (selectedColor ||
-                  product
-                    .colorsAvailable[0])
-          );
-
-        if (
-          existingIndex >
-          -1
-        ) {
-          const updated =
-            [...prev];
-
-          updated[
-            existingIndex
-          ].quantity +=
-            quantity;
-
-          return updated;
-        }
-
-        return [
-          ...prev,
-          {
-            product,
-            quantity,
-            selectedColor:
-              selectedColor ||
-              product
-                .colorsAvailable[0],
-            wrapPaperColor,
-            giftNote
-          }
-        ];
+    /*
+     * Product does not exist in cart yet.
+     * Add exactly ONE new cart item.
+     */
+    return [
+      ...prev,
+      {
+        product,
+        quantity,
+        selectedColor: finalColor,
+        wrapPaperColor,
+        giftNote
       }
-    );
+    ];
+  });
 
-    showToast(
-      `🌸 Added "${product.name}" to your cart!`
-    );
-  };
+  showToast(
+    `🌸 Added "${product.name}" to your cart!`
+  );
+};
+
+
 
   const updateCartQuantity = (
     index: number,
     quantity: number
   ) => {
     setCart(
-      (prev) => {
+      prev => {
         if (
           quantity <= 0
         ) {
@@ -1604,7 +2013,7 @@ export const StoreProvider: React.FC<{
     index: number
   ) => {
     setCart(
-      (prev) =>
+      prev =>
         prev.filter(
           (_, i) =>
             i !== index
@@ -1634,12 +2043,6 @@ export const StoreProvider: React.FC<{
         'reviewCount'
     >
   ) => {
-    /*
-     * Mark products as intentionally modified.
-     *
-     * This allows creation of the products row
-     * if it did not previously exist in Supabase.
-     */
     modifiedDataTypes.current.add(
       'products'
     );
@@ -1653,7 +2056,7 @@ export const StoreProvider: React.FC<{
       };
 
     setProducts(
-      (prev) => [
+      prev => [
         newProduct,
         ...prev
       ]
@@ -1673,9 +2076,9 @@ export const StoreProvider: React.FC<{
     );
 
     setProducts(
-      (prev) =>
+      prev =>
         prev.map(
-          (p) =>
+          p =>
             p.id === id
               ? {
                   ...p,
@@ -1699,9 +2102,9 @@ export const StoreProvider: React.FC<{
     );
 
     setProducts(
-      (prev) =>
+      prev =>
         prev.map(
-          (p) =>
+          p =>
             p.id === id
               ? {
                   ...p,
@@ -1730,9 +2133,9 @@ export const StoreProvider: React.FC<{
     );
 
     setProducts(
-      (prev) =>
+      prev =>
         prev.filter(
-          (p) =>
+          p =>
             p.id !== id
         )
     );
@@ -1780,18 +2183,18 @@ export const StoreProvider: React.FC<{
       };
 
     setOrders(
-      (prev) => [
+      prev => [
         newOrder,
         ...prev
       ]
     );
 
     orderData.items.forEach(
-      (item) => {
+      item => {
         updateStock(
           item.productId,
           (products.find(
-            (p) =>
+            p =>
               p.id ===
               item.productId
           )?.stock ||
@@ -1819,9 +2222,9 @@ export const StoreProvider: React.FC<{
     );
 
     setOrders(
-      (prev) =>
+      prev =>
         prev.map(
-          (o) =>
+          o =>
             o.id === id
               ? {
                   ...o,
@@ -1845,9 +2248,9 @@ export const StoreProvider: React.FC<{
     );
 
     setOrders(
-      (prev) =>
+      prev =>
         prev.map(
-          (o) => {
+          o => {
             if (
               o.id === id
             ) {
@@ -1914,7 +2317,7 @@ export const StoreProvider: React.FC<{
       };
 
     setCustomRequests(
-      (prev) => [
+      prev => [
         newReq,
         ...prev
       ]
@@ -1935,9 +2338,9 @@ export const StoreProvider: React.FC<{
     );
 
     setCustomRequests(
-      (prev) =>
+      prev =>
         prev.map(
-          (r) =>
+          r =>
             r.id === id
               ? {
                   ...r,
@@ -1977,16 +2380,73 @@ export const StoreProvider: React.FC<{
       'reviews'
     );
 
-    const newRev: Review =
-      {
-        ...reviewData,
-        id: `rev-${Date.now()}`,
-        date: 'Just now',
-        verifiedStudent: true
-      };
+    modifiedDataTypes.current.add(
+      'products'
+    );
 
+    /*
+     * Convert rating to a real number.
+     */
+    const numericRating =
+      Number(
+        reviewData.rating
+      );
+
+    /*
+     * Keep rating safely between 1 and 5.
+     */
+    const safeRating =
+      Number.isFinite(
+        numericRating
+      )
+        ? Math.min(
+            5,
+            Math.max(
+              1,
+              numericRating
+            )
+          )
+        : 1;
+
+    const newRev: Review = {
+      ...reviewData,
+
+      rating:
+        safeRating,
+
+      id:
+        `rev-${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2, 8)}`,
+
+      date:
+        'Just now',
+
+      verifiedStudent:
+        true
+    };
+
+    /*
+     * IMPORTANT:
+     *
+     * Do NOT calculate the product rating here using the
+     * `reviews` variable.
+     *
+     * That variable can be stale because React state updates
+     * are asynchronous.
+     *
+     * Instead:
+     *
+     * new review
+     *      ↓
+     * setReviews()
+     *      ↓
+     * reviews effect
+     *      ↓
+     * recalculateProductRatings()
+     */
     setReviews(
-      (prev) => [
+      prev => [
         newRev,
         ...prev
       ]
@@ -2011,7 +2471,7 @@ export const StoreProvider: React.FC<{
     );
 
     setSettings(
-      (prev) => ({
+      prev => ({
         ...prev,
         ...newSettings
       })
@@ -2109,4 +2569,4 @@ export const useStore = () => {
   }
 
   return context;
-}; 
+};
