@@ -238,8 +238,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div
           className="
             relative
-            aspect-[1/1]
-            sm:aspect-[3/4]
+            aspect-[3/4]
             w-full
             overflow-hidden
             bg-gray-100
@@ -255,7 +254,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="
               h-full
               w-full
-              object-cover
+              object-contain
               transition-transform
               duration-500
               group-hover:scale-[1.04]
