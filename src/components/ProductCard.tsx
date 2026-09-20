@@ -202,7 +202,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       <div
         className="
           relative
-          aspect-square
+          aspect-[3/4]
           w-full
           overflow-hidden
           bg-stone-100
@@ -210,7 +210,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         "
       >
         <img
-          src={latestProduct.imageUrl}
+          src={latestProduct.cardImageUrl || latestProduct.imageUrl}
           alt={latestProduct.name}
           className="
             w-full

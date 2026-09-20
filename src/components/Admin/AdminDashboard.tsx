@@ -23,7 +23,9 @@ import {
   User,
   MapPin,
   QrCode,
-  CreditCard
+    CreditCard,
+  Crop,
+  RotateCcw
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
@@ -66,9 +68,17 @@ export const AdminDashboard: React.FC = () => {
     'Pastel Pink, Yellow, Cream'
   );
   const [newFeatures, setNewFeatures] = useState<string>(
-    '100% Milk Cotton, Flexible Stem Wire'
-  );
-  const [newImageUrl, setNewImageUrl] = useState<string>('');
+  '100% Milk Cotton, Flexible Stem Wire'
+);
+
+const [newImageUrl, setNewImageUrl] = useState<string>('');
+
+// Product Card Crop State
+const [newCardImageUrl, setNewCardImageUrl] = useState<string>('');
+const [isCropperOpen, setIsCropperOpen] = useState<boolean>(false);
+const [cropZoom, setCropZoom] = useState<number>(1);
+const [cropX, setCropX] = useState<number>(0.5);
+const [cropY, setCropY] = useState<number>(0.5);
 
   // Store Settings State
   const [storeNameInput, setStoreNameInput] = useState<string>(
@@ -187,7 +197,8 @@ export const AdminDashboard: React.FC = () => {
         description: newDescription,
         colorsAvailable: newColors.split(',').map(c => c.trim()),
         features: newFeatures.split(',').map(f => f.trim()),
-        imageUrl: finalImage
+                imageUrl: finalImage,
+        cardImageUrl: newCardImageUrl || undefined
       });
 
       setEditingProduct(null);
@@ -202,7 +213,8 @@ export const AdminDashboard: React.FC = () => {
         description: newDescription,
         colorsAvailable: newColors.split(',').map(c => c.trim()),
         features: newFeatures.split(',').map(f => f.trim()),
-        imageUrl: finalImage
+               imageUrl: finalImage,
+        cardImageUrl: newCardImageUrl || undefined
       });
     }
 
@@ -221,20 +233,26 @@ export const AdminDashboard: React.FC = () => {
     setNewDescription(prod.description);
     setNewColors(prod.colorsAvailable.join(', '));
     setNewFeatures(prod.features.join(', '));
-    setNewImageUrl(prod.imageUrl);
+       setNewImageUrl(prod.imageUrl);
+    setNewCardImageUrl(prod.cardImageUrl || '');
     setIsAddProductOpen(true);
   };
 
-  const resetProductForm = () => {
+   const resetProductForm = () => {
     setEditingProduct(null);
     setNewTitle('');
     setNewPrice(200);
     setNewStock(10);
     setNewDescription('');
     setNewImageUrl('');
+    setNewCardImageUrl('');
+    setIsCropperOpen(false);
+    setCropZoom(1);
+    setCropX(0.5);
+    setCropY(0.5);
   };
 
-  const handleImageFileUpload = (
+    const handleImageFileUpload = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = e.target.files?.[0];
@@ -244,11 +262,138 @@ export const AdminDashboard: React.FC = () => {
 
       reader.onloadend = () => {
         setNewImageUrl(reader.result as string);
-        showToast('Image uploaded successfully preview ready!');
+
+        // A new original image means the previous crop
+        // no longer belongs to this image.
+        setNewCardImageUrl('');
+
+        showToast(
+          'Image uploaded successfully preview ready!'
+        );
       };
 
       reader.readAsDataURL(file);
     }
+  };
+    const openCropper = () => {
+    if (!newImageUrl.trim()) {
+      showToast('Please add an image first.');
+      return;
+    }
+
+    setCropZoom(1);
+    setCropX(0.5);
+    setCropY(0.5);
+    setIsCropperOpen(true);
+  };
+
+  const saveCardCrop = () => {
+    if (!newImageUrl) return;
+
+    const img = new Image();
+
+    img.crossOrigin = 'anonymous';
+
+    img.onload = () => {
+      const sourceWidth = img.naturalWidth;
+      const sourceHeight = img.naturalHeight;
+
+      if (!sourceWidth || !sourceHeight) {
+        showToast('Could not read this image.');
+        return;
+      }
+
+      // Product Card uses a 4:5 portrait crop.
+      const targetAspect = 800 / 800;
+      const sourceAspect = sourceWidth / sourceHeight;
+
+      let cropWidth: number;
+      let cropHeight: number;
+
+      if (sourceAspect > targetAspect) {
+        cropHeight = sourceHeight;
+        cropWidth = cropHeight * targetAspect;
+      } else {
+        cropWidth = sourceWidth;
+        cropHeight = cropWidth / targetAspect;
+      }
+
+      // Zoom into the crop.
+      cropWidth = cropWidth / cropZoom;
+      cropHeight = cropHeight / cropZoom;
+
+      const maxX = sourceWidth - cropWidth;
+      const maxY = sourceHeight - cropHeight;
+
+      const sx = Math.max(
+        0,
+        Math.min(maxX, maxX * cropX)
+      );
+
+      const sy = Math.max(
+        0,
+        Math.min(maxY, maxY * cropY)
+      );
+
+      const canvas = document.createElement('canvas');
+
+      canvas.width = 800;
+      canvas.height = 800;
+
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        showToast('Could not create crop preview.');
+        return;
+      }
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      ctx.drawImage(
+        img,
+        sx,
+        sy,
+        cropWidth,
+        cropHeight,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+      try {
+        const croppedImage = canvas.toDataURL(
+          'image/jpeg',
+          0.9
+        );
+
+        setNewCardImageUrl(croppedImage);
+        setIsCropperOpen(false);
+
+        showToast(
+          'Product Card crop saved successfully!'
+        );
+      } catch {
+        showToast(
+          'This image URL cannot be cropped. Please upload the image file instead.'
+        );
+      }
+    };
+
+    img.onerror = () => {
+      showToast(
+        'Unable to crop this image. Please upload the image file instead.'
+      );
+    };
+
+    img.src = newImageUrl;
+  };
+
+  const resetCropPosition = () => {
+    setCropZoom(1);
+    setCropX(0.5);
+    setCropY(0.5);
   };
 
   const handleQrFileUpload = (
@@ -1075,12 +1220,13 @@ export const AdminDashboard: React.FC = () => {
                       </label>
 
                       <input
-                        type="url"
+                        type="text"
                         placeholder="https://images.unsplash.com/..."
                         value={newImageUrl}
-                        onChange={e =>
-                          setNewImageUrl(e.target.value)
-                        }
+                       onChange={e => {
+  setNewImageUrl(e.target.value);
+  setNewCardImageUrl('');
+}}
                         className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-black placeholder:text-black outline-none"
                       />
 
@@ -1125,6 +1271,77 @@ export const AdminDashboard: React.FC = () => {
 
                     </div>
 
+                  )}
+                                    {newImageUrl && (
+                    <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4 space-y-3">
+
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+
+                        <div>
+                          <div className="text-xs font-extrabold text-purple-900">
+                            Product Card Image
+                          </div>
+
+                          <div className="text-[11px] text-black mt-0.5">
+                            Crop the image specifically for the product card.
+                            Your original product image will remain unchanged.
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={openCropper}
+                          className="bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-sm flex items-center gap-2 transition-all"
+                        >
+                          <Crop className="w-4 h-4" />
+                          Crop for Product Card
+                        </button>
+
+                      </div>
+
+                      {newCardImageUrl ? (
+                        <div className="flex flex-wrap items-center gap-3 bg-white p-3 rounded-xl border border-purple-200">
+
+                          <img
+                            src={newCardImageUrl}
+                            alt="Product Card Crop"
+                            className="w-16 h-20 rounded-xl object-cover border border-stone-200"
+                          />
+
+                          <div className="flex-1 min-w-[180px]">
+
+                            <div className="text-xs font-extrabold text-emerald-700">
+                              ✓ Custom Product Card Crop Ready
+                            </div>
+
+                            <div className="text-[11px] text-black mt-0.5">
+                              This cropped image will appear on Product Cards.
+                              The Product Drawer will still use the original image.
+                            </div>
+
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNewCardImageUrl('');
+                              showToast(
+                                'Product Card crop removed. Original image will be used.'
+                              );
+                            }}
+                            className="px-3 py-1.5 rounded-lg text-xs font-bold text-rose-700 hover:bg-rose-50"
+                          >
+                            Remove Crop
+                          </button>
+
+                        </div>
+                      ) : (
+                        <div className="text-[11px] text-black font-semibold">
+                          No custom crop selected — Product Card will use the original image.
+                        </div>
+                      )}
+
+                    </div>
                   )}
 
 
@@ -2114,7 +2331,226 @@ export const AdminDashboard: React.FC = () => {
 
         )}
 
-      </div>
+            </div>
+
+
+      {/* ========================================================= */}
+      {/* PRODUCT CARD IMAGE CROPPER */}
+      {/* ========================================================= */}
+
+      {isCropperOpen && newImageUrl && (
+
+        <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+
+          <div className="w-full max-w-2xl max-h-[95vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-stone-200">
+
+            {/* HEADER */}
+
+            <div className="flex items-center justify-between px-5 py-4 border-b border-stone-200">
+
+              <div>
+
+                <h3 className="font-extrabold text-black text-lg flex items-center gap-2">
+                  <Crop className="w-5 h-5 text-purple-600" />
+                  Crop for Product Card
+                </h3>
+
+                <p className="text-xs text-black mt-0.5">
+                  Adjust the image without changing your original product image.
+                </p>
+
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsCropperOpen(false)}
+                className="p-2 rounded-xl text-black hover:bg-stone-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+            </div>
+
+
+            {/* CROP PREVIEW */}
+
+            <div className="p-5 space-y-5">
+
+              <div className="flex justify-center">
+
+                <div className="relative w-[280px] sm:w-[360px] aspect-[800/800] rounded-2xl overflow-hidden bg-stone-200 border-4 border-stone-300 shadow-lg">
+
+                  <img
+                    src={newImageUrl}
+                    alt="Crop Preview"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-100"
+                    style={{
+                      transform: `scale(${cropZoom})`,
+                      objectPosition: `${cropX * 100}% ${cropY * 100}%`
+                    }}
+                  />
+
+                  {/* CROP FRAME */}
+
+                  <div className="absolute inset-0 pointer-events-none">
+
+                    <div className="absolute inset-0 border-2 border-white/90 rounded-xl shadow-[inset_0_0_0_1px_rgba(0,0,0,0.2)]" />
+
+                    <div className="absolute left-1/3 top-0 bottom-0 border-l border-white/50" />
+
+                    <div className="absolute left-2/3 top-0 bottom-0 border-l border-white/50" />
+
+                    <div className="absolute top-1/3 left-0 right-0 border-t border-white/50" />
+
+                    <div className="absolute top-2/3 left-0 right-0 border-t border-white/50" />
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              {/* CONTROLS */}
+
+              <div className="bg-stone-50 rounded-2xl border border-stone-200 p-4 space-y-5">
+
+                {/* ZOOM */}
+
+                <div>
+
+                  <div className="flex items-center justify-between mb-2">
+
+                    <label className="text-xs font-extrabold text-black">
+                      Zoom
+                    </label>
+
+                    <span className="text-xs font-bold text-purple-700">
+                      {cropZoom.toFixed(2)}×
+                    </span>
+
+                  </div>
+
+                  <input
+                    type="range"
+                    min="1"
+                    max="3"
+                    step="0.01"
+                    value={cropZoom}
+                    onChange={e =>
+                      setCropZoom(Number(e.target.value))
+                    }
+                    className="w-full accent-purple-600"
+                  />
+
+                </div>
+
+
+                {/* HORIZONTAL POSITION */}
+
+                <div>
+
+                  <div className="flex items-center justify-between mb-2">
+
+                    <label className="text-xs font-extrabold text-black">
+                      Horizontal Position
+                    </label>
+
+                    <span className="text-[11px] font-bold text-black">
+                      {Math.round(cropX * 100)}%
+                    </span>
+
+                  </div>
+
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={cropX}
+                    onChange={e =>
+                      setCropX(Number(e.target.value))
+                    }
+                    className="w-full accent-purple-600"
+                  />
+
+                </div>
+
+
+                {/* VERTICAL POSITION */}
+
+                <div>
+
+                  <div className="flex items-center justify-between mb-2">
+
+                    <label className="text-xs font-extrabold text-black">
+                      Vertical Position
+                    </label>
+
+                    <span className="text-[11px] font-bold text-black">
+                      {Math.round(cropY * 100)}%
+                    </span>
+
+                  </div>
+
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={cropY}
+                    onChange={e =>
+                      setCropY(Number(e.target.value))
+                    }
+                    className="w-full accent-purple-600"
+                  />
+
+                </div>
+
+
+                {/* RESET */}
+
+                <button
+                  type="button"
+                  onClick={resetCropPosition}
+                  className="text-xs font-bold text-black hover:text-purple-700 flex items-center gap-1.5"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Reset Crop Position
+                </button>
+
+              </div>
+
+
+              {/* ACTIONS */}
+
+              <div className="flex justify-end gap-3 border-t border-stone-200 pt-4">
+
+                <button
+                  type="button"
+                  onClick={() => setIsCropperOpen(false)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-black hover:bg-stone-100"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={saveCardCrop}
+                  className="px-6 py-2.5 rounded-xl text-xs font-extrabold bg-purple-600 text-white hover:bg-purple-700 shadow-md"
+                >
+                  Save Crop
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
 
     </div>
   );

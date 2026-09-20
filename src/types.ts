@@ -27,8 +27,9 @@ export interface Product {
   description: string;
   features: string[];
   colorsAvailable: string[];
-  imageUrl: string;
-  isPopular?: boolean;
+ imageUrl: string;
+cardImageUrl?: string;
+isPopular?: boolean;
   isNew?: boolean;
   leadTimeDays: number;
   rating: number;
