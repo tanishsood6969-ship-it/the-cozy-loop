@@ -130,15 +130,16 @@ const getColorStyle = (
 };
 
 export const ProductModal: React.FC = () => {
-  const {
-    selectedProduct,
-    setSelectedProduct,
-    setActiveModal,
-    addToCart,
-    reviews,
-    addReview,
-    isDarkMode,
-  } = useStore();
+ const {
+  selectedProduct,
+  setSelectedProduct,
+  setActiveModal,
+  activeModal,
+  addToCart,
+  reviews,
+  addReview,
+  isDarkMode,
+} = useStore();
 
   const [quantity, setQuantity] =
     useState<number>(1);
@@ -212,7 +213,9 @@ export const ProductModal: React.FC = () => {
     };
   }, [imageViewerOpen]);
 
-  if (!selectedProduct) return null;
+if (!selectedProduct || activeModal !== 'product') {
+  return null;
+}
 
   const productReviews = reviews.filter(
     r =>

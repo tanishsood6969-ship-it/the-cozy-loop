@@ -1,595 +1,756 @@
-import React from 'react';
+
+import React, { useEffect, useState } from 'react';
 import type { Product } from '../types';
 import { useStore } from '../context/StoreContext';
 import {
   Star,
   ShoppingBag,
   Eye,
-  Clock
+  Clock,
+  Heart,
+  Check,
+  Package,
+  Sparkles,
 } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
 }
 
-/**
- * Returns styling based on the color name.
- * This makes each color option visually match its label.
- */
 const getColorStyle = (colorName: string) => {
-  const color = colorName.toLowerCase().trim();
+  const color = colorName.toLowerCase();
 
-  if (
-    color.includes('red') ||
-    color.includes('crimson') ||
-    color.includes('scarlet')
-  ) {
-    return 'bg-red-500 border-red-600 text-white';
+  if (color.includes('red') || color.includes('maroon')) {
+    return 'bg-red-400';
   }
 
-  if (
-    color.includes('pink') ||
-    color.includes('rose') ||
-    color.includes('blush')
-  ) {
-    return 'bg-pink-400 border-pink-500 text-white';
+  if (color.includes('pink') || color.includes('rose')) {
+    return 'bg-pink-400';
   }
 
-  if (
-    color.includes('orange') ||
-    color.includes('peach') ||
-    color.includes('coral')
-  ) {
-    return 'bg-orange-400 border-orange-500 text-white';
+  if (color.includes('orange')) {
+    return 'bg-orange-400';
   }
 
-  if (
-    color.includes('yellow') ||
-    color.includes('mustard')
-  ) {
-    return 'bg-yellow-300 border-yellow-500 text-stone-900';
+  if (color.includes('yellow') || color.includes('gold')) {
+    return 'bg-yellow-300';
   }
 
-  if (
-    color.includes('green') ||
-    color.includes('olive') ||
-    color.includes('mint') ||
-    color.includes('sage')
-  ) {
-    return 'bg-green-500 border-green-600 text-white';
+  if (color.includes('green')) {
+    return 'bg-green-400';
   }
 
-  if (
-    color.includes('blue') ||
-    color.includes('navy') ||
-    color.includes('sky')
-  ) {
-    return 'bg-blue-500 border-blue-600 text-white';
+  if (color.includes('blue') || color.includes('navy')) {
+    return 'bg-blue-400';
   }
 
-  if (
-    color.includes('purple') ||
-    color.includes('violet') ||
-    color.includes('lavender')
-  ) {
-    return 'bg-purple-500 border-purple-600 text-white';
+  if (color.includes('purple') || color.includes('violet')) {
+    return 'bg-purple-400';
   }
 
-  if (
-    color.includes('brown') ||
-    color.includes('chocolate') ||
-    color.includes('coffee')
-  ) {
-    return 'bg-amber-800 border-amber-900 text-white';
+  if (color.includes('brown') || color.includes('beige')) {
+    return 'bg-amber-700';
   }
 
-  if (
-    color.includes('black') ||
-    color.includes('charcoal')
-  ) {
-    return 'bg-black border-stone-700 text-white';
+  if (color.includes('black')) {
+    return 'bg-black';
   }
 
-  if (
-    color.includes('white') ||
-    color.includes('ivory') ||
-    color.includes('cream')
-  ) {
-    return 'bg-white border-stone-300 text-stone-800';
+  if (color.includes('white') || color.includes('cream')) {
+    return 'bg-white border border-gray-300';
   }
 
-  if (
-    color.includes('gray') ||
-    color.includes('grey') ||
-    color.includes('silver')
-  ) {
-    return 'bg-gray-400 border-gray-500 text-white';
+  if (color.includes('grey') || color.includes('gray')) {
+    return 'bg-gray-400';
   }
 
-  if (
-    color.includes('beige') ||
-    color.includes('tan')
-  ) {
-    return 'bg-[#D8C3A5] border-[#B8A184] text-stone-800';
-  }
-
-  if (
-    color.includes('teal') ||
-    color.includes('turquoise')
-  ) {
-    return 'bg-teal-500 border-teal-600 text-white';
-  }
-
-  if (color.includes('gold')) {
-    return 'bg-yellow-500 border-yellow-600 text-white';
-  }
-
-  return 'bg-stone-100 border-stone-300 text-stone-700';
+  return 'bg-gray-500';
 };
 
-export const ProductCard: React.FC<ProductCardProps> = ({
-  product
-}) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const {
     products,
-    addToCart,
     setSelectedProduct,
-    setActiveModal
+    setActiveModal,
+    addToCart,
+    isDarkMode,
   } = useStore();
 
-  /*
-   * Always use the newest version of the product
-   * from StoreContext.
-   */
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
+
   const latestProduct =
-    products.find(
-      p => p.id === product.id
-    ) || product;
+    products.find((item) => item.id === product.id) || product;
 
-  /*
-   * Opens the product drawer.
-   */
-  const handleCardClick = () => {
-    setSelectedProduct(latestProduct);
-    setActiveModal('product');
-  };
+  useEffect(() => {
+    try {
+      const savedWishlist = localStorage.getItem('knot_bloom_wishlist');
 
-  const isOutOfStock =
-    latestProduct.stock <= 0;
+      if (savedWishlist) {
+        const wishlist: string[] = JSON.parse(savedWishlist);
+        setIsWishlisted(wishlist.includes(latestProduct.id));
+      }
+    } catch {
+      setIsWishlisted(false);
+    }
+  }, [latestProduct.id]);
+
+  const hasDiscount =
+    typeof latestProduct.originalPrice === 'number' &&
+    latestProduct.originalPrice > latestProduct.price;
+
+  const discountPercentage = hasDiscount
+    ? Math.round(
+        ((latestProduct.originalPrice! - latestProduct.price) /
+          latestProduct.originalPrice!) *
+          100
+      )
+    : 0;
+
+  const isOutOfStock = latestProduct.stock <= 0;
 
   const isLowStock =
     latestProduct.stock > 0 &&
     latestProduct.stock <= 5;
 
-  const currentRating =
-    Number(latestProduct.rating ?? 0);
+  const handleCardClick = () => {
+    setSelectedProduct(latestProduct);
+    setActiveModal('product');
+  };
 
-  const currentReviewCount =
-    Number(latestProduct.reviewCount ?? 0);
+  const handleQuickView = (e: React.MouseEvent) => {
+  e.stopPropagation();
+
+  setSelectedProduct(latestProduct);
+  setActiveModal('image');
+};
+
+  const handleWishlist = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    try {
+      const savedWishlist = localStorage.getItem('knot_bloom_wishlist');
+
+      let wishlist: string[] = savedWishlist
+        ? JSON.parse(savedWishlist)
+        : [];
+
+      if (wishlist.includes(latestProduct.id)) {
+        wishlist = wishlist.filter(
+          (id) => id !== latestProduct.id
+        );
+
+        setIsWishlisted(false);
+      } else {
+        wishlist.push(latestProduct.id);
+        setIsWishlisted(true);
+      }
+
+      localStorage.setItem(
+        'knot_bloom_wishlist',
+        JSON.stringify(wishlist)
+      );
+    } catch {
+      // Prevent wishlist errors from breaking the card.
+    }
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (isOutOfStock || isAdded) return;
+
+    addToCart(
+      latestProduct,
+      1,
+      latestProduct.colorsAvailable?.[0]
+    );
+
+    setIsAdded(true);
+
+    setTimeout(() => {
+      setIsAdded(false);
+    }, 1200);
+  };
+
+  const currentRating = Number.isFinite(latestProduct.rating)
+    ? latestProduct.rating
+    : 0;
 
   return (
-    <div
-      onClick={handleCardClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={e => {
-        if (
-          e.key === 'Enter' ||
-          e.key === ' '
-        ) {
-          e.preventDefault();
-          handleCardClick();
-        }
-      }}
-      className="
-        group
-        glass-card
-        rounded-3xl
-        overflow-hidden
-        transition-all
-        duration-300
-        hover:shadow-xl
-        hover:-translate-y-1
-        flex
-        flex-col
-        justify-between
-        border
-        border-[var(--border-color)]
-        cursor-pointer
-      "
+    <article
+  onClick={handleCardClick}
+  style={{
+    backgroundColor: isDarkMode ? '#24211f' : '#fffaf2',
+    borderColor: isDarkMode ? '#4a3d38' : '#eadfd3',
+    opacity: 1,
+    backdropFilter: 'none',
+    WebkitBackdropFilter: 'none',
+  }}
+  className="
+    group
+    relative
+    z-0
+    flex
+    h-full
+    cursor-pointer
+    flex-col
+    rounded-2xl
+    border
+    border-solid
+    shadow-md
+    transition-all
+    duration-300
+    ease-out
+    hover:-translate-y-2
+    hover:scale-[1.015]
+    hover:shadow-2xl
+    hover:shadow-stone-900/20
+    hover:border-rose-300
+    dark:hover:border-rose-700
+    dark:hover:shadow-black/50
+  "
+
     >
-      {/* Product Image Container */}
+      {/* HOVER GLOW */}
       <div
         className="
-          relative
-          aspect-[3/4]
-          w-full
-          overflow-hidden
-          bg-stone-100
-          dark:bg-stone-900
-        "
-      >
-        <img
-          src={latestProduct.cardImageUrl || latestProduct.imageUrl}
-          alt={latestProduct.name}
-          className="
-            w-full
-            h-full
-            object-cover
-            object-center
-            group-hover:scale-105
-            transition-transform
-            duration-500
-          "
-          loading="lazy"
-        />
-
-        {/* Badges Overlay */}
-        <div className="
-          absolute
-          top-3
-          left-3
-          flex
-          flex-col
-          gap-1.5
-          items-start
-        ">
-          {latestProduct.isPopular && (
-            <span className="
-              bg-rose-500
-              text-white
-              font-bold
-              text-[10px]
-              sm:text-xs
-              px-2.5
-              py-1
-              rounded-full
-              shadow-sm
-            ">
-              ✨ Bestseller
-            </span>
-          )}
-
-          {latestProduct.isNew && (
-            <span className="
-              bg-amber-400
-              text-stone-900
-              font-bold
-              text-[10px]
-              sm:text-xs
-              px-2.5
-              py-1
-              rounded-full
-              shadow-sm
-            ">
-              🌟 New Arrival
-            </span>
-          )}
-        </div>
-
-        {/* Stock Status Pill */}
-        <div className="
-          absolute
-          top-3
-          right-3
-        ">
-          {isOutOfStock ? (
-            <span className="
-              bg-stone-900/90
-              text-stone-200
-              font-semibold
-              text-[10px]
-              sm:text-xs
-              px-2.5
-              py-1
-              rounded-full
-              backdrop-blur-sm
-            ">
-              Sold Out
-            </span>
-          ) : isLowStock ? (
-            <span className="
-              bg-amber-500
-              text-white
-              font-semibold
-              text-[10px]
-              sm:text-xs
-              px-2.5
-              py-1
-              rounded-full
-              shadow-sm
-              animate-pulse-subtle
-            ">
-              Only {latestProduct.stock} left
-            </span>
-          ) : (
-            <span className="
-              bg-emerald-500/90
-              text-white
-              font-medium
-              text-[10px]
-              sm:text-xs
-              px-2.5
-              py-1
-              rounded-full
-              backdrop-blur-sm
-            ">
-              In Stock
-            </span>
-          )}
-        </div>
-
-        {/* Quick View Overlay */}
-        <div className="
-          absolute
-          inset-0
-          bg-stone-900/20
-          opacity-0
-          group-hover:opacity-100
-          transition-opacity
-          flex
-          items-center
-          justify-center
           pointer-events-none
-        ">
-          <div className="
-            bg-white/95
-            text-stone-800
-            font-semibold
-            text-xs
-            px-4
-            py-2
-            rounded-full
-            shadow-lg
-            flex
-            items-center
-            gap-1.5
-            transform
-            translate-y-2
-            group-hover:translate-y-0
-            transition-all
-          ">
-            <Eye className="w-3.5 h-3.5" />
+          absolute
+          -inset-2
+          -z-10
+          rounded-[24px]
+          bg-rose-300/0
+          opacity-0
+          blur-2xl
+          transition-all
+          duration-300
+          ease-out
+          group-hover:bg-rose-300/45
+          group-hover:opacity-100
+          dark:group-hover:bg-rose-900/35
+        "
+      />
 
-            <span>
-              Quick View
-            </span>
+      {/* ROUNDED CARD CONTENT */}
+      <div className="relative flex h-full flex-col overflow-hidden rounded-2xl">
+
+        {/* PRODUCT IMAGE */}
+        <div
+          className="
+            relative
+            aspect-[3/4]
+            w-full
+            overflow-hidden
+            bg-gray-100
+            dark:bg-zinc-900
+          "
+        >
+          <img
+            src={
+              latestProduct.cardImageUrl ||
+              latestProduct.imageUrl
+            }
+            alt={latestProduct.name}
+            className="
+              h-full
+              w-full
+              object-cover
+              transition-transform
+              duration-500
+              group-hover:scale-[1.04]
+            "
+            loading="lazy"
+          />
+
+          <div
+            className="
+              pointer-events-none
+              absolute
+              inset-0
+              bg-gradient-to-t
+              from-black/15
+              via-transparent
+              to-transparent
+              opacity-0
+              transition-opacity
+              duration-300
+              group-hover:opacity-100
+            "
+          />
+
+          {/* BADGES */}
+          <div className="absolute left-3 top-3 flex flex-col gap-1.5">
+            {latestProduct.isPopular && (
+              <span
+                className="
+                  inline-flex
+                  w-fit
+                  items-center
+                  gap-1.5
+                  rounded-full
+                  bg-white
+                  px-2.5
+                  py-1
+                  text-[10px]
+                  font-bold
+                  text-rose-600
+                  shadow-sm
+                "
+              >
+                <Sparkles size={11} />
+                Bestseller
+              </span>
+            )}
+
+            {latestProduct.isNew && (
+              <span
+                className="
+                  inline-flex
+                  w-fit
+                  items-center
+                  rounded-full
+                  bg-black
+                  px-2.5
+                  py-1
+                  text-[10px]
+                  font-bold
+                  text-white
+                  shadow-sm
+                "
+              >
+                New Arrival
+              </span>
+            )}
+
+            {hasDiscount && (
+              <span
+                className="
+                  inline-flex
+                  w-fit
+                  items-center
+                  rounded-full
+                  bg-rose-500
+                  px-2.5
+                  py-1
+                  text-[10px]
+                  font-bold
+                  text-white
+                  shadow-sm
+                "
+              >
+                -{discountPercentage}%
+              </span>
+            )}
           </div>
-        </div>
-      </div>
 
-      {/* Product Content Details */}
-      <div className="
-        p-4
-        sm:p-5
-        flex-1
-        flex
-        flex-col
-        justify-between
-        space-y-3
-      ">
-        <div>
-          {/* Category & Lead Time */}
-          <div className="
-            flex
-            items-center
-            justify-between
-            text-xs
-            text-[var(--text-secondary)]
-            mb-1
-          ">
-            <span className="
-              font-semibold
-              text-rose-500
-              uppercase
-              tracking-wider
-              text-[10px]
-            ">
+          {/* WISHLIST */}
+          <button
+            type="button"
+            onClick={handleWishlist}
+            aria-label={
+              isWishlisted
+                ? `Remove ${latestProduct.name} from wishlist`
+                : `Add ${latestProduct.name} to wishlist`
+            }
+            className={`
+  absolute
+  right-3
+  top-3
+  z-10
+  flex
+  h-9
+  w-9
+  items-center
+  justify-center
+  rounded-full
+  border
+  shadow-sm
+  transition-all
+  duration-200
+  ${
+    isWishlisted
+      ? 'border-rose-200 bg-rose-500 text-white'
+      : isDarkMode
+      ? 'border-stone-600 bg-stone-700 text-stone-200 hover:bg-stone-600 hover:text-rose-300'
+      : 'border-gray-200 bg-white text-gray-700 hover:text-rose-500'
+  }
+`}
+          >
+            <Heart
+              size={17}
+              fill={isWishlisted ? 'currentColor' : 'none'}
+            />
+          </button>
+
+          {/* QUICK VIEW */}
+{/* QUICK VIEW */}
+<div
+  className="
+    absolute
+    inset-0
+    flex
+    items-center
+    justify-center
+    pointer-events-none
+    opacity-0
+    transition-all
+    duration-300
+    ease-out
+    group-hover:opacity-100
+  "
+>
+  <button
+    type="button"
+    onClick={handleQuickView}
+    className="
+      pointer-events-auto
+      group/quick
+      flex
+      items-center
+      justify-center
+      gap-1.5
+      rounded-full
+      bg-white/95
+      px-4
+      py-2
+      text-xs
+      font-bold
+      text-stone-800
+      shadow-xl
+      ring-1
+      ring-black/10
+      transition-all
+      duration-200
+      translate-y-2
+      scale-95
+      hover:scale-105
+      hover:bg-rose-500
+      hover:text-white
+      hover:shadow-2xl
+      active:scale-95
+      group-hover:translate-y-0
+      group-hover:scale-100
+      dark:bg-stone-800/95
+      dark:text-stone-100
+      dark:ring-white/10
+      dark:hover:bg-rose-600
+      dark:hover:text-white
+    "
+  >
+    <Eye
+      size={14}
+      className="
+        transition-transform
+        duration-200
+        group-hover/quick:scale-110
+      "
+    />
+    Quick View
+  </button>
+</div>
+        </div>
+
+        {/* PRODUCT INFORMATION */}
+        <div className="flex flex-1 flex-col p-4">
+
+          {/* CATEGORY + STOCK */}
+          <div
+            className="
+              mb-1.5
+              flex
+              h-6
+              items-center
+              justify-between
+              gap-2
+            "
+          >
+            <span
+              className="
+                max-w-[65%]
+                truncate
+                px-0.5
+                py-1
+                text-[10px]
+                font-bold
+                uppercase
+                tracking-wide
+                text-stone-600
+                dark:text-stone-300
+              "
+            >
               {latestProduct.category}
             </span>
 
-            <span className="
-              flex
-              items-center
-              gap-1
-              text-[11px]
-            ">
-              <Clock
-                className="
-                  w-3
-                  h-3
-                  text-[var(--text-secondary)]
-                "
-              />
-
-              {latestProduct.leadTimeDays}d lead
-            </span>
+            {isOutOfStock ? (
+              <span className="text-[10px] font-semibold text-red-500">
+                Out of stock
+              </span>
+            ) : isLowStock ? (
+              <span className="flex items-center gap-1 text-[10px] font-semibold text-orange-500">
+                <Package size={11} />
+                Only {latestProduct.stock} left
+              </span>
+            ) : (
+              <span
+                className="flex items-center gap-1 text-[10px] font-medium"
+                style={{
+                  color: isDarkMode ? '#d6d3d1' : '#6b7280',
+                }}
+              >
+                <Package size={11} />
+                In stock
+              </span>
+            )}
           </div>
 
-          {/* Product Name */}
-          <h3 className="
-            font-bold
-            text-[var(--text-primary)]
-            text-base
-            sm:text-lg
-            leading-snug
-            hover:text-rose-600
-            transition-colors
-            line-clamp-1
-          ">
-            {latestProduct.name}
-          </h3>
+          {/* TITLE */}
+          <div className="min-w-0">
+            <h3
+              title={latestProduct.name}
+              style={{
+                color: isDarkMode ? '#ffffff' : '#171717',
+              }}
+              className="
+                overflow-hidden
+                text-ellipsis
+                whitespace-nowrap
+                text-[19px]
+                font-extrabold
+                leading-[23px]
+                tracking-[-0.01em]
+                group-hover:text-rose-600
+              "
+            >
+              {latestProduct.name}
+            </h3>
+          </div>
 
-          {/* Live Star Rating */}
-          <div className="
-            flex
-            items-center
-            gap-1.5
-            text-xs
-            mt-1
-          ">
-            <div className="
+          {/* RATING */}
+          <div
+            className="
+              mt-1
               flex
+              h-5
               items-center
-              gap-0.5
-            ">
-              <Star
-                className="
-                  w-3.5
-                  h-3.5
-                  fill-amber-400
-                  text-amber-400
-                "
-              />
+              gap-1.5
+            "
+          >
+            <div className="flex items-center gap-0.5">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  size={12}
+                  className={
+                    star <= Math.round(currentRating)
+                      ? 'fill-amber-400 text-amber-400'
+                      : 'text-gray-300'
+                  }
+                />
+              ))}
             </div>
 
-            <span className="
-              font-bold
-              text-[var(--text-primary)]
-            ">
+            <span
+              className="text-[11px] font-medium"
+              style={{
+                color: isDarkMode ? '#d6d3d1' : '#4b5563',
+              }}
+            >
               {currentRating.toFixed(1)}
             </span>
 
-            <span className="
-              text-[var(--text-secondary)]
-            ">
-              ({currentReviewCount})
+            <span
+              className="text-[11px]"
+              style={{
+                color: isDarkMode ? '#a8a29e' : '#9ca3af',
+              }}
+            >
+              ({latestProduct.reviewCount})
             </span>
           </div>
-        </div>
 
-        {/* Color Palette Indicators */}
-        <div className="
-          flex
-          items-center
-          gap-1.5
-          pt-1
-        ">
-          <span className="
-            text-[11px]
-            text-[var(--text-secondary)]
-            mr-1
-          ">
-            Colors:
-          </span>
+          {/* COLORS */}
+          <div className="mt-2 h-6">
+            {latestProduct.colorsAvailable &&
+              latestProduct.colorsAvailable.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-[11px] font-medium"
+                    style={{
+                      color: isDarkMode ? '#d6d3d1' : '#4b5563',
+                    }}
+                  >
+                    Colors
+                  </span>
 
-          {latestProduct.colorsAvailable
-            .slice(0, 4)
-            .map((color, idx) => (
-              <span
-                key={idx}
-                className={`
-                  text-[10px]
-                  font-semibold
-                  px-2
-                  py-0.5
-                  rounded-md
-                  truncate
-                  max-w-[80px]
-                  border
-                  shadow-sm
-                  transition-all
-                  hover:scale-105
-                  ${getColorStyle(color)}
-                `}
-                title={color}
-              >
-                {color}
-              </span>
-            ))}
+                  <div className="flex items-center gap-1.5">
+                    {latestProduct.colorsAvailable
+                      .slice(0, 5)
+                      .map((color) => (
+                        <span
+                          key={color}
+                          title={color}
+                          className={`
+                            h-4
+                            w-4
+                            rounded-full
+                            shadow-sm
+                            ring-1
+                            ring-black/10
+                            ${getColorStyle(color)}
+                          `}
+                        />
+                      ))}
 
-          {latestProduct.colorsAvailable.length > 4 && (
-            <span className="
-              text-[10px]
-              text-[var(--text-secondary)]
-            ">
-              +
-              {latestProduct.colorsAvailable.length - 4}
-            </span>
-          )}
-        </div>
+                    {latestProduct.colorsAvailable.length > 5 && (
+                      <span
+                        className="text-[10px]"
+                        style={{
+                          color: isDarkMode ? '#a8a29e' : '#9ca3af',
+                        }}
+                      >
+                        +{latestProduct.colorsAvailable.length - 5}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+          </div>
 
-        {/* Price & Add To Cart Bar */}
-        <div className="
-          flex
-          items-center
-          justify-between
-          pt-2
-          border-t
-          border-[var(--border-color)]
-        ">
-          <div>
-            <div className="
+          {/* SHIPPING */}
+          <div
+            className="
+              mt-2
+              mb-1
               flex
-              items-baseline
+              h-4
+              items-center
               gap-1.5
-            ">
-              <span className="
-                text-lg
-                sm:text-xl
-                font-extrabold
-                text-[var(--text-primary)]
-              ">
-                ₹{latestProduct.price}
+            "
+          >
+            <Clock
+              size={12}
+              style={{
+                color: isDarkMode ? '#a8a29e' : '#9ca3af',
+              }}
+            />
+
+            <span
+              className="text-[10px] font-medium"
+              style={{
+                color: isDarkMode ? '#d6d3d1' : '#6b7280',
+              }}
+            >
+              Handmade • Ships in {latestProduct.leadTimeDays} day
+              {latestProduct.leadTimeDays !== 1 ? 's' : ''}
+            </span>
+          </div>
+
+          {/* PRICE */}
+          <div
+            className="
+              mb-2
+              flex
+              h-10
+              items-center
+              justify-between
+              gap-2
+            "
+          >
+            <div className="flex min-w-0 items-center gap-2">
+              <span
+                className="
+                  text-[20px]
+                  font-extrabold
+                  tracking-tight
+                "
+                style={{
+                  color: isDarkMode ? '#ffffff' : '#171717',
+                }}
+              >
+                ₹{latestProduct.price.toLocaleString('en-IN')}
               </span>
 
-              {latestProduct.originalPrice && (
-                <span className="
-                  text-xs
-                  text-[var(--text-secondary)]
-                  line-through
-                ">
-                  ₹{latestProduct.originalPrice}
+              {hasDiscount && (
+                <span
+                  className="
+                    text-xs
+                    font-medium
+                    text-gray-400
+                    line-through
+                  "
+                >
+                  ₹
+                  {latestProduct.originalPrice!.toLocaleString(
+                    'en-IN'
+                  )}
                 </span>
               )}
             </div>
+
+            {hasDiscount && (
+              <span
+                className="
+                  shrink-0
+                  text-[10px]
+                  font-semibold
+                  text-rose-500
+                "
+              >
+                Save ₹
+                {(
+                  latestProduct.originalPrice! -
+                  latestProduct.price
+                ).toLocaleString('en-IN')}
+              </span>
+            )}
           </div>
 
-          {/* Add To Cart */}
+          {/* ADD TO CART */}
           <button
-            onClick={e => {
-              e.preventDefault();
-              e.stopPropagation();
-
-              if (isOutOfStock) {
-                return;
-              }
-
-              addToCart(
-                latestProduct,
-                1
-              );
-            }}
-            disabled={isOutOfStock}
+            type="button"
+            onClick={handleAddToCart}
+            disabled={isOutOfStock || isAdded}
             className={`
-              px-3.5
-              py-2
-              rounded-full
-              font-bold
-              text-xs
-              sm:text-sm
               flex
+              h-10
+              w-full
               items-center
-              gap-1.5
+              justify-center
+              gap-2
+              rounded-xl
+              text-sm
+              font-bold
               transition-all
-
+              duration-200
               ${
                 isOutOfStock
-                  ? 'bg-stone-200 text-stone-400 cursor-not-allowed dark:bg-stone-800 dark:text-stone-500'
-                  : 'bg-rose-500 hover:bg-rose-600 text-white shadow-md shadow-rose-200 active:scale-95'
+                  ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                  : isAdded
+                  ? 'bg-green-500 text-white'
+                  : 'bg-rose-500 text-white shadow-sm shadow-rose-500/20 hover:bg-rose-600 hover:shadow-md active:scale-[0.98]'
               }
             `}
           >
-            <ShoppingBag className="w-4 h-4" />
-
-            <span>
-              {isOutOfStock
-                ? 'Sold Out'
-                : 'Add'}
-            </span>
+            {isOutOfStock ? (
+              <>
+                <Package size={16} />
+                Out of Stock
+              </>
+            ) : isAdded ? (
+              <>
+                <Check size={16} />
+                Added to Cart
+              </>
+            ) : (
+              <>
+                <ShoppingBag size={16} />
+                Add to Cart
+              </>
+            )}
           </button>
         </div>
       </div>
-    </div>
+    </article>
   );
 };

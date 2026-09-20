@@ -19,19 +19,13 @@ import { Footer } from './components/Footer';
 
 import {
   Sparkles,
-  HeartHandshake
+  HeartHandshake,
+   X,
 } from 'lucide-react';
 
 /*
  * ============================================================
  * TOAST NOTIFICATION
- * ============================================================
- *
- * IMPORTANT:
- * This component is intentionally OUTSIDE StoreContent.
- *
- * This prevents React from treating the toast component as a
- * brand-new component every time StoreContent re-renders.
  * ============================================================
  */
 
@@ -89,7 +83,6 @@ const ToastNotification: React.FC<
             backdrop-blur-xl
           "
         >
-          {/* Soft background glow */}
           <div
             className="
               absolute
@@ -102,7 +95,6 @@ const ToastNotification: React.FC<
             "
           />
 
-          {/* Animated icon */}
           <div
             className="
               relative
@@ -122,12 +114,10 @@ const ToastNotification: React.FC<
             ✨
           </div>
 
-          {/* Toast message */}
           <span className="relative leading-5">
             {message}
           </span>
 
-          {/* Moving shine */}
           <div
             className="
               absolute
@@ -163,14 +153,14 @@ const StoreContent: React.FC = () => {
     isAdmin,
     adminAuthenticated,
     toastMessage,
+    activeModal,
+    selectedProduct,
     setActiveModal,
-    setSelectedCategory
+    setSelectedCategory,
   } = useStore();
 
   const [currentHash, setCurrentHash] =
-    useState<string>(
-      window.location.hash
-    );
+    useState<string>(window.location.hash);
 
   /*
    * ============================================================
@@ -180,9 +170,7 @@ const StoreContent: React.FC = () => {
 
   useEffect(() => {
     const handleHashChange = () => {
-      setCurrentHash(
-        window.location.hash
-      );
+      setCurrentHash(window.location.hash);
     };
 
     window.addEventListener(
@@ -205,29 +193,22 @@ const StoreContent: React.FC = () => {
    */
 
   const filteredProducts =
-    products.filter(product => {
+    products.filter((product) => {
       const matchesCategory =
         selectedCategory === 'All' ||
-        product.category ===
-          selectedCategory;
+        product.category === selectedCategory;
 
       const matchesSearch =
         searchQuery === '' ||
         product.name
           .toLowerCase()
-          .includes(
-            searchQuery.toLowerCase()
-          ) ||
+          .includes(searchQuery.toLowerCase()) ||
         product.description
           .toLowerCase()
-          .includes(
-            searchQuery.toLowerCase()
-          ) ||
+          .includes(searchQuery.toLowerCase()) ||
         product.category
           .toLowerCase()
-          .includes(
-            searchQuery.toLowerCase()
-          );
+          .includes(searchQuery.toLowerCase());
 
       return (
         matchesCategory &&
@@ -246,7 +227,7 @@ const StoreContent: React.FC = () => {
   ) => {
     const productReviews =
       reviews.filter(
-        review =>
+        (review) =>
           review.productName
             .trim()
             .toLowerCase() ===
@@ -255,40 +236,27 @@ const StoreContent: React.FC = () => {
             .toLowerCase()
       );
 
-    /*
-     * If there are no reviews, preserve the
-     * existing product rating.
-     */
-    if (
-      productReviews.length === 0
-    ) {
+    if (productReviews.length === 0) {
       return product;
     }
 
     const totalRating =
       productReviews.reduce(
         (sum, review) =>
-          sum +
-          Number(
-            review.rating || 0
-          ),
+          sum + Number(review.rating || 0),
         0
       );
 
     const averageRating =
-      totalRating /
-      productReviews.length;
+      totalRating / productReviews.length;
 
     const roundedRating =
-      Math.round(
-        averageRating * 10
-      ) / 10;
+      Math.round(averageRating * 10) / 10;
 
     return {
       ...product,
       rating: roundedRating,
-      reviewCount:
-        productReviews.length
+      reviewCount: productReviews.length,
     };
   };
 
@@ -363,9 +331,7 @@ const StoreContent: React.FC = () => {
         duration-300
       "
     >
-      {/* ======================================================
-          TOP CENTER TOAST
-          ====================================================== */}
+      {/* TOP CENTER TOAST */}
 
       <ToastNotification
         message={toastMessage}
@@ -379,8 +345,7 @@ const StoreContent: React.FC = () => {
             HERO
             ==================================================== */}
 
-        {selectedCategory ===
-          'All' &&
+        {selectedCategory === 'All' &&
           !searchQuery && (
             <Hero />
           )}
@@ -400,7 +365,8 @@ const StoreContent: React.FC = () => {
           "
         >
 
-          {/* Category Header */}
+          {/* CATEGORY HEADER */}
+
           <div
             className="
               flex
@@ -428,8 +394,7 @@ const StoreContent: React.FC = () => {
                 "
               >
                 <span>
-                  {selectedCategory ===
-                  'All'
+                  {selectedCategory === 'All'
                     ? '🌸 Handcrafted Wool & Cotton Collection'
                     : selectedCategory}
                 </span>
@@ -444,21 +409,17 @@ const StoreContent: React.FC = () => {
                 "
               >
                 Showing{' '}
-                {
-                  filteredProducts.length
-                }{' '}
-                unique hand-knitted
-                item(s) ready for campus
-                dorm delivery
+                {filteredProducts.length}{' '}
+                unique hand-knitted item(s)
+                ready for campus dorm delivery
               </p>
             </div>
 
-            {/* Custom Order Button */}
+            {/* CUSTOM ORDER BUTTON */}
+
             <button
               onClick={() =>
-                setActiveModal(
-                  'customOrder'
-                )
+                setActiveModal('customOrder')
               }
               className="
                 bg-amber-100
@@ -489,9 +450,8 @@ const StoreContent: React.FC = () => {
               />
 
               <span>
-                Want a custom flower
-                color? Request Custom
-                Order
+                Want a custom flower color?
+                Request Custom Order
               </span>
             </button>
           </div>
@@ -500,8 +460,7 @@ const StoreContent: React.FC = () => {
               EMPTY STATE
               ================================================== */}
 
-          {filteredProducts.length ===
-          0 ? (
+          {filteredProducts.length === 0 ? (
             <div
               className="
                 bg-[var(--surface)]
@@ -542,8 +501,7 @@ const StoreContent: React.FC = () => {
                   text-lg
                 "
               >
-                No crochet products
-                found
+                No crochet products found
               </h3>
 
               <p
@@ -553,18 +511,15 @@ const StoreContent: React.FC = () => {
                   font-medium
                 "
               >
-                We couldn't find any
-                items matching "
-                {searchQuery}".
+                We couldn't find any items
+                matching "{searchQuery}".
                 Try searching for tulips,
                 sunflowers, or keychains!
               </p>
 
               <button
                 onClick={() => {
-                  setSelectedCategory(
-                    'All'
-                  );
+                  setSelectedCategory('All');
                 }}
                 className="
                   bg-stone-900
@@ -599,7 +554,7 @@ const StoreContent: React.FC = () => {
               "
             >
               {filteredProducts.map(
-                product => {
+                (product) => {
                   const liveProduct =
                     getProductWithLiveRating(
                       product
@@ -608,9 +563,7 @@ const StoreContent: React.FC = () => {
                   return (
                     <ProductCard
                       key={product.id}
-                      product={
-                        liveProduct
-                      }
+                      product={liveProduct}
                     />
                   );
                 }
@@ -669,8 +622,7 @@ const StoreContent: React.FC = () => {
                 />
 
                 <span>
-                  Personalized Student
-                  Orders
+                  Personalized Student Orders
                 </span>
               </div>
 
@@ -682,8 +634,8 @@ const StoreContent: React.FC = () => {
                   text-[var(--text-primary)]
                 "
               >
-                Need a Custom Crochet
-                Gift For Someone Special?
+                Need a Custom Crochet Gift
+                For Someone Special?
               </h3>
 
               <p
@@ -696,19 +648,16 @@ const StoreContent: React.FC = () => {
                 "
               >
                 Choose your favorite yarn
-                colors, stem count, and
-                custom notes. We'll
-                hand-crochet it and deliver
-                directly to your dorm room
-                or campus spot!
+                colors, stem count, and custom
+                notes. We'll hand-crochet it and
+                deliver directly to your dorm
+                room or campus spot!
               </p>
             </div>
 
             <button
               onClick={() =>
-                setActiveModal(
-                  'customOrder'
-                )
+                setActiveModal('customOrder')
               }
               className="
                 bg-gradient-to-r
@@ -741,6 +690,112 @@ const StoreContent: React.FC = () => {
           ====================================================== */}
 
       <ProductModal />
+
+      {/* ======================================================
+          IMAGE QUICK VIEW
+          ====================================================== */}
+
+      {/* ======================================================
+    IMAGE QUICK VIEW
+    ====================================================== */}
+
+{activeModal === 'image' && selectedProduct && (
+  <div
+    className="
+      fixed
+      inset-0
+      z-[99999]
+      flex
+      items-center
+      justify-center
+      bg-black/85
+      p-4
+      backdrop-blur-md
+      animate-in
+      fade-in
+      duration-200
+    "
+    onClick={() => setActiveModal(null)}
+  >
+    {/* IMAGE CONTAINER */}
+    <div
+      className="
+        relative
+        flex
+        max-h-[92vh]
+        max-w-[92vw]
+        items-center
+        justify-center
+        animate-in
+        zoom-in-95
+        duration-200
+      "
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* CLOSE BUTTON */}
+      <button
+        type="button"
+        onClick={() => setActiveModal(null)}
+        aria-label="Close image preview"
+        className="
+          absolute
+          -right-3
+          -top-3
+          z-20
+          flex
+          h-11
+          w-11
+          items-center
+          justify-center
+          rounded-full
+          border
+          border-white/20
+          bg-black/75
+          text-white
+          shadow-2xl
+          backdrop-blur-xl
+          transition-all
+          duration-200
+          hover:scale-110
+          hover:bg-white
+          hover:text-stone-900
+          active:scale-95
+          sm:-right-4
+          sm:-top-4
+          sm:h-12
+          sm:w-12
+        "
+      >
+        <X
+          size={21}
+          strokeWidth={2.5}
+          className="
+            transition-transform
+            duration-200
+          "
+        />
+      </button>
+
+      {/* IMAGE */}
+      <img
+        src={
+          selectedProduct.cardImageUrl ||
+          selectedProduct.imageUrl
+        }
+        alt={selectedProduct.name}
+        className="
+          max-h-[92vh]
+          max-w-[92vw]
+          rounded-2xl
+          object-contain
+          shadow-[0_25px_80px_rgba(0,0,0,0.55)]
+          select-none
+        "
+      />
+    </div>
+  </div>
+)}
+
       <CustomOrderModal />
       <CartDrawer />
       <CheckoutModal />
@@ -771,7 +826,8 @@ export function App() {
         "
       >
 
-        {/* Background Video */}
+        {/* BACKGROUND VIDEO */}
+
         <video
           autoPlay
           muted
@@ -796,7 +852,8 @@ export function App() {
           />
         </video>
 
-        {/* Background Overlay */}
+        {/* BACKGROUND OVERLAY */}
+
         <div
           className="
             fixed

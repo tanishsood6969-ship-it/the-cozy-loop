@@ -28,6 +28,30 @@ import {
 
 import { supabase } from '../lib/supabaseClient';
 
+/*
+ * ============================================================
+ * MODAL TYPE
+ * ============================================================
+ */
+
+type ActiveModal =
+  | 'image'
+  | 'product'
+  | 'customOrder'
+  | 'checkout'
+  | 'orderSuccess'
+  | 'orderTracker'
+  | 'auth'
+  | 'adminAuth'
+  | 'userOrders'
+  | null;
+
+/*
+ * ============================================================
+ * STORE CONTEXT TYPE
+ * ============================================================
+ */
+
 interface StoreContextType {
   products: Product[];
   orders: Order[];
@@ -53,7 +77,9 @@ interface StoreContextType {
     roomOrSpot?: string
   ) => User;
 
-  sendOtpCode: (identifier: string) => string;
+  sendOtpCode: (
+    identifier: string
+  ) => string;
 
   verifyOtpCode: (
     identifier: string,
@@ -77,7 +103,9 @@ interface StoreContextType {
   logoutAdmin: () => void;
 
   selectedCategory: ProductCategory;
-  setSelectedCategory: (cat: ProductCategory) => void;
+  setSelectedCategory: (
+    cat: ProductCategory
+  ) => void;
 
   searchQuery: string;
   setSearchQuery: (q: string) => void;
@@ -85,35 +113,21 @@ interface StoreContextType {
   cartOpen: boolean;
   setCartOpen: (val: boolean) => void;
 
-  activeModal:
-    | 'product'
-    | 'customOrder'
-    | 'checkout'
-    | 'orderSuccess'
-    | 'orderTracker'
-    | 'auth'
-    | 'adminAuth'
-    | 'userOrders'
-    | null;
+  activeModal: ActiveModal;
 
   setActiveModal: (
-    modal:
-      | 'product'
-      | 'customOrder'
-      | 'checkout'
-      | 'orderSuccess'
-      | 'orderTracker'
-      | 'auth'
-      | 'adminAuth'
-      | 'userOrders'
-      | null
+    modal: ActiveModal
   ) => void;
 
   selectedProduct: Product | null;
-  setSelectedProduct: (prod: Product | null) => void;
+  setSelectedProduct: (
+    prod: Product | null
+  ) => void;
 
   lastCreatedOrder: Order | null;
-  setLastCreatedOrder: (ord: Order | null) => void;
+  setLastCreatedOrder: (
+    ord: Order | null
+  ) => void;
 
   isDarkMode: boolean;
   toggleDarkMode: () => void;
@@ -138,7 +152,10 @@ interface StoreContextType {
   clearCart: () => void;
 
   addProduct: (
-    product: Omit<Product, 'id' | 'rating' | 'reviewCount'>
+    product: Omit<
+      Product,
+      'id' | 'rating' | 'reviewCount'
+    >
   ) => void;
 
   updateProduct: (
@@ -154,7 +171,10 @@ interface StoreContextType {
   deleteProduct: (id: string) => void;
 
   createOrder: (
-    orderData: Omit<Order, 'id' | 'createdAt' | 'status'>
+    orderData: Omit<
+      Order,
+      'id' | 'createdAt' | 'status'
+    >
   ) => Order;
 
   updateOrderStatus: (
@@ -168,7 +188,10 @@ interface StoreContextType {
   ) => void;
 
   createCustomRequest: (
-    reqData: Omit<CustomRequest, 'id' | 'createdAt' | 'status'>
+    reqData: Omit<
+      CustomRequest,
+      'id' | 'createdAt' | 'status'
+    >
   ) => void;
 
   updateCustomRequestStatus: (
@@ -178,7 +201,10 @@ interface StoreContextType {
   ) => void;
 
   addReview: (
-    reviewData: Omit<Review, 'id' | 'date' | 'verifiedStudent'>
+    reviewData: Omit<
+      Review,
+      'id' | 'date' | 'verifiedStudent'
+    >
   ) => void;
 
   updateSettings: (
@@ -202,7 +228,8 @@ const getSafeLocalStorage = <T,>(
   fallback: T
 ): T => {
   try {
-    const saved = localStorage.getItem(key);
+    const saved =
+      localStorage.getItem(key);
 
     if (
       !saved ||
@@ -258,7 +285,8 @@ const INITIAL_DEMO_USERS: User[] = [
     email: 'aarav@university.edu',
     phone: '+91 98765 43210',
     password: 'student123',
-    dormOrBuilding: 'Subir Hall - Block B',
+    dormOrBuilding:
+      'Subir Hall - Block B',
     roomOrSpot: 'Room 304'
   }
 ];
@@ -361,14 +389,16 @@ export const StoreProvider: React.FC<{
   const [isAdmin, setIsAdminState] =
     useState(false);
 
-  const [adminAuthenticated, setAdminAuthenticated] =
-    useState<boolean>(() => {
-      return (
-        sessionStorage.getItem(
-          'knot_bloom_admin_auth'
-        ) === 'true'
-      );
-    });
+  const [
+    adminAuthenticated,
+    setAdminAuthenticated
+  ] = useState<boolean>(() => {
+    return (
+      sessionStorage.getItem(
+        'knot_bloom_admin_auth'
+      ) === 'true'
+    );
+  });
 
   /*
    * ============================================================
@@ -381,6 +411,12 @@ export const StoreProvider: React.FC<{
 
   const [searchQuery, setSearchQuery] =
     useState('');
+
+  /*
+   * ============================================================
+   * DARK MODE
+   * ============================================================
+   */
 
   const [isDarkMode, setIsDarkMode] =
     useState<boolean>(() => {
@@ -395,15 +431,16 @@ export const StoreProvider: React.FC<{
     const root =
       document.documentElement;
 
-    root.classList.remove('dark');
-
-    if (isDarkMode) {
-      root.classList.add('dark');
-    }
+    root.classList.toggle(
+      'dark',
+      isDarkMode
+    );
 
     localStorage.setItem(
       'cozy_dark_mode',
-      isDarkMode ? 'true' : 'false'
+      isDarkMode
+        ? 'true'
+        : 'false'
     );
   }, [isDarkMode]);
 
@@ -416,18 +453,18 @@ export const StoreProvider: React.FC<{
   const [cartOpen, setCartOpen] =
     useState(false);
 
+  /*
+   * ============================================================
+   * ACTIVE MODAL
+   *
+   * IMPORTANT:
+   * 'image' is included here so Quick View can
+   * open the image-only preview.
+   * ============================================================
+   */
+
   const [activeModal, setActiveModal] =
-    useState<
-      | 'product'
-      | 'customOrder'
-      | 'checkout'
-      | 'orderSuccess'
-      | 'orderTracker'
-      | 'auth'
-      | 'adminAuth'
-      | 'userOrders'
-      | null
-    >(null);
+    useState<ActiveModal>(null);
 
   const [selectedProduct, setSelectedProduct] =
     useState<Product | null>(null);
@@ -450,6 +487,7 @@ export const StoreProvider: React.FC<{
   /*
    * Prevent duplicate Add To Cart calls.
    */
+
   const addToCartLock =
     useRef(false);
 
@@ -458,12 +496,12 @@ export const StoreProvider: React.FC<{
 
   /*
    * Toast refs.
-   *
-   * IMPORTANT:
-   * These are declared ONLY ONCE in this component.
    */
+
   const toastTimeoutRef =
-    useRef<ReturnType<typeof setTimeout> | null>(null);
+    useRef<ReturnType<typeof setTimeout> | null>(
+      null
+    );
 
   const lastToastMessageRef =
     useRef<string | null>(null);
@@ -495,7 +533,8 @@ export const StoreProvider: React.FC<{
     useRef<Review[]>(reviews);
 
   useEffect(() => {
-    reviewsRef.current = reviews;
+    reviewsRef.current =
+      reviews;
   }, [reviews]);
 
   /*
@@ -525,6 +564,7 @@ export const StoreProvider: React.FC<{
     /*
      * Add cloud reviews first.
      */
+
     incoming.forEach(
       review => {
         if (review?.id) {
@@ -538,10 +578,8 @@ export const StoreProvider: React.FC<{
 
     /*
      * Add current/local reviews after cloud reviews.
-     *
-     * Local/current version wins if the same review exists
-     * in both places.
      */
+
     existing.forEach(
       review => {
         if (review?.id) {
@@ -556,6 +594,7 @@ export const StoreProvider: React.FC<{
     /*
      * Newest generated review IDs first.
      */
+
     return Array.from(
       merged.values()
     ).sort(
@@ -606,6 +645,7 @@ export const StoreProvider: React.FC<{
         /*
          * No reviews = preserve existing rating.
          */
+
         if (
           productReviews.length ===
           0
@@ -743,10 +783,12 @@ export const StoreProvider: React.FC<{
     /*
      * Serialize writes for each data type.
      */
+
     const previousQueue =
       saveQueues.current[
         dataType
-      ] || Promise.resolve();
+      ] ||
+      Promise.resolve();
 
     const currentSave =
       previousQueue
@@ -761,6 +803,7 @@ export const StoreProvider: React.FC<{
             /*
              * Realtime already delivered this exact data.
              */
+
             if (
               lastCloudData.current[
                 dataType
@@ -883,8 +926,11 @@ export const StoreProvider: React.FC<{
          * ========================================================
          */
 
-        let cloudReviews: Review[] = [];
-        let cloudProducts: Product[] = [];
+        let cloudReviews: Review[] =
+          [];
+
+        let cloudProducts: Product[] =
+          [];
 
         cloudData.forEach(
           item => {
@@ -1161,6 +1207,7 @@ export const StoreProvider: React.FC<{
             /*
              * Ignore DELETE events.
              */
+
             if (
               payload.eventType ===
               'DELETE'
@@ -1171,6 +1218,7 @@ export const StoreProvider: React.FC<{
             /*
              * Ignore realtime events before initialization.
              */
+
             if (
               !cloudInitialized.current
             ) {
@@ -1567,29 +1615,42 @@ export const StoreProvider: React.FC<{
    * ============================================================
    */
 
-  const showToast = (msg: string) => {
-    const now = Date.now();
+  const showToast = (
+    msg: string
+  ) => {
+    const now =
+      Date.now();
 
     /*
      * Prevent the exact same toast from being displayed
      * multiple times within 2 seconds.
      */
+
     if (
-      lastToastMessageRef.current === msg &&
-      now - lastToastTimeRef.current < 2000
+      lastToastMessageRef.current ===
+        msg &&
+      now -
+        lastToastTimeRef.current <
+        2000
     ) {
       return;
     }
 
-    lastToastMessageRef.current = msg;
-    lastToastTimeRef.current = now;
+    lastToastMessageRef.current =
+      msg;
+
+    lastToastTimeRef.current =
+      now;
 
     setToastMessage(msg);
 
     /*
      * Clear previous timeout.
      */
-    if (toastTimeoutRef.current) {
+
+    if (
+      toastTimeoutRef.current
+    ) {
       clearTimeout(
         toastTimeoutRef.current
       );
@@ -1598,10 +1659,15 @@ export const StoreProvider: React.FC<{
     /*
      * Automatically hide the toast.
      */
+
     toastTimeoutRef.current =
       setTimeout(() => {
-        setToastMessage(null);
-        toastTimeoutRef.current = null;
+        setToastMessage(
+          null
+        );
+
+        toastTimeoutRef.current =
+          null;
       }, 4000);
   };
 
@@ -1640,13 +1706,17 @@ export const StoreProvider: React.FC<{
       found &&
       found.password === pass
     ) {
-      setCurrentUser(found);
+      setCurrentUser(
+        found
+      );
 
       showToast(
         `🌸 Welcome back, ${found.name}!`
       );
 
-      setActiveModal(null);
+      setActiveModal(
+        null
+      );
 
       return true;
     }
@@ -1691,7 +1761,9 @@ export const StoreProvider: React.FC<{
       `✨ Account created successfully! Welcome ${name}`
     );
 
-    setActiveModal(null);
+    setActiveModal(
+      null
+    );
 
     return newUser;
   };
@@ -1778,7 +1850,9 @@ export const StoreProvider: React.FC<{
         '✅ OTP Verification Successful! logged in.'
       );
 
-      setActiveModal(null);
+      setActiveModal(
+        null
+      );
 
       return true;
     }
@@ -1799,11 +1873,15 @@ export const StoreProvider: React.FC<{
       `Logged in as ${user.name}`
     );
 
-    setActiveModal(null);
+    setActiveModal(
+      null
+    );
   };
 
   const logoutUser = () => {
-    setCurrentUser(null);
+    setCurrentUser(
+      null
+    );
 
     showToast(
       'Logged out of student account'
@@ -1830,7 +1908,9 @@ export const StoreProvider: React.FC<{
       return;
     }
 
-    setIsAdminState(val);
+    setIsAdminState(
+      val
+    );
   };
 
   const loginAdminWithCredentials = (
@@ -1867,7 +1947,9 @@ export const StoreProvider: React.FC<{
         true
       );
 
-      setActiveModal(null);
+      setActiveModal(
+        null
+      );
 
       showToast(
         '👑 Owner Credentials Verified! Welcome to Admin Portal.'
@@ -1915,22 +1997,22 @@ export const StoreProvider: React.FC<{
     giftNote?: string
   ) => {
     /*
-     * Prevent duplicate calls caused by:
-     * - double clicks
-     * - event bubbling
-     * - accidental repeated handlers
+     * Prevent duplicate calls.
      */
+
     if (
       addToCartLock.current
     ) {
       return;
     }
 
-    addToCartLock.current = true;
+    addToCartLock.current =
+      true;
 
     /*
      * Release the lock after 700ms.
      */
+
     setTimeout(() => {
       addToCartLock.current =
         false;
@@ -1939,6 +2021,7 @@ export const StoreProvider: React.FC<{
     /*
      * Check stock.
      */
+
     if (
       product.stock <= 0
     ) {
@@ -1952,6 +2035,7 @@ export const StoreProvider: React.FC<{
     /*
      * Determine selected color.
      */
+
     const finalColor =
       selectedColor ||
       product.colorsAvailable[0];
@@ -1959,6 +2043,7 @@ export const StoreProvider: React.FC<{
     /*
      * Update cart.
      */
+
     setCart(prev => {
       const existingIndex =
         prev.findIndex(
@@ -1972,6 +2057,7 @@ export const StoreProvider: React.FC<{
       /*
        * Product already exists.
        */
+
       if (
         existingIndex > -1
       ) {
@@ -1992,6 +2078,7 @@ export const StoreProvider: React.FC<{
       /*
        * Product does not exist.
        */
+
       return [
         ...prev,
         {
@@ -2008,6 +2095,7 @@ export const StoreProvider: React.FC<{
     /*
      * Exactly one toast.
      */
+
     showToast(
       `🌸 Added "${product.name}" to your cart!`
     );
@@ -2419,6 +2507,7 @@ export const StoreProvider: React.FC<{
     /*
      * Convert rating to number.
      */
+
     const numericRating =
       Number(
         reviewData.rating
@@ -2427,6 +2516,7 @@ export const StoreProvider: React.FC<{
     /*
      * Keep rating between 1 and 5.
      */
+
     const safeRating =
       Number.isFinite(
         numericRating
@@ -2461,6 +2551,7 @@ export const StoreProvider: React.FC<{
     /*
      * Add review using functional state update.
      */
+
     setReviews(
       prev => [
         newRev,
@@ -2583,7 +2674,9 @@ export const StoreProvider: React.FC<{
 
 export const useStore = () => {
   const context =
-    useContext(StoreContext);
+    useContext(
+      StoreContext
+    );
 
   if (!context) {
     throw new Error(
