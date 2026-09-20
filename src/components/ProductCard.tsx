@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import type { Product } from '../types';
 import { useStore } from '../context/StoreContext';
@@ -119,11 +118,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   const handleQuickView = (e: React.MouseEvent) => {
-  e.stopPropagation();
+    e.stopPropagation();
 
-  setSelectedProduct(latestProduct);
-  setActiveModal('image');
-};
+    setSelectedProduct(latestProduct);
+    setActiveModal('image');
+  };
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -179,38 +178,38 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <article
-  onClick={handleCardClick}
-  style={{
-    backgroundColor: isDarkMode ? '#24211f' : '#fffaf2',
-    borderColor: isDarkMode ? '#4a3d38' : '#eadfd3',
-    opacity: 1,
-    backdropFilter: 'none',
-    WebkitBackdropFilter: 'none',
-  }}
-  className="
-    group
-    relative
-    z-0
-    flex
-    h-full
-    cursor-pointer
-    flex-col
-    rounded-2xl
-    border
-    border-solid
-    shadow-md
-    transition-all
-    duration-300
-    ease-out
-    hover:-translate-y-2
-    hover:scale-[1.015]
-    hover:shadow-2xl
-    hover:shadow-stone-900/20
-    hover:border-rose-300
-    dark:hover:border-rose-700
-    dark:hover:shadow-black/50
-  "
-
+      onClick={handleCardClick}
+      style={{
+        backgroundColor: isDarkMode ? '#24211f' : '#fffaf2',
+        borderColor: isDarkMode ? '#4a3d38' : '#eadfd3',
+        opacity: 1,
+        backdropFilter: 'none',
+        WebkitBackdropFilter: 'none',
+      }}
+      className="
+        group
+        relative
+        z-0
+        flex
+        h-full
+        cursor-pointer
+        flex-col
+        overflow-hidden
+        rounded-2xl
+        border
+        border-solid
+        shadow-md
+        transition-all
+        duration-300
+        ease-out
+        hover:-translate-y-2
+        hover:scale-[1.015]
+        hover:shadow-2xl
+        hover:shadow-stone-900/20
+        hover:border-rose-300
+        dark:hover:border-rose-700
+        dark:hover:shadow-black/50
+      "
     >
       {/* HOVER GLOW */}
       <div
@@ -232,14 +231,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         "
       />
 
-      {/* ROUNDED CARD CONTENT */}
+      {/* CARD CONTENT */}
       <div className="relative flex h-full flex-col overflow-hidden rounded-2xl">
 
         {/* PRODUCT IMAGE */}
         <div
           className="
             relative
-            aspect-[3/4]
+            aspect-[1/1]
+            sm:aspect-[3/4]
             w-full
             overflow-hidden
             bg-gray-100
@@ -280,25 +280,43 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           />
 
           {/* BADGES */}
-          <div className="absolute left-3 top-3 flex flex-col gap-1.5">
+          <div
+            className="
+              absolute
+              left-2
+              top-2
+              flex
+              max-w-[70%]
+              flex-col
+              gap-1
+              sm:left-3
+              sm:top-3
+              sm:gap-1.5
+            "
+          >
             {latestProduct.isPopular && (
               <span
                 className="
                   inline-flex
                   w-fit
                   items-center
-                  gap-1.5
+                  gap-1
                   rounded-full
                   bg-white
-                  px-2.5
-                  py-1
-                  text-[10px]
+                  px-2
+                  py-0.5
+                  text-[8px]
                   font-bold
                   text-rose-600
                   shadow-sm
+                  sm:gap-1.5
+                  sm:px-2.5
+                  sm:py-1
+                  sm:text-[10px]
                 "
               >
-                <Sparkles size={11} />
+                <Sparkles size={9} className="sm:hidden" />
+                <Sparkles size={11} className="hidden sm:block" />
                 Bestseller
               </span>
             )}
@@ -311,12 +329,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   items-center
                   rounded-full
                   bg-black
-                  px-2.5
-                  py-1
-                  text-[10px]
+                  px-2
+                  py-0.5
+                  text-[8px]
                   font-bold
                   text-white
                   shadow-sm
+                  sm:px-2.5
+                  sm:py-1
+                  sm:text-[10px]
                 "
               >
                 New Arrival
@@ -331,12 +352,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   items-center
                   rounded-full
                   bg-rose-500
-                  px-2.5
-                  py-1
-                  text-[10px]
+                  px-2
+                  py-0.5
+                  text-[8px]
                   font-bold
                   text-white
                   shadow-sm
+                  sm:px-2.5
+                  sm:py-1
+                  sm:text-[10px]
                 "
               >
                 -{discountPercentage}%
@@ -354,151 +378,195 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 : `Add ${latestProduct.name} to wishlist`
             }
             className={`
-  absolute
-  right-3
-  top-3
-  z-10
-  flex
-  h-9
-  w-9
-  items-center
-  justify-center
-  rounded-full
-  border
-  shadow-sm
-  transition-all
-  duration-200
-  ${
-    isWishlisted
-      ? 'border-rose-200 bg-rose-500 text-white'
-      : isDarkMode
-      ? 'border-stone-600 bg-stone-700 text-stone-200 hover:bg-stone-600 hover:text-rose-300'
-      : 'border-gray-200 bg-white text-gray-700 hover:text-rose-500'
-  }
-`}
+              absolute
+              right-2
+              top-2
+              z-10
+              flex
+              h-8
+              w-8
+              items-center
+              justify-center
+              rounded-full
+              border
+              shadow-sm
+              transition-all
+              duration-200
+              sm:right-3
+              sm:top-3
+              sm:h-9
+              sm:w-9
+              ${
+                isWishlisted
+                  ? 'border-rose-200 bg-rose-500 text-white'
+                  : isDarkMode
+                  ? 'border-stone-600 bg-stone-700 text-stone-200 hover:bg-stone-600 hover:text-rose-300'
+                  : 'border-gray-200 bg-white text-gray-700 hover:text-rose-500'
+              }
+            `}
           >
             <Heart
+              size={15}
+              className="sm:hidden"
+              fill={isWishlisted ? 'currentColor' : 'none'}
+            />
+
+            <Heart
               size={17}
+              className="hidden sm:block"
               fill={isWishlisted ? 'currentColor' : 'none'}
             />
           </button>
 
           {/* QUICK VIEW */}
-{/* QUICK VIEW */}
-<div
-  className="
-    absolute
-    inset-0
-    flex
-    items-center
-    justify-center
-    pointer-events-none
-    opacity-0
-    transition-all
-    duration-300
-    ease-out
-    group-hover:opacity-100
-  "
->
-  <button
-    type="button"
-    onClick={handleQuickView}
-    className="
-      pointer-events-auto
-      group/quick
-      flex
-      items-center
-      justify-center
-      gap-1.5
-      rounded-full
-      bg-white/95
-      px-4
-      py-2
-      text-xs
-      font-bold
-      text-stone-800
-      shadow-xl
-      ring-1
-      ring-black/10
-      transition-all
-      duration-200
-      translate-y-2
-      scale-95
-      hover:scale-105
-      hover:bg-rose-500
-      hover:text-white
-      hover:shadow-2xl
-      active:scale-95
-      group-hover:translate-y-0
-      group-hover:scale-100
-      dark:bg-stone-800/95
-      dark:text-stone-100
-      dark:ring-white/10
-      dark:hover:bg-rose-600
-      dark:hover:text-white
-    "
-  >
-    <Eye
-      size={14}
-      className="
-        transition-transform
-        duration-200
-        group-hover/quick:scale-110
-      "
-    />
-    Quick View
-  </button>
-</div>
+          <div
+            className="
+              pointer-events-none
+              absolute
+              inset-0
+              flex
+              items-center
+              justify-center
+              opacity-0
+              transition-all
+              duration-300
+              ease-out
+              group-hover:opacity-100
+            "
+          >
+            <button
+              type="button"
+              onClick={handleQuickView}
+              className="
+                pointer-events-auto
+                group/quick
+                flex
+                items-center
+                justify-center
+                gap-1
+                rounded-full
+                bg-white/95
+                px-3
+                py-1.5
+                text-[10px]
+                font-bold
+                text-stone-800
+                shadow-xl
+                ring-1
+                ring-black/10
+                transition-all
+                duration-200
+                translate-y-2
+                scale-95
+                hover:scale-105
+                hover:bg-rose-500
+                hover:text-white
+                hover:shadow-2xl
+                active:scale-95
+                group-hover:translate-y-0
+                group-hover:scale-100
+                sm:gap-1.5
+                sm:px-4
+                sm:py-2
+                sm:text-xs
+                dark:bg-stone-800/95
+                dark:text-stone-100
+                dark:ring-white/10
+                dark:hover:bg-rose-600
+                dark:hover:text-white
+              "
+            >
+              <Eye
+                size={12}
+                className="
+                  transition-transform
+                  duration-200
+                  sm:hidden
+                  group-hover/quick:scale-110
+                "
+              />
+
+              <Eye
+                size={14}
+                className="
+                  hidden
+                  transition-transform
+                  duration-200
+                  sm:block
+                  group-hover/quick:scale-110
+                "
+              />
+
+              Quick View
+            </button>
+          </div>
         </div>
 
         {/* PRODUCT INFORMATION */}
-        <div className="flex flex-1 flex-col p-4">
+        <div
+          className="
+            flex
+            flex-1
+            flex-col
+            p-2.5
+            sm:p-4
+          "
+        >
 
           {/* CATEGORY + STOCK */}
           <div
             className="
-              mb-1.5
+              mb-1
               flex
-              h-6
+              min-h-[18px]
               items-center
               justify-between
-              gap-2
+              gap-1
+              sm:mb-1.5
+              sm:h-6
+              sm:gap-2
             "
           >
             <span
               className="
-                max-w-[65%]
+                min-w-0
+                max-w-[58%]
                 truncate
                 px-0.5
-                py-1
-                text-[10px]
+                py-0.5
+                text-[8px]
                 font-bold
                 uppercase
                 tracking-wide
                 text-stone-600
                 dark:text-stone-300
+                sm:max-w-[65%]
+                sm:py-1
+                sm:text-[10px]
               "
             >
               {latestProduct.category}
             </span>
 
             {isOutOfStock ? (
-              <span className="text-[10px] font-semibold text-red-500">
+              <span className="shrink-0 text-[8px] font-semibold text-red-500 sm:text-[10px]">
                 Out of stock
               </span>
             ) : isLowStock ? (
-              <span className="flex items-center gap-1 text-[10px] font-semibold text-orange-500">
-                <Package size={11} />
+              <span className="flex shrink-0 items-center gap-0.5 text-[8px] font-semibold text-orange-500 sm:gap-1 sm:text-[10px]">
+                <Package size={9} className="sm:hidden" />
+                <Package size={11} className="hidden sm:block" />
                 Only {latestProduct.stock} left
               </span>
             ) : (
               <span
-                className="flex items-center gap-1 text-[10px] font-medium"
+                className="flex shrink-0 items-center gap-0.5 text-[8px] font-medium sm:gap-1 sm:text-[10px]"
                 style={{
                   color: isDarkMode ? '#d6d3d1' : '#6b7280',
                 }}
               >
-                <Package size={11} />
+                <Package size={9} className="sm:hidden" />
+                <Package size={11} className="hidden sm:block" />
                 In stock
               </span>
             )}
@@ -515,11 +583,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 overflow-hidden
                 text-ellipsis
                 whitespace-nowrap
-                text-[19px]
+                text-[14px]
                 font-extrabold
-                leading-[23px]
+                leading-[18px]
                 tracking-[-0.01em]
                 group-hover:text-rose-600
+                sm:text-[19px]
+                sm:leading-[23px]
               "
             >
               {latestProduct.name}
@@ -531,27 +601,48 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="
               mt-1
               flex
-              h-5
+              min-h-[17px]
               items-center
-              gap-1.5
+              gap-1
+              sm:h-5
+              sm:gap-1.5
             "
           >
-            <div className="flex items-center gap-0.5">
+            <div className="flex items-center gap-0">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
+                  size={10}
+                  className={`
+                    sm:hidden
+                    ${
+                      star <= Math.round(currentRating)
+                        ? 'fill-amber-400 text-amber-400'
+                        : 'text-gray-300'
+                    }
+                  `}
+                />
+              ))}
+
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={`desktop-${star}`}
                   size={12}
-                  className={
-                    star <= Math.round(currentRating)
-                      ? 'fill-amber-400 text-amber-400'
-                      : 'text-gray-300'
-                  }
+                  className={`
+                    hidden
+                    sm:block
+                    ${
+                      star <= Math.round(currentRating)
+                        ? 'fill-amber-400 text-amber-400'
+                        : 'text-gray-300'
+                    }
+                  `}
                 />
               ))}
             </div>
 
             <span
-              className="text-[11px] font-medium"
+              className="text-[9px] font-medium sm:text-[11px]"
               style={{
                 color: isDarkMode ? '#d6d3d1' : '#4b5563',
               }}
@@ -560,7 +651,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </span>
 
             <span
-              className="text-[11px]"
+              className="text-[9px] sm:text-[11px]"
               style={{
                 color: isDarkMode ? '#a8a29e' : '#9ca3af',
               }}
@@ -570,12 +661,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
 
           {/* COLORS */}
-          <div className="mt-2 h-6">
+          <div className="mt-1.5 min-h-[20px] sm:mt-2 sm:h-6">
             {latestProduct.colorsAvailable &&
               latestProduct.colorsAvailable.length > 0 && (
-                <div className="flex items-center gap-2">
+                <div className="flex min-w-0 items-center gap-1 sm:gap-2">
                   <span
-                    className="text-[11px] font-medium"
+                    className="shrink-0 text-[9px] font-medium sm:text-[11px]"
                     style={{
                       color: isDarkMode ? '#d6d3d1' : '#4b5563',
                     }}
@@ -583,7 +674,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     Colors
                   </span>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex min-w-0 items-center gap-1 sm:gap-1.5">
                     {latestProduct.colorsAvailable
                       .slice(0, 5)
                       .map((color) => (
@@ -591,12 +682,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                           key={color}
                           title={color}
                           className={`
-                            h-4
-                            w-4
+                            h-3
+                            w-3
+                            shrink-0
                             rounded-full
                             shadow-sm
                             ring-1
                             ring-black/10
+                            sm:h-4
+                            sm:w-4
                             ${getColorStyle(color)}
                           `}
                         />
@@ -604,7 +698,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
                     {latestProduct.colorsAvailable.length > 5 && (
                       <span
-                        className="text-[10px]"
+                        className="shrink-0 text-[8px] sm:text-[10px]"
                         style={{
                           color: isDarkMode ? '#a8a29e' : '#9ca3af',
                         }}
@@ -620,23 +714,42 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* SHIPPING */}
           <div
             className="
-              mt-2
+              mt-1
               mb-1
               flex
-              h-4
+              min-h-[14px]
               items-center
-              gap-1.5
+              gap-1
+              sm:mt-2
+              sm:mb-1
+              sm:h-4
+              sm:gap-1.5
             "
           >
             <Clock
+              size={10}
+              className="shrink-0 sm:hidden"
+              style={{
+                color: isDarkMode ? '#a8a29e' : '#9ca3af',
+              }}
+            />
+
+            <Clock
               size={12}
+              className="hidden shrink-0 sm:block"
               style={{
                 color: isDarkMode ? '#a8a29e' : '#9ca3af',
               }}
             />
 
             <span
-              className="text-[10px] font-medium"
+              className="
+                min-w-0
+                truncate
+                text-[8px]
+                font-medium
+                sm:text-[10px]
+              "
               style={{
                 color: isDarkMode ? '#d6d3d1' : '#6b7280',
               }}
@@ -649,20 +762,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* PRICE */}
           <div
             className="
-              mb-2
+              mb-1.5
               flex
-              h-10
+              min-h-[30px]
               items-center
               justify-between
-              gap-2
+              gap-1
+              sm:mb-2
+              sm:h-10
+              sm:gap-2
             "
           >
-            <div className="flex min-w-0 items-center gap-2">
+            <div className="flex min-w-0 items-center gap-1 sm:gap-2">
               <span
                 className="
-                  text-[20px]
+                  shrink-0
+                  text-[16px]
                   font-extrabold
                   tracking-tight
+                  sm:text-[20px]
                 "
                 style={{
                   color: isDarkMode ? '#ffffff' : '#171717',
@@ -674,10 +792,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               {hasDiscount && (
                 <span
                   className="
-                    text-xs
+                    truncate
+                    text-[9px]
                     font-medium
                     text-gray-400
                     line-through
+                    sm:text-xs
                   "
                 >
                   ₹
@@ -692,9 +812,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <span
                 className="
                   shrink-0
-                  text-[10px]
+                  text-[8px]
                   font-semibold
                   text-rose-500
+                  sm:text-[10px]
                 "
               >
                 Save ₹
@@ -713,16 +834,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             disabled={isOutOfStock || isAdded}
             className={`
               flex
-              h-10
+              h-9
               w-full
               items-center
               justify-center
-              gap-2
-              rounded-xl
-              text-sm
+              gap-1.5
+              rounded-lg
+              text-[10px]
               font-bold
               transition-all
               duration-200
+              sm:h-10
+              sm:gap-2
+              sm:rounded-xl
+              sm:text-sm
               ${
                 isOutOfStock
                   ? 'cursor-not-allowed bg-gray-100 text-gray-400'
@@ -734,17 +859,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           >
             {isOutOfStock ? (
               <>
-                <Package size={16} />
+                <Package size={13} className="sm:hidden" />
+                <Package size={16} className="hidden sm:block" />
                 Out of Stock
               </>
             ) : isAdded ? (
               <>
-                <Check size={16} />
+                <Check size={13} className="sm:hidden" />
+                <Check size={16} className="hidden sm:block" />
                 Added to Cart
               </>
             ) : (
               <>
-                <ShoppingBag size={16} />
+                <ShoppingBag size={13} className="sm:hidden" />
+                <ShoppingBag size={16} className="hidden sm:block" />
                 Add to Cart
               </>
             )}
