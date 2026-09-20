@@ -121,7 +121,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     e.stopPropagation();
 
     setSelectedProduct(latestProduct);
-    setActiveModal('image');
+    setActiveModal('product');
   };
 
   const handleWishlist = (e: React.MouseEvent) => {
