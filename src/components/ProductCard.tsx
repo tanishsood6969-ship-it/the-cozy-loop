@@ -78,16 +78,39 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
 
+  /*
+   * IMPORTANT:
+   * Always take the product from StoreContext when available.
+   * This makes the card react immediately when AdminDashboard
+   * changes cardImageUrl.
+   */
   const latestProduct =
-    products.find((item) => item.id === product.id) || product;
+    products.find((item) => item.id === product.id) ?? product;
+
+  /*
+   * The cropped image is ONLY for the card.
+   * The original imageUrl remains untouched and is used elsewhere
+   * such as the product detail view.
+   */
+  const cardImage =
+    typeof latestProduct.cardImageUrl === 'string' &&
+    latestProduct.cardImageUrl.trim().length > 0
+      ? latestProduct.cardImageUrl
+      : latestProduct.imageUrl;
+      
 
   useEffect(() => {
     try {
-      const savedWishlist = localStorage.getItem('knot_bloom_wishlist');
+      const savedWishlist = localStorage.getItem(
+        'knot_bloom_wishlist'
+      );
 
       if (savedWishlist) {
         const wishlist: string[] = JSON.parse(savedWishlist);
-        setIsWishlisted(wishlist.includes(latestProduct.id));
+
+        setIsWishlisted(
+          wishlist.includes(latestProduct.id)
+        );
       }
     } catch {
       setIsWishlisted(false);
@@ -100,7 +123,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const discountPercentage = hasDiscount
     ? Math.round(
-        ((latestProduct.originalPrice! - latestProduct.price) /
+        ((latestProduct.originalPrice! -
+          latestProduct.price) /
           latestProduct.originalPrice!) *
           100
       )
@@ -117,18 +141,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     setActiveModal('product');
   };
 
-  const handleQuickView = (e: React.MouseEvent) => {
+  const handleQuickView = (
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation();
 
     setSelectedProduct(latestProduct);
     setActiveModal('product');
   };
 
-  const handleWishlist = (e: React.MouseEvent) => {
+  const handleWishlist = (
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation();
 
     try {
-      const savedWishlist = localStorage.getItem('knot_bloom_wishlist');
+      const savedWishlist = localStorage.getItem(
+        'knot_bloom_wishlist'
+      );
 
       let wishlist: string[] = savedWishlist
         ? JSON.parse(savedWishlist)
@@ -142,6 +172,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         setIsWishlisted(false);
       } else {
         wishlist.push(latestProduct.id);
+
         setIsWishlisted(true);
       }
 
@@ -154,7 +185,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     }
   };
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = (
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation();
 
     if (isOutOfStock || isAdded) return;
@@ -172,16 +205,23 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     }, 1200);
   };
 
-  const currentRating = Number.isFinite(latestProduct.rating)
+  const currentRating = Number.isFinite(
+    latestProduct.rating
+  )
     ? latestProduct.rating
     : 0;
+    
 
   return (
     <article
       onClick={handleCardClick}
       style={{
-        backgroundColor: isDarkMode ? '#24211f' : '#fffaf2',
-        borderColor: isDarkMode ? '#4a3d38' : '#eadfd3',
+        backgroundColor: isDarkMode
+          ? '#24211f'
+          : '#fffaf2',
+        borderColor: isDarkMode
+          ? '#4a3d38'
+          : '#eadfd3',
         opacity: 1,
         backdropFilter: 'none',
         WebkitBackdropFilter: 'none',
@@ -246,20 +286,28 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           "
         >
           <img
-            src={
-              latestProduct.cardImageUrl ||
-              latestProduct.imageUrl
-            }
+            key={`${latestProduct.id}-${cardImage}`}
+            src={cardImage}
             alt={latestProduct.name}
             className="
               h-full
               w-full
-              object-contain
+              object-cover
               transition-transform
               duration-500
               group-hover:scale-[1.04]
             "
             loading="lazy"
+            onError={(e) => {
+              const image = e.currentTarget;
+
+              if (
+                image.src !== latestProduct.imageUrl &&
+                latestProduct.imageUrl
+              ) {
+                image.src = latestProduct.imageUrl;
+              }
+            }}
           />
 
           <div
@@ -314,8 +362,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   sm:text-[10px]
                 "
               >
-                <Sparkles size={9} className="sm:hidden" />
-                <Sparkles size={11} className="hidden sm:block" />
+                <Sparkles
+                  size={9}
+                  className="sm:hidden"
+                />
+
+                <Sparkles
+                  size={11}
+                  className="hidden sm:block"
+                />
+
                 Bestseller
               </span>
             )}
@@ -407,13 +463,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <Heart
               size={15}
               className="sm:hidden"
-              fill={isWishlisted ? 'currentColor' : 'none'}
+              fill={
+                isWishlisted
+                  ? 'currentColor'
+                  : 'none'
+              }
             />
 
             <Heart
               size={17}
               className="hidden sm:block"
-              fill={isWishlisted ? 'currentColor' : 'none'}
+              fill={
+                isWishlisted
+                  ? 'currentColor'
+                  : 'none'
+              }
             />
           </button>
 
@@ -511,7 +575,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             sm:p-4
           "
         >
-
           {/* CATEGORY + STOCK */}
           <div
             className="
@@ -553,19 +616,37 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               </span>
             ) : isLowStock ? (
               <span className="flex shrink-0 items-center gap-0.5 text-[8px] font-semibold text-orange-500 sm:gap-1 sm:text-[10px]">
-                <Package size={9} className="sm:hidden" />
-                <Package size={11} className="hidden sm:block" />
+                <Package
+                  size={9}
+                  className="sm:hidden"
+                />
+
+                <Package
+                  size={11}
+                  className="hidden sm:block"
+                />
+
                 Only {latestProduct.stock} left
               </span>
             ) : (
               <span
                 className="flex shrink-0 items-center gap-0.5 text-[8px] font-medium sm:gap-1 sm:text-[10px]"
                 style={{
-                  color: isDarkMode ? '#d6d3d1' : '#6b7280',
+                  color: isDarkMode
+                    ? '#d6d3d1'
+                    : '#6b7280',
                 }}
               >
-                <Package size={9} className="sm:hidden" />
-                <Package size={11} className="hidden sm:block" />
+                <Package
+                  size={9}
+                  className="sm:hidden"
+                />
+
+                <Package
+                  size={11}
+                  className="hidden sm:block"
+                />
+
                 In stock
               </span>
             )}
@@ -576,7 +657,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <h3
               title={latestProduct.name}
               style={{
-                color: isDarkMode ? '#ffffff' : '#171717',
+                color: isDarkMode
+                  ? '#ffffff'
+                  : '#171717',
               }}
               className="
                 overflow-hidden
@@ -608,42 +691,50 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             "
           >
             <div className="flex items-center gap-0">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  size={10}
-                  className={`
-                    sm:hidden
-                    ${
-                      star <= Math.round(currentRating)
-                        ? 'fill-amber-400 text-amber-400'
-                        : 'text-gray-300'
-                    }
-                  `}
-                />
-              ))}
+              {[1, 2, 3, 4, 5].map(
+                (star) => (
+                  <Star
+                    key={star}
+                    size={10}
+                    className={`
+                      sm:hidden
+                      ${
+                        star <=
+                        Math.round(currentRating)
+                          ? 'fill-amber-400 text-amber-400'
+                          : 'text-gray-300'
+                      }
+                    `}
+                  />
+                )
+              )}
 
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={`desktop-${star}`}
-                  size={12}
-                  className={`
-                    hidden
-                    sm:block
-                    ${
-                      star <= Math.round(currentRating)
-                        ? 'fill-amber-400 text-amber-400'
-                        : 'text-gray-300'
-                    }
-                  `}
-                />
-              ))}
+              {[1, 2, 3, 4, 5].map(
+                (star) => (
+                  <Star
+                    key={`desktop-${star}`}
+                    size={12}
+                    className={`
+                      hidden
+                      sm:block
+                      ${
+                        star <=
+                        Math.round(currentRating)
+                          ? 'fill-amber-400 text-amber-400'
+                          : 'text-gray-300'
+                      }
+                    `}
+                  />
+                )
+              )}
             </div>
 
             <span
               className="text-[9px] font-medium sm:text-[11px]"
               style={{
-                color: isDarkMode ? '#d6d3d1' : '#4b5563',
+                color: isDarkMode
+                  ? '#d6d3d1'
+                  : '#4b5563',
               }}
             >
               {currentRating.toFixed(1)}
@@ -652,7 +743,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <span
               className="text-[9px] sm:text-[11px]"
               style={{
-                color: isDarkMode ? '#a8a29e' : '#9ca3af',
+                color: isDarkMode
+                  ? '#a8a29e'
+                  : '#9ca3af',
               }}
             >
               ({latestProduct.reviewCount})
@@ -662,12 +755,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* COLORS */}
           <div className="mt-1.5 min-h-[20px] sm:mt-2 sm:h-6">
             {latestProduct.colorsAvailable &&
-              latestProduct.colorsAvailable.length > 0 && (
+              latestProduct.colorsAvailable.length >
+                0 && (
                 <div className="flex min-w-0 items-center gap-1 sm:gap-2">
                   <span
                     className="shrink-0 text-[9px] font-medium sm:text-[11px]"
                     style={{
-                      color: isDarkMode ? '#d6d3d1' : '#4b5563',
+                      color: isDarkMode
+                        ? '#d6d3d1'
+                        : '#4b5563',
                     }}
                   >
                     Colors
@@ -695,14 +791,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                         />
                       ))}
 
-                    {latestProduct.colorsAvailable.length > 5 && (
+                    {latestProduct.colorsAvailable.length >
+                      5 && (
                       <span
                         className="shrink-0 text-[8px] sm:text-[10px]"
                         style={{
-                          color: isDarkMode ? '#a8a29e' : '#9ca3af',
+                          color: isDarkMode
+                            ? '#a8a29e'
+                            : '#9ca3af',
                         }}
                       >
-                        +{latestProduct.colorsAvailable.length - 5}
+                        +
+                        {latestProduct
+                          .colorsAvailable.length -
+                          5}
                       </span>
                     )}
                   </div>
@@ -729,7 +831,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               size={10}
               className="shrink-0 sm:hidden"
               style={{
-                color: isDarkMode ? '#a8a29e' : '#9ca3af',
+                color: isDarkMode
+                  ? '#a8a29e'
+                  : '#9ca3af',
               }}
             />
 
@@ -737,7 +841,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               size={12}
               className="hidden shrink-0 sm:block"
               style={{
-                color: isDarkMode ? '#a8a29e' : '#9ca3af',
+                color: isDarkMode
+                  ? '#a8a29e'
+                  : '#9ca3af',
               }}
             />
 
@@ -750,11 +856,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 sm:text-[10px]
               "
               style={{
-                color: isDarkMode ? '#d6d3d1' : '#6b7280',
+                color: isDarkMode
+                  ? '#d6d3d1'
+                  : '#6b7280',
               }}
             >
-              Handmade • Ships in {latestProduct.leadTimeDays} day
-              {latestProduct.leadTimeDays !== 1 ? 's' : ''}
+              Handmade • Ships in{' '}
+              {latestProduct.leadTimeDays} day
+              {latestProduct.leadTimeDays !== 1
+                ? 's'
+                : ''}
             </span>
           </div>
 
@@ -782,10 +893,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   sm:text-[20px]
                 "
                 style={{
-                  color: isDarkMode ? '#ffffff' : '#171717',
+                  color: isDarkMode
+                    ? '#ffffff'
+                    : '#171717',
                 }}
               >
-                ₹{latestProduct.price.toLocaleString('en-IN')}
+                ₹
+                {latestProduct.price.toLocaleString(
+                  'en-IN'
+                )}
               </span>
 
               {hasDiscount && (
@@ -858,20 +974,44 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           >
             {isOutOfStock ? (
               <>
-                <Package size={13} className="sm:hidden" />
-                <Package size={16} className="hidden sm:block" />
+                <Package
+                  size={13}
+                  className="sm:hidden"
+                />
+
+                <Package
+                  size={16}
+                  className="hidden sm:block"
+                />
+
                 Out of Stock
               </>
             ) : isAdded ? (
               <>
-                <Check size={13} className="sm:hidden" />
-                <Check size={16} className="hidden sm:block" />
+                <Check
+                  size={13}
+                  className="sm:hidden"
+                />
+
+                <Check
+                  size={16}
+                  className="hidden sm:block"
+                />
+
                 Added to Cart
               </>
             ) : (
               <>
-                <ShoppingBag size={13} className="sm:hidden" />
-                <ShoppingBag size={16} className="hidden sm:block" />
+                <ShoppingBag
+                  size={13}
+                  className="sm:hidden"
+                />
+
+                <ShoppingBag
+                  size={16}
+                  className="hidden sm:block"
+                />
+
                 Add to Cart
               </>
             )}

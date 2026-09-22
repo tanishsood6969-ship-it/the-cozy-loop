@@ -1,10 +1,11 @@
-export type ProductCategory = 
-  | 'All' 
-  | 'Flower Stems' 
-  | 'Bouquets' 
-  | 'Keychains' 
-  | 'Handbags & Pouches' 
-  | 'Plushies & Amigurumi' 
+
+export type ProductCategory =
+  | 'All'
+  | 'Flower Stems'
+  | 'Bouquets'
+  | 'Keychains'
+  | 'Handbags & Pouches'
+  | 'Plushies & Amigurumi'
   | 'Wearables & Hair';
 
 export interface User {
@@ -27,9 +28,15 @@ export interface Product {
   description: string;
   features: string[];
   colorsAvailable: string[];
- imageUrl: string;
-cardImageUrl?: string;
-isPopular?: boolean;
+
+  // Original/full product image
+  imageUrl: string;
+
+
+  // Optional cropped image used specifically for product cards
+  cardImageUrl?: string;
+
+  isPopular?: boolean;
   isNew?: boolean;
   leadTimeDays: number;
   rating: number;
@@ -51,7 +58,12 @@ export interface CartItem {
   giftNote?: string;
 }
 
-export type OrderStatus = 'Pending' | 'Crocheting' | 'Ready for Pickup' | 'Delivered' | 'Cancelled';
+export type OrderStatus =
+  | 'Pending'
+  | 'Crocheting'
+  | 'Ready for Pickup'
+  | 'Delivered'
+  | 'Cancelled';
 
 export interface Order {
   id: string;
@@ -61,6 +73,7 @@ export interface Order {
   phone: string;
   dormOrBuilding: string;
   roomOrSpot: string;
+
   items: {
     productId: string;
     productName: string;
@@ -70,17 +83,32 @@ export interface Order {
     giftNote?: string;
     imageUrl: string;
   }[];
+
   subtotal: number;
   deliveryFee: number;
   total: number;
-  paymentMethod: 'UPI / GPay' | 'Cash on Campus Pickup' | 'Card';
-  paymentStatus: 'Paid' | 'Pay on Pickup' | 'Payment Verified ✅' | 'Payment Pending Owner Verification';
+
+  paymentMethod:
+    | 'UPI / GPay'
+    | 'Cash on Campus Pickup'
+    | 'Card';
+
+  paymentStatus:
+    | 'Paid'
+    | 'Pay on Pickup'
+    | 'Payment Verified ✅'
+    | 'Payment Pending Owner Verification';
+
   estimatedDeliveryDate: string;
   specialInstructions?: string;
   userId?: string;
   upiTransactionId?: string;
   paymentScreenshotUrl?: string;
-   paymentVerificationStatus?: 'Pending Owner Verification' | 'Payment Verified ✅' | 'Payment Rejected ❌';
+
+  paymentVerificationStatus?:
+    | 'Pending Owner Verification'
+    | 'Payment Verified ✅'
+    | 'Payment Rejected ❌';
 }
 
 export interface CustomRequest {
@@ -95,7 +123,13 @@ export interface CustomRequest {
   targetDate: string;
   description: string;
   referenceImageUrl?: string;
-  status: 'Pending Quote' | 'Approved & Crocheting' | 'Ready for Pickup' | 'Completed';
+
+  status:
+    | 'Pending Quote'
+    | 'Approved & Crocheting'
+    | 'Ready for Pickup'
+    | 'Completed';
+
   quotedPrice?: number;
 }
 
@@ -126,3 +160,4 @@ export interface StoreSettings {
   upiQrImageUrl?: string;
   paymentInstructions: string;
 }
+
