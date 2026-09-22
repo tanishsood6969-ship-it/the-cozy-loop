@@ -1005,4 +1005,11 @@ html.dark .navbar-theme-bg {
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
 }
+.details {
+  color: #000;
+}
+
+.hint {
+  color: #555;
+}
 

@@ -3,7 +3,7 @@ import React, {
   useContext,
   useState,
   useEffect,
-  useRef,
+  useRef
 } from 'react';
 
 import type {
@@ -15,7 +15,7 @@ import type {
   CartItem,
   ProductCategory,
   OrderStatus,
-  User,
+  User
 } from '../types';
 
 import {
@@ -23,14 +23,16 @@ import {
   INITIAL_ORDERS,
   INITIAL_CUSTOM_REQUESTS,
   INITIAL_REVIEWS,
-  INITIAL_SETTINGS,
+  INITIAL_SETTINGS
 } from '../data/initialData';
 
 import { supabase } from '../lib/supabaseClient';
 
-/* ============================================================
-   MODAL TYPE
-============================================================ */
+/*
+ * ============================================================
+ * MODAL TYPE
+ * ============================================================
+ */
 
 type ActiveModal =
   | 'image'
@@ -44,9 +46,11 @@ type ActiveModal =
   | 'userOrders'
   | null;
 
-/* ============================================================
-   STORE CONTEXT TYPE
-============================================================ */
+/*
+ * ============================================================
+ * STORE CONTEXT TYPE
+ * ============================================================
+ */
 
 interface StoreContextType {
   products: Product[];
@@ -73,7 +77,9 @@ interface StoreContextType {
     roomOrSpot?: string
   ) => User;
 
-  sendOtpCode: (identifier: string) => string;
+  sendOtpCode: (
+    identifier: string
+  ) => string;
 
   verifyOtpCode: (
     identifier: string,
@@ -114,13 +120,11 @@ interface StoreContextType {
   ) => void;
 
   selectedProduct: Product | null;
-
   setSelectedProduct: (
     prod: Product | null
   ) => void;
 
   lastCreatedOrder: Order | null;
-
   setLastCreatedOrder: (
     ord: Order | null
   ) => void;
@@ -213,62 +217,82 @@ const StoreContext =
     undefined
   );
 
-/* ============================================================
-   LOCAL STORAGE
-============================================================ */
+/*
+ * ============================================================
+ * SAFE LOCAL STORAGE HELPERS
+ * ============================================================
+ */
 
 const getSafeLocalStorage = <T,>(
   key: string,
   fallback: T
 ): T => {
   try {
-    const saved =
-      localStorage.getItem(key);
+    const saved = localStorage.getItem(key);
 
-    if (
-      !saved ||
-      saved === 'undefined' ||
-      saved === 'null'
-    ) {
+    if (!saved || saved === 'undefined' || saved === 'null') {
       return fallback;
     }
 
     return JSON.parse(saved) as T;
-  } catch (error) {
-    console.error(
-      `Failed to load ${key} from localStorage:`,
-      error
-    );
-
+  } catch {
     return fallback;
   }
 };
 
-const setSafeLocalStorage = (
-  key: string,
-  value: unknown
-) => {
+const setSafeLocalStorage = (key: string, value: unknown) => {
   try {
     if (value === undefined) {
       localStorage.removeItem(key);
       return;
     }
 
-    localStorage.setItem(
-      key,
-      JSON.stringify(value)
-    );
-  } catch (error) {
-    console.error(
-      `Failed to save ${key} to localStorage:`,
-      error
-    );
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Intentionally silent: localStorage is only a cache.
   }
 };
 
-/* ============================================================
-   DEMO USER
-============================================================ */
+const getSafeErrorMessage = (error: unknown): string => {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error
+  ) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string' && message.trim()) {
+      return message;
+    }
+  }
+
+  return 'Unknown error';
+};
+
+const stripBase64CardImages = (productList: Product[]): Product[] => {
+  return productList.map(product => {
+    if (
+      typeof product.cardImageUrl === 'string' &&
+      product.cardImageUrl.startsWith('data:image/')
+    ) {
+      return {
+        ...product,
+        cardImageUrl: undefined
+      };
+    }
+
+    return product;
+  });
+};
+
+/*
+ * ============================================================
+ * DEMO USER
+ * ============================================================
+ */
 
 const INITIAL_DEMO_USERS: User[] = [
   {
@@ -279,20 +303,24 @@ const INITIAL_DEMO_USERS: User[] = [
     password: 'student123',
     dormOrBuilding:
       'Subir Hall - Block B',
-    roomOrSpot: 'Room 304',
-  },
+    roomOrSpot: 'Room 304'
+  }
 ];
 
-/* ============================================================
-   PROVIDER
-============================================================ */
+/*
+ * ============================================================
+ * STORE PROVIDER
+ * ============================================================
+ */
 
 export const StoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  /* ==========================================================
-     STATE
-  ========================================================== */
+  /*
+   * ============================================================
+   * LOCAL STATE
+   * ============================================================
+   */
 
   const [products, setProducts] =
     useState<Product[]>(() =>
@@ -336,9 +364,13 @@ export const StoreProvider: React.FC<{
 
       return {
         ...INITIAL_SETTINGS,
-        ...parsed,
+        ...parsed
       };
     });
+
+  /*
+   * Cart and logged-in user remain device-specific.
+   */
 
   const [cart, setCart] =
     useState<CartItem[]>(() =>
@@ -364,12 +396,18 @@ export const StoreProvider: React.FC<{
       )
     );
 
+  /*
+   * ============================================================
+   * ADMIN AUTH
+   * ============================================================
+   */
+
   const [isAdmin, setIsAdminState] =
     useState(false);
 
   const [
     adminAuthenticated,
-    setAdminAuthenticated,
+    setAdminAuthenticated
   ] = useState<boolean>(() => {
     return (
       sessionStorage.getItem(
@@ -378,11 +416,23 @@ export const StoreProvider: React.FC<{
     );
   });
 
+  /*
+   * ============================================================
+   * UI STATE
+   * ============================================================
+   */
+
   const [selectedCategory, setSelectedCategory] =
     useState<ProductCategory>('All');
 
   const [searchQuery, setSearchQuery] =
     useState('');
+
+  /*
+   * ============================================================
+   * DARK MODE
+   * ============================================================
+   */
 
   const [isDarkMode, setIsDarkMode] =
     useState<boolean>(() => {
@@ -393,8 +443,41 @@ export const StoreProvider: React.FC<{
       );
     });
 
+  useEffect(() => {
+    const root =
+      document.documentElement;
+
+    root.classList.toggle(
+      'dark',
+      isDarkMode
+    );
+
+    localStorage.setItem(
+      'cozy_dark_mode',
+      isDarkMode
+        ? 'true'
+        : 'false'
+    );
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(
+      prev => !prev
+    );
+  };
+
   const [cartOpen, setCartOpen] =
     useState(false);
+
+  /*
+   * ============================================================
+   * ACTIVE MODAL
+   *
+   * IMPORTANT:
+   * 'image' is included here so Quick View can
+   * open the image-only preview.
+   * ============================================================
+   */
 
   const [activeModal, setActiveModal] =
     useState<ActiveModal>(null);
@@ -408,18 +491,28 @@ export const StoreProvider: React.FC<{
   const [toastMessage, setToastMessage] =
     useState<string | null>(null);
 
-  /* ==========================================================
-     REFS
-  ========================================================== */
+  /*
+   * ============================================================
+   * CLOUD SYNC CONTROL
+   * ============================================================
+   */
 
   const cloudInitialized =
+    useRef(false);
+
+  /*
+   * Prevent duplicate Add To Cart calls.
+   */
+
+  const addToCartLock =
     useRef(false);
 
   const cloudLoadFailed =
     useRef(false);
 
-  const addToCartLock =
-    useRef(false);
+  /*
+   * Toast refs.
+   */
 
   const toastTimeoutRef =
     useRef<ReturnType<typeof setTimeout> | null>(
@@ -433,51 +526,49 @@ export const StoreProvider: React.FC<{
     useRef<number>(0);
 
   const cloudDataTypes =
-    useRef<Set<string>>(new Set());
+    useRef<Set<string>>(
+      new Set()
+    );
 
   const modifiedDataTypes =
-    useRef<Set<string>>(new Set());
+    useRef<Set<string>>(
+      new Set()
+    );
 
   const lastCloudData =
-    useRef<Record<string, string>>({});
+    useRef<Record<string, string>>(
+      {}
+    );
+
+  /*
+   * Keep latest reviews available to callbacks/effects
+   * that are created only once.
+   */
 
   const reviewsRef =
     useRef<Review[]>(reviews);
 
-  const saveQueues =
-    useRef<Record<string, Promise<void>>>({});
-
-  /* ==========================================================
-     REVIEWS REF
-  ========================================================== */
-
   useEffect(() => {
-    reviewsRef.current = reviews;
+    reviewsRef.current =
+      reviews;
   }, [reviews]);
 
-  /* ==========================================================
-     DARK MODE
-  ========================================================== */
+  /*
+   * ============================================================
+   * SAVE QUEUE
+   * ============================================================
+   */
 
-  useEffect(() => {
-    document.documentElement.classList.toggle(
-      'dark',
-      isDarkMode
+  const saveQueues =
+    useRef<Record<string, Promise<void>>>(
+      {}
     );
 
-    localStorage.setItem(
-      'cozy_dark_mode',
-      isDarkMode ? 'true' : 'false'
-    );
-  }, [isDarkMode]);
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(prev => !prev);
-  };
-
-  /* ==========================================================
-     REVIEW MERGE
-  ========================================================== */
+  /*
+   * ============================================================
+   * REVIEW HELPERS
+   * ============================================================
+   */
 
   const mergeReviews = (
     existing: Review[],
@@ -486,137 +577,249 @@ export const StoreProvider: React.FC<{
     const merged =
       new Map<string, Review>();
 
-    incoming.forEach(review => {
-      if (review?.id) {
-        merged.set(
-          String(review.id),
-          review
-        );
-      }
-    });
+    /*
+     * Add cloud reviews first.
+     */
 
-    existing.forEach(review => {
-      if (review?.id) {
-        merged.set(
-          String(review.id),
-          review
-        );
+    incoming.forEach(
+      review => {
+        if (review?.id) {
+          merged.set(
+            String(review.id),
+            review
+          );
+        }
       }
-    });
+    );
+
+    /*
+     * Add current/local reviews after cloud reviews.
+     */
+
+    existing.forEach(
+      review => {
+        if (review?.id) {
+          merged.set(
+            String(review.id),
+            review
+          );
+        }
+      }
+    );
+
+    /*
+     * Newest generated review IDs first.
+     */
 
     return Array.from(
       merged.values()
-    ).sort((a, b) => {
-      const aTime =
-        Number(
-          String(a.id).replace(
-            /\D/g,
-            ''
-          )
-        ) || 0;
+    ).sort(
+      (a, b) => {
+        const aTime =
+          Number(
+            String(a.id)
+              .replace(/\D/g, '')
+          ) || 0;
 
-      const bTime =
-        Number(
-          String(b.id).replace(
-            /\D/g,
-            ''
-          )
-        ) || 0;
+        const bTime =
+          Number(
+            String(b.id)
+              .replace(/\D/g, '')
+          ) || 0;
 
-      return bTime - aTime;
-    });
+        return bTime - aTime;
+      }
+    );
   };
 
-  /* ==========================================================
-     PRODUCT RATINGS
-  ========================================================== */
+  /*
+   * ============================================================
+   * RECALCULATE PRODUCT RATINGS
+   * ============================================================
+   */
 
   const recalculateProductRatings = (
     productList: Product[],
     reviewList: Review[]
   ): Product[] => {
-    return productList.map(product => {
-      const productName =
-        product.name
-          ?.trim()
-          .toLowerCase();
+    return productList.map(
+      product => {
+        const productName =
+          product.name
+            ?.trim()
+            .toLowerCase();
 
-      const productReviews =
-        reviewList.filter(
-          review =>
-            review.productName
-              ?.trim()
-              .toLowerCase() ===
-            productName
-        );
-
-      if (
-        productReviews.length ===
-        0
-      ) {
-        return product;
-      }
-
-      const ratings =
-        productReviews
-          .map(review =>
-            Number(review.rating)
-          )
-          .filter(
-            rating =>
-              Number.isFinite(rating) &&
-              rating >= 1 &&
-              rating <= 5
+        const productReviews =
+          reviewList.filter(
+            review =>
+              review.productName
+                ?.trim()
+                .toLowerCase() ===
+              productName
           );
 
-      if (
-        ratings.length ===
-        0
-      ) {
-        return product;
-      }
+        /*
+         * No reviews = preserve existing rating.
+         */
 
-      const total =
-        ratings.reduce(
-          (sum, rating) =>
-            sum + rating,
+        if (
+          productReviews.length ===
           0
-        );
+        ) {
+          return product;
+        }
 
-      const average =
-        total / ratings.length;
+        const ratings =
+          productReviews
+            .map(
+              review =>
+                Number(
+                  review.rating
+                )
+            )
+            .filter(
+              rating =>
+                Number.isFinite(
+                  rating
+                ) &&
+                rating >= 1 &&
+                rating <= 5
+            );
 
-      return {
-        ...product,
-        rating:
+        if (
+          ratings.length ===
+          0
+        ) {
+          return product;
+        }
+
+        const total =
+          ratings.reduce(
+            (
+              sum,
+              rating
+            ) =>
+              sum + rating,
+            0
+          );
+
+        const average =
+          total /
+          ratings.length;
+
+        const rounded =
           Math.round(
             average * 10
-          ) / 10,
-        reviewCount:
-          ratings.length,
-      };
-    });
+          ) / 10;
+
+        return {
+          ...product,
+          rating: rounded,
+          reviewCount:
+            ratings.length
+        };
+      }
+    );
   };
 
-  /* ==========================================================
-     LOAD STORE DATA
-  ========================================================== */
+  /*
+   * ============================================================
+   * PRODUCT CARD IMAGE UPLOAD
+   * ============================================================
+   */
+
+  const dataUrlToBlob = async (
+    dataUrl: string
+  ): Promise<Blob> => {
+    const response = await fetch(dataUrl);
+    return response.blob();
+  };
+
+  const uploadProductCardImages = async (
+    productList: Product[]
+  ): Promise<Product[]> => {
+    const result: Product[] = [];
+
+    for (const product of productList) {
+      const cardImageUrl = product.cardImageUrl;
+
+      if (
+        typeof cardImageUrl !== 'string' ||
+        !cardImageUrl.startsWith('data:image/')
+      ) {
+        result.push(product);
+        continue;
+      }
+
+      try {
+        const blob = await dataUrlToBlob(cardImageUrl);
+        const filePath = `products/${product.id}/card-image.jpg`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, blob, {
+            contentType: 'image/jpeg',
+            cacheControl: '31536000',
+            upsert: true
+          });
+
+        if (uploadError) {
+          throw new Error(
+            `Image upload failed: ${getSafeErrorMessage(uploadError)}`
+          );
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(filePath);
+
+        if (!publicUrlData?.publicUrl) {
+          throw new Error('Image URL could not be created.');
+        }
+
+        result.push({
+          ...product,
+          cardImageUrl: `${publicUrlData.publicUrl}?v=${Date.now()}`
+        });
+      } catch (error) {
+        console.error(
+          `Product image upload failed for ${product.name}: ${getSafeErrorMessage(error)}`
+        );
+
+        // Do not save Base64 data to the database.
+        result.push({
+          ...product,
+          cardImageUrl: undefined
+        });
+
+        throw error;
+      }
+    }
+
+    return result;
+  };
+
+  /*
+   * ============================================================
+   * LOAD STORE DATA FROM SUPABASE
+   * ============================================================
+   */
 
   const loadStoreData =
     async () => {
       const {
         data,
-        error,
-      } = await supabase
-        .from('store_data')
-        .select(
-          'data_type, data'
-        );
+        error
+      } =
+        await supabase
+          .from('store_data')
+          .select(
+            'data_type, data'
+          );
 
       if (error) {
         console.error(
-          'Error loading store data:',
-          error
+          `Cloud load failed: ${getSafeErrorMessage(error)}`
         );
 
         return null;
@@ -625,417 +828,152 @@ export const StoreProvider: React.FC<{
       return data;
     };
 
-  /* ==========================================================
-     BASE64 → BLOB
-  ========================================================== */
+  /*
+   * ============================================================
+   * SAVE STORE DATA TO SUPABASE
+   * ============================================================
+   */
 
-  const dataUrlToBlob =
-    async (
-      dataUrl: string
-    ): Promise<Blob> => {
-      const response =
-        await fetch(dataUrl);
+  const saveStoreData = async (
+    dataType: string,
+    data: unknown
+  ) => {
+    if (!cloudInitialized.current || cloudLoadFailed.current) {
+      return;
+    }
 
-      if (!response.ok) {
-        throw new Error(
-          'Unable to convert image data.'
-        );
-      }
+    if (data === undefined || data === null) {
+      return;
+    }
 
-      return response.blob();
-    };
+    if (
+      !cloudDataTypes.current.has(dataType) &&
+      !modifiedDataTypes.current.has(dataType)
+    ) {
+      return;
+    }
 
-  /* ==========================================================
-     UPLOAD PRODUCT CARD IMAGES
-     
-     IMPORTANT:
-     Base64 images NEVER go into store_data.
-     
-     They are converted to files and uploaded to:
-     
-     product-images/products/{productId}/card-image.jpg
-  ========================================================== */
+    const previousQueue =
+      saveQueues.current[dataType] || Promise.resolve();
 
-  const uploadProductCardImages =
-    async (
-      productList: Product[]
-    ): Promise<Product[]> => {
-      return Promise.all(
-        productList.map(
-          async product => {
-            const cardImageUrl =
-              product.cardImageUrl;
+    const currentSave = previousQueue
+      .catch(() => undefined)
+      .then(async () => {
+        try {
+          let dataToSave = data;
 
-            /*
-             * Already a normal URL.
-             */
-            if (
-              !cardImageUrl ||
-              !cardImageUrl.startsWith(
-                'data:image/'
-              )
-            ) {
-              return product;
-            }
+          /*
+           * Base64 card images are uploaded to Storage first.
+           * Only the resulting public URL is written to store_data.
+           */
+          if (dataType === 'products' && Array.isArray(data)) {
+            dataToSave = await uploadProductCardImages(
+              data as Product[]
+            );
+          }
 
-            console.log(
-              `Uploading card image for ${product.name}...`
+          if (dataType === 'products' && Array.isArray(dataToSave)) {
+            const containsBase64 = (dataToSave as Product[]).some(
+              product =>
+                typeof product.cardImageUrl === 'string' &&
+                product.cardImageUrl.startsWith('data:image/')
             );
 
-            try {
-              const blob =
-                await dataUrlToBlob(
-                  cardImageUrl
-                );
-
-              const filePath =
-                `products/${product.id}/card-image.jpg`;
-
-              const {
-                error:
-                  uploadError,
-              } =
-                await supabase.storage
-                  .from(
-                    'product-images'
-                  )
-                  .upload(
-                    filePath,
-                    blob,
-                    {
-                      contentType:
-                        'image/jpeg',
-                      cacheControl:
-                        '31536000',
-                      upsert: true,
-                    }
-                  );
-
-              if (uploadError) {
-                console.error(
-                  'SUPABASE STORAGE UPLOAD ERROR:',
-                  uploadError
-                );
-
-                throw uploadError;
-              }
-
-              const {
-                data:
-                  publicUrlData,
-              } =
-                supabase.storage
-                  .from(
-                    'product-images'
-                  )
-                  .getPublicUrl(
-                    filePath
-                  );
-
-              if (
-                !publicUrlData?.publicUrl
-              ) {
-                throw new Error(
-                  'Supabase did not return a public image URL.'
-                );
-              }
-
-              const publicUrl =
-                `${publicUrlData.publicUrl}?v=${Date.now()}`;
-
-              console.log(
-                `Card image uploaded successfully for ${product.name}`
-              );
-
-              return {
-                ...product,
-                cardImageUrl:
-                  publicUrl,
-              };
-            } catch (error) {
+            if (containsBase64) {
               console.error(
-                `Product card image upload failed for ${product.name}:`,
-                error
+                'Cloud save cancelled: product image is still Base64.'
               );
-
-              /*
-               * VERY IMPORTANT:
-               *
-               * Do not return the original product.
-               *
-               * Otherwise the Base64 image would be
-               * sent to store_data and cause another
-               * huge payload / 500 error.
-               */
-              throw error;
+              return;
             }
           }
-        )
-      );
-    };
 
-  /* ==========================================================
-     SAVE STORE DATA
-  ========================================================== */
+          const serialized = JSON.stringify(dataToSave);
 
-  const saveStoreData =
-    async (
-      dataType: string,
-      data: unknown
-    ) => {
-      if (
-        !cloudInitialized.current ||
-        cloudLoadFailed.current
-      ) {
-        return;
-      }
+          if (lastCloudData.current[dataType] === serialized) {
+            return;
+          }
 
-      if (
-        data === undefined ||
-        data === null
-      ) {
-        return;
-      }
+          const { error } = await supabase
+            .from('store_data')
+            .upsert(
+              {
+                data_type: dataType,
+                data: dataToSave,
+                updated_at: new Date().toISOString()
+              },
+              { onConflict: 'data_type' }
+            );
 
-      if (
-        !cloudDataTypes.current.has(
-          dataType
-        ) &&
-        !modifiedDataTypes.current.has(
-          dataType
-        )
-      ) {
-        return;
-      }
+          if (error) {
+            console.error(
+              `Cloud save failed for ${dataType}: ${getSafeErrorMessage(error)}`
+            );
+            return;
+          }
 
-      const previousQueue =
-        saveQueues.current[
-          dataType
-        ] ||
-        Promise.resolve();
+          /*
+           * IMPORTANT:
+           * Update React state only after both Storage and store_data
+           * have succeeded. This prevents a failed cloud save from
+           * replacing the local Base64 image with a URL that was never
+           * actually stored in the database.
+           */
+          if (
+            dataType === 'products' &&
+            Array.isArray(dataToSave)
+          ) {
+            const savedProducts = dataToSave as Product[];
+            const incomingProducts = data as Product[];
 
-      const currentSave =
-        previousQueue
-          .catch(() => {})
-          .then(async () => {
-            let dataToSave =
-              data;
+            const changed = savedProducts.some((savedProduct, index) => {
+              const original = incomingProducts[index];
+              return (
+                original?.cardImageUrl !== savedProduct.cardImageUrl
+              );
+            });
 
-            /*
-             * ======================================================
-             * PRODUCTS
-             * ======================================================
-             */
-
-            if (
-              dataType ===
-                'products' &&
-              Array.isArray(data)
-            ) {
-              try {
-                dataToSave =
-                  await uploadProductCardImages(
-                    data as Product[]
+            if (changed) {
+              setProducts(currentProducts =>
+                currentProducts.map(currentProduct => {
+                  const savedProduct = savedProducts.find(
+                    product => product.id === currentProduct.id
                   );
-              } catch (error) {
-                console.error(
-                  'Product image upload failed. Cloud product save cancelled.',
-                  error
-                );
 
-                return;
-              }
-
-              /*
-               * Update React state with the real Storage URLs.
-               *
-               * This removes the Base64 data from state.
-               */
-              const uploadedProducts =
-                dataToSave as Product[];
-
-              const hasChanged =
-                uploadedProducts.some(
-                  uploadedProduct => {
-                    const current =
-                      (
-                        data as Product[]
-                      ).find(
-                        product =>
-                          product.id ===
-                          uploadedProduct.id
-                      );
-
-                    return (
-                      current?.cardImageUrl !==
-                      uploadedProduct.cardImageUrl
-                    );
+                  if (!savedProduct) {
+                    return currentProduct;
                   }
-                );
 
-              if (hasChanged) {
-                setProducts(
-                  currentProducts =>
-                    currentProducts.map(
-                      currentProduct => {
-                        const uploaded =
-                          uploadedProducts.find(
-                            product =>
-                              product.id ===
-                              currentProduct.id
-                          );
-
-                        if (!uploaded) {
-                          return currentProduct;
-                        }
-
-                        return {
-                          ...currentProduct,
-                          cardImageUrl:
-                            uploaded.cardImageUrl,
-                        };
-                      }
-                    )
-                );
-              }
-            }
-
-            /*
-             * ======================================================
-             * SAFETY CHECK
-             *
-             * Never allow a Base64 cardImageUrl to reach
-             * store_data.
-             * ======================================================
-             */
-
-            if (
-              dataType ===
-                'products' &&
-              Array.isArray(dataToSave)
-            ) {
-              const hasBase64 =
-                (
-                  dataToSave as Product[]
-                ).some(
-                  product =>
-                    typeof product.cardImageUrl ===
-                      'string' &&
-                    product.cardImageUrl.startsWith(
-                      'data:image/'
-                    )
-                );
-
-              if (hasBase64) {
-                console.error(
-                  'BLOCKED cloud save: Base64 product image still exists.'
-                );
-
-                return;
-              }
-            }
-
-            const serialized =
-              JSON.stringify(
-                dataToSave
+                  return {
+                    ...currentProduct,
+                    cardImageUrl: savedProduct.cardImageUrl
+                  };
+                })
               );
-
-            /*
-             * Prevent duplicate saves.
-             */
-
-            if (
-              lastCloudData.current[
-                dataType
-              ] === serialized
-            ) {
-              return;
             }
+          }
 
-            console.log(
-              `Saving ${dataType} to Supabase...`
-            );
+          cloudDataTypes.current.add(dataType);
+          modifiedDataTypes.current.delete(dataType);
+          lastCloudData.current[dataType] = serialized;
+        } catch (error) {
+          console.error(
+            `Cloud save failed for ${dataType}: ${getSafeErrorMessage(error)}`
+          );
+        }
+      });
 
-            const {
-              error,
-            } =
-              await supabase
-                .from(
-                  'store_data'
-                )
-                .upsert(
-                  {
-                    data_type:
-                      dataType,
-                    data:
-                      dataToSave,
-                    updated_at:
-                      new Date().toISOString(),
-                  },
-                  {
-                    onConflict:
-                      'data_type',
-                  }
-                );
+    saveQueues.current[dataType] = currentSave;
+    await currentSave;
+  };
 
-            if (error) {
-              console.error(
-                `Error saving ${dataType} to Supabase:`,
-                error
-              );
-
-              /*
-               * Log the complete Supabase error
-               * so the actual database problem is visible.
-               */
-              console.error(
-                'Supabase error details:',
-                {
-                  message:
-                    error.message,
-                  details:
-                    error.details,
-                  hint:
-                    error.hint,
-                  code:
-                    error.code,
-                }
-              );
-
-              return;
-            }
-
-            cloudDataTypes.current.add(
-              dataType
-            );
-
-            modifiedDataTypes.current.delete(
-              dataType
-            );
-
-            lastCloudData.current[
-              dataType
-            ] = serialized;
-
-            console.log(
-              `Successfully saved ${dataType} to Supabase`
-            );
-          });
-
-      saveQueues.current[
-        dataType
-      ] = currentSave;
-
-      await currentSave;
-    };
-
-  /* ==========================================================
-     INITIAL CLOUD LOAD
-  ========================================================== */
+  /*
+   * ============================================================
+   * INITIAL CLOUD LOAD
+   * ============================================================
+   */
 
   useEffect(() => {
-    let cancelled =
-      false;
+    let cancelled = false;
 
     const initializeCloudData =
       async () => {
@@ -1072,11 +1010,31 @@ export const StoreProvider: React.FC<{
           }
         );
 
-        let cloudReviews:
-          Review[] = [];
+        const requiredDataTypes = [
+          'products',
+          'orders',
+          'custom_requests',
+          'reviews',
+          'settings'
+        ];
 
-        let cloudProducts:
-          Product[] = [];
+        requiredDataTypes.forEach(dataType => {
+          if (!cloudDataTypes.current.has(dataType)) {
+            modifiedDataTypes.current.add(dataType);
+          }
+        });
+
+        /*
+         * ========================================================
+         * COLLECT CLOUD DATA
+         * ========================================================
+         */
+
+        let cloudReviews: Review[] =
+          [];
+
+        let cloudProducts: Product[] =
+          [];
 
         cloudData.forEach(
           item => {
@@ -1157,7 +1115,7 @@ export const StoreProvider: React.FC<{
                 ) {
                   setSettings({
                     ...INITIAL_SETTINGS,
-                    ...(item.data as StoreSettings),
+                    ...(item.data as StoreSettings)
                   });
                 }
                 break;
@@ -1165,9 +1123,11 @@ export const StoreProvider: React.FC<{
           }
         );
 
-        /* ======================================================
-           REVIEWS
-        ====================================================== */
+        /*
+         * ========================================================
+         * MERGE REVIEWS
+         * ========================================================
+         */
 
         const currentReviews =
           reviewsRef.current;
@@ -1191,15 +1151,15 @@ export const StoreProvider: React.FC<{
           const cloudIds =
             new Set<string>();
 
-          cloudReviews.forEach(
-            review => {
-              cloudIds.add(
-                String(review.id)
-              );
-            }
-          );
+          for (
+            const review of cloudReviews
+          ) {
+            cloudIds.add(
+              String(review.id)
+            );
+          }
 
-          const localMissing =
+          const hasLocalReviewsMissingFromCloud =
             currentReviews.some(
               review =>
                 !cloudIds.has(
@@ -1209,16 +1169,20 @@ export const StoreProvider: React.FC<{
                 )
             );
 
-          if (localMissing) {
+          if (
+            hasLocalReviewsMissingFromCloud
+          ) {
             modifiedDataTypes.current.add(
               'reviews'
             );
           }
         }
 
-        /* ======================================================
-           PRODUCTS
-        ====================================================== */
+        /*
+         * ========================================================
+         * PRODUCTS
+         * ========================================================
+         */
 
         if (
           cloudProducts.length > 0
@@ -1234,19 +1198,24 @@ export const StoreProvider: React.FC<{
           );
         }
 
-        /* ======================================================
-           INITIALIZED
-        ====================================================== */
+        /*
+         * ========================================================
+         * CLOUD INITIALIZED
+         * ========================================================
+         */
 
         cloudInitialized.current =
           true;
 
-        /* ======================================================
-           EMPTY DATABASE
-        ====================================================== */
+        /*
+         * ========================================================
+         * EMPTY TABLE SEED
+         * ========================================================
+         */
 
         if (
-          cloudData.length === 0
+          cloudData.length ===
+          0
         ) {
           console.log(
             'Supabase store_data is completely empty.'
@@ -1272,30 +1241,32 @@ export const StoreProvider: React.FC<{
             'settings'
           );
 
-          await saveStoreData(
-            'products',
-            products
-          );
+          await Promise.all([
+            saveStoreData(
+              'products',
+              products
+            ),
 
-          await saveStoreData(
-            'orders',
-            orders
-          );
+            saveStoreData(
+              'orders',
+              orders
+            ),
 
-          await saveStoreData(
-            'custom_requests',
-            customRequests
-          );
+            saveStoreData(
+              'custom_requests',
+              customRequests
+            ),
 
-          await saveStoreData(
-            'reviews',
-            reviewsRef.current
-          );
+            saveStoreData(
+              'reviews',
+              reviewsRef.current
+            ),
 
-          await saveStoreData(
-            'settings',
-            settings
-          );
+            saveStoreData(
+              'settings',
+              settings
+            )
+          ]);
         } else {
           console.log(
             'Supabase store data loaded successfully.'
@@ -1317,9 +1288,11 @@ export const StoreProvider: React.FC<{
     };
   }, []);
 
-  /* ==========================================================
-     REALTIME SYNC
-  ========================================================== */
+  /*
+   * ============================================================
+   * REALTIME SYNC
+   * ============================================================
+   */
 
   useEffect(() => {
     const channel =
@@ -1332,15 +1305,23 @@ export const StoreProvider: React.FC<{
           {
             event: '*',
             schema: 'public',
-            table: 'store_data',
+            table: 'store_data'
           },
           payload => {
+            /*
+             * Ignore DELETE events.
+             */
+
             if (
               payload.eventType ===
               'DELETE'
             ) {
               return;
             }
+
+            /*
+             * Ignore realtime events before initialization.
+             */
 
             if (
               !cloudInitialized.current
@@ -1376,16 +1357,20 @@ export const StoreProvider: React.FC<{
             const serialized =
               JSON.stringify(data);
 
-            /* ==================================================
-               REVIEWS
-            ================================================== */
+            /*
+             * ========================================================
+             * REVIEWS
+             * ========================================================
+             */
 
             if (
               dataType ===
               'reviews'
             ) {
               if (
-                Array.isArray(data)
+                Array.isArray(
+                  data
+                )
               ) {
                 const incomingReviews =
                   data as Review[];
@@ -1408,7 +1393,7 @@ export const StoreProvider: React.FC<{
                         )
                       );
 
-                    const localMissing =
+                    const localReviewMissingFromCloud =
                       currentReviews.some(
                         review =>
                           !incomingIds.has(
@@ -1419,7 +1404,7 @@ export const StoreProvider: React.FC<{
                       );
 
                     if (
-                      localMissing
+                      localReviewMissingFromCloud
                     ) {
                       modifiedDataTypes.current.add(
                         'reviews'
@@ -1438,95 +1423,100 @@ export const StoreProvider: React.FC<{
               return;
             }
 
-            /* ==================================================
-               PRODUCTS
-            ================================================== */
+            /*
+             * ========================================================
+             * PRODUCTS
+             * ========================================================
+             */
 
-            if (
-              dataType ===
-              'products'
-            ) {
-              if (
-                Array.isArray(data)
-              ) {
-                const incomingProducts =
-                  data as Product[];
+if (dataType === 'products') {
+  if (Array.isArray(data)) {
+    const incomingProducts =
+      data as Product[];
 
-                setProducts(
-                  currentProducts => {
-                    const updatedProducts =
-                      recalculateProductRatings(
-                        incomingProducts,
-                        reviewsRef.current
-                      );
+    setProducts(currentProducts => {
+      const updatedProducts =
+        recalculateProductRatings(
+          incomingProducts,
+          reviewsRef.current
+        );
 
-                    return updatedProducts.map(
-                      cloudProduct => {
-                        const localProduct =
-                          currentProducts.find(
-                            current =>
-                              current.id ===
-                              cloudProduct.id
-                          );
+      /*
+       * Merge cloud products with the current local products.
+       *
+       * If the cloud version is missing a newer optional field
+       * such as cardImageUrl, keep the local value instead of
+       * deleting it.
+       */
+      return updatedProducts.map(cloudProduct => {
+        const localProduct =
+          currentProducts.find(
+            current =>
+              current.id === cloudProduct.id
+          );
 
-                        if (
-                          !localProduct
-                        ) {
-                          return cloudProduct;
-                        }
+        if (!localProduct) {
+          return cloudProduct;
+        }
 
-                        const hasReviews =
-                          reviewsRef.current.some(
-                            review =>
-                              review.productName
-                                ?.trim()
-                                .toLowerCase() ===
-                              cloudProduct.name
-                                ?.trim()
-                                .toLowerCase()
-                          );
+        const hasReviews =
+          reviewsRef.current.some(
+            review =>
+              review.productName
+                ?.trim()
+                .toLowerCase() ===
+              cloudProduct.name
+                ?.trim()
+                .toLowerCase()
+          );
 
-                        return {
-                          ...localProduct,
-                          ...cloudProduct,
+        return {
+          ...localProduct,
+          ...cloudProduct,
 
-                          ...(cloudProduct.cardImageUrl
-                            ? {
-                                cardImageUrl:
-                                  cloudProduct.cardImageUrl,
-                              }
-                            : localProduct.cardImageUrl
-                            ? {
-                                cardImageUrl:
-                                  localProduct.cardImageUrl,
-                              }
-                            : {}),
-
-                          ...(!hasReviews
-                            ? {
-                                rating:
-                                  localProduct.rating,
-                                reviewCount:
-                                  localProduct.reviewCount,
-                              }
-                            : {}),
-                        };
-                      }
-                    );
-                  }
-                );
+          /*
+           * Preserve cardImageUrl when an older cloud
+           * payload does not contain it.
+           */
+          ...(cloudProduct.cardImageUrl
+            ? {
+                cardImageUrl:
+                  cloudProduct.cardImageUrl,
               }
+            : localProduct.cardImageUrl
+            ? {
+                cardImageUrl:
+                  localProduct.cardImageUrl,
+              }
+            : {}),
 
-              lastCloudData.current[
-                dataType
-              ] = serialized;
+          /*
+           * Preserve locally calculated ratings when
+           * the product has no reviews.
+           */
+          ...(!hasReviews
+            ? {
+                rating: localProduct.rating,
+                reviewCount:
+                  localProduct.reviewCount,
+              }
+            : {}),
+        };
+      });
+    });
+  }
 
-              return;
-            }
+  lastCloudData.current[dataType] =
+    serialized;
 
-            /* ==================================================
-               OTHER DATA
-            ================================================== */
+  return;
+}
+
+            /*
+             * ========================================================
+             * OTHER DATA
+             * ========================================================
+             */
 
             lastCloudData.current[
               dataType
@@ -1537,7 +1527,9 @@ export const StoreProvider: React.FC<{
             ) {
               case 'orders':
                 if (
-                  Array.isArray(data)
+                  Array.isArray(
+                    data
+                  )
                 ) {
                   setOrders(
                     data as Order[]
@@ -1547,7 +1539,9 @@ export const StoreProvider: React.FC<{
 
               case 'custom_requests':
                 if (
-                  Array.isArray(data)
+                  Array.isArray(
+                    data
+                  )
                 ) {
                   setCustomRequests(
                     data as CustomRequest[]
@@ -1559,23 +1553,27 @@ export const StoreProvider: React.FC<{
                 if (
                   typeof data ===
                     'object' &&
-                  !Array.isArray(data)
+                  !Array.isArray(
+                    data
+                  )
                 ) {
                   setSettings({
                     ...INITIAL_SETTINGS,
-                    ...(data as StoreSettings),
+                    ...(data as StoreSettings)
                   });
                 }
                 break;
             }
           }
         )
-        .subscribe(status => {
-          console.log(
-            'Supabase realtime status:',
-            status
-          );
-        });
+        .subscribe(
+          status => {
+            console.log(
+              'Supabase realtime status:',
+              status
+            );
+          }
+        );
 
     return () => {
       supabase.removeChannel(
@@ -1584,13 +1582,16 @@ export const StoreProvider: React.FC<{
     };
   }, []);
 
-  /* ==========================================================
-     RATINGS
-  ========================================================== */
+  /*
+   * ============================================================
+   * RECALCULATE RATINGS WHEN REVIEWS CHANGE
+   * ============================================================
+   */
 
   useEffect(() => {
     if (
-      reviews.length === 0
+      reviews.length ===
+      0
     ) {
       return;
     }
@@ -1604,9 +1605,11 @@ export const StoreProvider: React.FC<{
     );
   }, [reviews]);
 
-  /* ==========================================================
-     PRODUCTS → SUPABASE + LOCAL CACHE
-  ========================================================== */
+  /*
+   * ============================================================
+   * SHARED DATA → SUPABASE + LOCAL CACHE
+   * ============================================================
+   */
 
   useEffect(() => {
     if (
@@ -1619,20 +1622,11 @@ export const StoreProvider: React.FC<{
       );
     }
 
-    /*
-     * Important:
-     * After upload, products state contains the Storage URL,
-     * not the Base64 image.
-     */
     setSafeLocalStorage(
       'knot_bloom_products',
-      products
+      stripBase64CardImages(products)
     );
   }, [products]);
-
-  /* ==========================================================
-     ORDERS
-  ========================================================== */
 
   useEffect(() => {
     if (
@@ -1651,10 +1645,6 @@ export const StoreProvider: React.FC<{
     );
   }, [orders]);
 
-  /* ==========================================================
-     CUSTOM REQUESTS
-  ========================================================== */
-
   useEffect(() => {
     if (
       cloudInitialized.current &&
@@ -1671,10 +1661,6 @@ export const StoreProvider: React.FC<{
       customRequests
     );
   }, [customRequests]);
-
-  /* ==========================================================
-     REVIEWS
-  ========================================================== */
 
   useEffect(() => {
     if (
@@ -1693,10 +1679,6 @@ export const StoreProvider: React.FC<{
     );
   }, [reviews]);
 
-  /* ==========================================================
-     SETTINGS
-  ========================================================== */
-
   useEffect(() => {
     if (
       cloudInitialized.current &&
@@ -1714,9 +1696,11 @@ export const StoreProvider: React.FC<{
     );
   }, [settings]);
 
-  /* ==========================================================
-     DEVICE DATA
-  ========================================================== */
+  /*
+   * ============================================================
+   * DEVICE-SPECIFIC DATA
+   * ============================================================
+   */
 
   useEffect(() => {
     setSafeLocalStorage(
@@ -1745,15 +1729,22 @@ export const StoreProvider: React.FC<{
     }
   }, [currentUser]);
 
-  /* ==========================================================
-     TOAST
-  ========================================================== */
+  /*
+   * ============================================================
+   * TOAST
+   * ============================================================
+   */
 
   const showToast = (
     msg: string
   ) => {
     const now =
       Date.now();
+
+    /*
+     * Prevent the exact same toast from being displayed
+     * multiple times within 2 seconds.
+     */
 
     if (
       lastToastMessageRef.current ===
@@ -1773,6 +1764,10 @@ export const StoreProvider: React.FC<{
 
     setToastMessage(msg);
 
+    /*
+     * Clear previous timeout.
+     */
+
     if (
       toastTimeoutRef.current
     ) {
@@ -1781,17 +1776,26 @@ export const StoreProvider: React.FC<{
       );
     }
 
+    /*
+     * Automatically hide the toast.
+     */
+
     toastTimeoutRef.current =
       setTimeout(() => {
-        setToastMessage(null);
+        setToastMessage(
+          null
+        );
+
         toastTimeoutRef.current =
           null;
       }, 4000);
   };
 
-  /* ==========================================================
-     USER AUTH
-  ========================================================== */
+  /*
+   * ============================================================
+   * USER AUTH
+   * ============================================================
+   */
 
   const loginUserWithPassword = (
     loginId: string,
@@ -1822,13 +1826,17 @@ export const StoreProvider: React.FC<{
       found &&
       found.password === pass
     ) {
-      setCurrentUser(found);
+      setCurrentUser(
+        found
+      );
 
       showToast(
         `🌸 Welcome back, ${found.name}!`
       );
 
-      setActiveModal(null);
+      setActiveModal(
+        null
+      );
 
       return true;
     }
@@ -1855,13 +1863,13 @@ export const StoreProvider: React.FC<{
       phone,
       password,
       dormOrBuilding,
-      roomOrSpot,
+      roomOrSpot
     };
 
     setRegisteredUsers(
       prev => [
         ...prev,
-        newUser,
+        newUser
       ]
     );
 
@@ -1943,13 +1951,13 @@ export const StoreProvider: React.FC<{
               ? '+91 98765 43210'
               : identifier,
           dormOrBuilding:
-            'Hostel Block A',
+            'Hostel Block A'
         };
 
         setRegisteredUsers(
           prev => [
             ...prev,
-            otpUser,
+            otpUser
           ]
         );
 
@@ -1962,7 +1970,9 @@ export const StoreProvider: React.FC<{
         '✅ OTP Verification Successful! logged in.'
       );
 
-      setActiveModal(null);
+      setActiveModal(
+        null
+      );
 
       return true;
     }
@@ -1983,20 +1993,26 @@ export const StoreProvider: React.FC<{
       `Logged in as ${user.name}`
     );
 
-    setActiveModal(null);
+    setActiveModal(
+      null
+    );
   };
 
   const logoutUser = () => {
-    setCurrentUser(null);
+    setCurrentUser(
+      null
+    );
 
     showToast(
       'Logged out of student account'
     );
   };
 
-  /* ==========================================================
-     ADMIN AUTH
-  ========================================================== */
+  /*
+   * ============================================================
+   * ADMIN AUTH
+   * ============================================================
+   */
 
   const setIsAdmin = (
     val: boolean
@@ -2012,7 +2028,9 @@ export const StoreProvider: React.FC<{
       return;
     }
 
-    setIsAdminState(val);
+    setIsAdminState(
+      val
+    );
   };
 
   const loginAdminWithCredentials = (
@@ -2031,7 +2049,8 @@ export const StoreProvider: React.FC<{
       username
         .trim()
         .toLowerCase() ===
-        validUsername.toLowerCase() &&
+        validUsername
+          .toLowerCase() &&
       pin.trim() ===
         validPin
     ) {
@@ -2044,9 +2063,13 @@ export const StoreProvider: React.FC<{
         'true'
       );
 
-      setIsAdminState(true);
+      setIsAdminState(
+        true
+      );
 
-      setActiveModal(null);
+      setActiveModal(
+        null
+      );
 
       showToast(
         '👑 Owner Credentials Verified! Welcome to Admin Portal.'
@@ -2071,16 +2094,20 @@ export const StoreProvider: React.FC<{
       'knot_bloom_admin_auth'
     );
 
-    setIsAdminState(false);
+    setIsAdminState(
+      false
+    );
 
     showToast(
       'Logged out of Admin Portal'
     );
   };
 
-  /* ==========================================================
-     CART
-  ========================================================== */
+  /*
+   * ============================================================
+   * CART
+   * ============================================================
+   */
 
   const addToCart = (
     product: Product,
@@ -2089,6 +2116,10 @@ export const StoreProvider: React.FC<{
     wrapPaperColor?: string,
     giftNote?: string
   ) => {
+    /*
+     * Prevent duplicate calls.
+     */
+
     if (
       addToCartLock.current
     ) {
@@ -2098,10 +2129,18 @@ export const StoreProvider: React.FC<{
     addToCartLock.current =
       true;
 
+    /*
+     * Release the lock after 700ms.
+     */
+
     setTimeout(() => {
       addToCartLock.current =
         false;
     }, 700);
+
+    /*
+     * Check stock.
+     */
 
     if (
       product.stock <= 0
@@ -2113,9 +2152,17 @@ export const StoreProvider: React.FC<{
       return;
     }
 
+    /*
+     * Determine selected color.
+     */
+
     const finalColor =
       selectedColor ||
       product.colorsAvailable[0];
+
+    /*
+     * Update cart.
+     */
 
     setCart(prev => {
       const existingIndex =
@@ -2126,6 +2173,10 @@ export const StoreProvider: React.FC<{
             item.selectedColor ===
               finalColor
         );
+
+      /*
+       * Product already exists.
+       */
 
       if (
         existingIndex > -1
@@ -2138,11 +2189,15 @@ export const StoreProvider: React.FC<{
                   ...item,
                   quantity:
                     item.quantity +
-                    quantity,
+                    quantity
                 }
               : item
         );
       }
+
+      /*
+       * Product does not exist.
+       */
 
       return [
         ...prev,
@@ -2152,10 +2207,14 @@ export const StoreProvider: React.FC<{
           selectedColor:
             finalColor,
           wrapPaperColor,
-          giftNote,
-        },
+          giftNote
+        }
       ];
     });
+
+    /*
+     * Exactly one toast.
+     */
 
     showToast(
       `🌸 Added "${product.name}" to your cart!`
@@ -2166,34 +2225,37 @@ export const StoreProvider: React.FC<{
     index: number,
     quantity: number
   ) => {
-    setCart(prev => {
-      if (
-        quantity <= 0
-      ) {
-        return prev.filter(
-          (_, i) =>
-            i !== index
-        );
+    setCart(
+      prev => {
+        if (
+          quantity <= 0
+        ) {
+          return prev.filter(
+            (_, i) =>
+              i !== index
+          );
+        }
+
+        const updated =
+          [...prev];
+
+        updated[index].quantity =
+          quantity;
+
+        return updated;
       }
-
-      const updated =
-        [...prev];
-
-      updated[index].quantity =
-        quantity;
-
-      return updated;
-    });
+    );
   };
 
   const removeFromCart = (
     index: number
   ) => {
-    setCart(prev =>
-      prev.filter(
-        (_, i) =>
-          i !== index
-      )
+    setCart(
+      prev =>
+        prev.filter(
+          (_, i) =>
+            i !== index
+        )
     );
 
     showToast(
@@ -2205,16 +2267,18 @@ export const StoreProvider: React.FC<{
     setCart([]);
   };
 
-  /* ==========================================================
-     PRODUCTS
-  ========================================================== */
+  /*
+   * ============================================================
+   * PRODUCTS
+   * ============================================================
+   */
 
   const addProduct = (
     newProdData: Omit<
       Product,
       'id' |
-        'rating' |
-        'reviewCount'
+      'rating' |
+      'reviewCount'
     >
   ) => {
     modifiedDataTypes.current.add(
@@ -2226,43 +2290,40 @@ export const StoreProvider: React.FC<{
         ...newProdData,
         id: `prod-${Date.now()}`,
         rating: 5.0,
-        reviewCount: 0,
+        reviewCount: 0
       };
 
-    setProducts(prev => [
-      newProduct,
-      ...prev,
-    ]);
+    setProducts(
+      prev => [
+        newProduct,
+        ...prev
+      ]
+    );
 
     showToast(
       `✨ Added "${newProduct.name}" to catalog!`
     );
   };
 
-  const updateProduct = (
-    id: string,
-    updatedFields: Partial<Product>
-  ) => {
-    modifiedDataTypes.current.add(
-      'products'
-    );
+ const updateProduct = (
+  id: string,
+  updatedFields: Partial<Product>
+) => {
+  modifiedDataTypes.current.add('products');
 
-    setProducts(prev =>
-      prev.map(product =>
-        product.id === id
-          ? {
-              ...product,
-              ...updatedFields,
-            }
-          : product
-      )
-    );
+  setProducts(prev =>
+    prev.map(product =>
+      product.id === id
+        ? {
+            ...product,
+            ...updatedFields,
+          }
+        : product
+    )
+  );
 
-    showToast(
-      'Product updated successfully!'
-    );
-  };
-
+  showToast('Product updated successfully!');
+};
   const updateStock = (
     id: string,
     newStock: number
@@ -2271,18 +2332,20 @@ export const StoreProvider: React.FC<{
       'products'
     );
 
-    setProducts(prev =>
-      prev.map(product =>
-        product.id === id
-          ? {
-              ...product,
-              stock: Math.max(
-                0,
-                newStock
-              ),
-            }
-          : product
-      )
+    setProducts(
+      prev =>
+        prev.map(
+          p =>
+            p.id === id
+              ? {
+                  ...p,
+                  stock: Math.max(
+                    0,
+                    newStock
+                  )
+                }
+              : p
+        )
     );
 
     showToast(
@@ -2300,11 +2363,12 @@ export const StoreProvider: React.FC<{
       'products'
     );
 
-    setProducts(prev =>
-      prev.filter(
-        product =>
-          product.id !== id
-      )
+    setProducts(
+      prev =>
+        prev.filter(
+          p =>
+            p.id !== id
+        )
     );
 
     showToast(
@@ -2312,16 +2376,18 @@ export const StoreProvider: React.FC<{
     );
   };
 
-  /* ==========================================================
-     ORDERS
-  ========================================================== */
+  /*
+   * ============================================================
+   * ORDERS
+   * ============================================================
+   */
 
   const createOrder = (
     orderData: Omit<
       Order,
       'id' |
-        'createdAt' |
-        'status'
+      'createdAt' |
+      'status'
     >
   ): Order => {
     modifiedDataTypes.current.add(
@@ -2344,13 +2410,15 @@ export const StoreProvider: React.FC<{
         status: 'Pending',
 
         userId:
-          currentUser?.id,
+          currentUser?.id
       };
 
-    setOrders(prev => [
-      newOrder,
-      ...prev,
-    ]);
+    setOrders(
+      prev => [
+        newOrder,
+        ...prev
+      ]
+    );
 
     orderData.items.forEach(
       item => {
@@ -2358,10 +2426,11 @@ export const StoreProvider: React.FC<{
           item.productId,
           (
             products.find(
-              product =>
-                product.id ===
+              p =>
+                p.id ===
                 item.productId
-            )?.stock || 1
+            )?.stock ||
+            1
           ) -
             item.quantity
         );
@@ -2385,15 +2454,17 @@ export const StoreProvider: React.FC<{
       'orders'
     );
 
-    setOrders(prev =>
-      prev.map(order =>
-        order.id === id
-          ? {
-              ...order,
-              status,
-            }
-          : order
-      )
+    setOrders(
+      prev =>
+        prev.map(
+          o =>
+            o.id === id
+              ? {
+                  ...o,
+                  status
+                }
+              : o
+        )
     );
 
     showToast(
@@ -2409,28 +2480,31 @@ export const StoreProvider: React.FC<{
       'orders'
     );
 
-    setOrders(prev =>
-      prev.map(order => {
-        if (
-          order.id === id
-        ) {
-          return {
-            ...order,
+    setOrders(
+      prev =>
+        prev.map(
+          o => {
+            if (
+              o.id === id
+            ) {
+              return {
+                ...o,
 
-            paymentStatus:
-              isVerified
-                ? 'Payment Verified ✅'
-                : 'Pay on Pickup',
+                paymentStatus:
+                  isVerified
+                    ? 'Payment Verified ✅'
+                    : 'Pay on Pickup',
 
-            paymentVerificationStatus:
-              isVerified
-                ? 'Payment Verified ✅'
-                : 'Payment Rejected ❌',
-          };
-        }
+                paymentVerificationStatus:
+                  isVerified
+                    ? 'Payment Verified ✅'
+                    : 'Payment Rejected ❌'
+              };
+            }
 
-        return order;
-      })
+            return o;
+          }
+        )
     );
 
     showToast(
@@ -2440,16 +2514,18 @@ export const StoreProvider: React.FC<{
     );
   };
 
-  /* ==========================================================
-     CUSTOM REQUESTS
-  ========================================================== */
+  /*
+   * ============================================================
+   * CUSTOM REQUESTS
+   * ============================================================
+   */
 
   const createCustomRequest = (
     reqData: Omit<
       CustomRequest,
       'id' |
-        'createdAt' |
-        'status'
+      'createdAt' |
+      'status'
     >
   ) => {
     modifiedDataTypes.current.add(
@@ -2470,13 +2546,13 @@ export const StoreProvider: React.FC<{
           new Date().toISOString(),
 
         status:
-          'Pending Quote',
+          'Pending Quote'
       };
 
     setCustomRequests(
       prev => [
         newReq,
-        ...prev,
+        ...prev
       ]
     );
 
@@ -2497,20 +2573,20 @@ export const StoreProvider: React.FC<{
     setCustomRequests(
       prev =>
         prev.map(
-          request =>
-            request.id === id
+          r =>
+            r.id === id
               ? {
-                  ...request,
+                  ...r,
                   status,
 
                   ...(quotedPrice !==
                   undefined
                     ? {
-                        quotedPrice,
+                        quotedPrice
                       }
-                    : {}),
+                    : {})
                 }
-              : request
+              : r
         )
     );
 
@@ -2519,16 +2595,18 @@ export const StoreProvider: React.FC<{
     );
   };
 
-  /* ==========================================================
-     REVIEWS
-  ========================================================== */
+  /*
+   * ============================================================
+   * REVIEWS
+   * ============================================================
+   */
 
   const addReview = (
     reviewData: Omit<
       Review,
       'id' |
-        'date' |
-        'verifiedStudent'
+      'date' |
+      'verifiedStudent'
     >
   ) => {
     modifiedDataTypes.current.add(
@@ -2539,10 +2617,18 @@ export const StoreProvider: React.FC<{
       'products'
     );
 
+    /*
+     * Convert rating to number.
+     */
+
     const numericRating =
       Number(
         reviewData.rating
       );
+
+    /*
+     * Keep rating between 1 and 5.
+     */
 
     const safeRating =
       Number.isFinite(
@@ -2557,38 +2643,45 @@ export const StoreProvider: React.FC<{
           )
         : 1;
 
-    const newRev: Review =
-      {
-        ...reviewData,
+    const newRev: Review = {
+      ...reviewData,
 
-        rating:
-          safeRating,
+      rating:
+        safeRating,
 
-        id:
-          `rev-${Date.now()}-${Math.random()
-            .toString(36)
-            .slice(2, 8)}`,
+      id:
+        `rev-${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2, 8)}`,
 
-        date:
-          'Just now',
+      date:
+        'Just now',
 
-        verifiedStudent:
-          true,
-      };
+      verifiedStudent:
+        true
+    };
 
-    setReviews(prev => [
-      newRev,
-      ...prev,
-    ]);
+    /*
+     * Add review using functional state update.
+     */
+
+    setReviews(
+      prev => [
+        newRev,
+        ...prev
+      ]
+    );
 
     showToast(
       'Thank you for your review!'
     );
   };
 
-  /* ==========================================================
-     SETTINGS
-  ========================================================== */
+  /*
+   * ============================================================
+   * SETTINGS
+   * ============================================================
+   */
 
   const updateSettings = (
     newSettings: Partial<StoreSettings>
@@ -2597,19 +2690,23 @@ export const StoreProvider: React.FC<{
       'settings'
     );
 
-    setSettings(prev => ({
-      ...prev,
-      ...newSettings,
-    }));
+    setSettings(
+      prev => ({
+        ...prev,
+        ...newSettings
+      })
+    );
 
     showToast(
       'Store settings saved successfully!'
     );
   };
 
-  /* ==========================================================
-     PROVIDER
-  ========================================================== */
+  /*
+   * ============================================================
+   * PROVIDER
+   * ============================================================
+   */
 
   return (
     <StoreContext.Provider
@@ -2633,7 +2730,6 @@ export const StoreProvider: React.FC<{
 
         isAdmin,
         setIsAdmin,
-
         adminAuthenticated,
         loginAdminWithCredentials,
         logoutAdmin,
@@ -2681,17 +2777,13 @@ export const StoreProvider: React.FC<{
 
         addReview,
 
-        updateSettings,
+        updateSettings
       }}
     >
       {children}
     </StoreContext.Provider>
   );
 };
-
-/* ============================================================
-   HOOK
-============================================================ */
 
 export const useStore = () => {
   const context =

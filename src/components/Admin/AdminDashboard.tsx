@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 import type {
@@ -47,147 +46,90 @@ export const AdminDashboard: React.FC = () => {
     showToast
   } = useStore();
 
-  const [deleteProductId, setDeleteProductId] =
-    useState<string | null>(null);
+  const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<
     'overview' | 'products' | 'orders' | 'custom' | 'settings'
   >('overview');
 
-  // =========================================================
-  // PRODUCT SEARCH / FILTER
-  // =========================================================
+  // Product Search & Filter
+  const [productSearch, setProductSearch] = useState<string>('');
+  const [isAddProductOpen, setIsAddProductOpen] = useState<boolean>(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  const [productSearch, setProductSearch] =
-    useState<string>('');
-
-  const [isAddProductOpen, setIsAddProductOpen] =
-    useState<boolean>(false);
-
-  const [editingProduct, setEditingProduct] =
-    useState<Product | null>(null);
-
-  // =========================================================
-  // NEW PRODUCT FORM
-  // =========================================================
-
+  // New Product Form State
   const [newTitle, setNewTitle] = useState<string>('');
-
   const [newCategory, setNewCategory] =
     useState<ProductCategory>('Flower Stems');
+  const [newPrice, setNewPrice] = useState<number>(200);
+  const [newOriginalPrice, setNewOriginalPrice] = useState<number>(250);
+  const [newStock, setNewStock] = useState<number>(10);
+  const [newLeadTime, setNewLeadTime] = useState<number>(1);
+  const [newDescription, setNewDescription] = useState<string>('');
+  const [newColors, setNewColors] = useState<string>(
+    'Pastel Pink, Yellow, Cream'
+  );
+  const [newFeatures, setNewFeatures] = useState<string>(
+    '100% Milk Cotton, Flexible Stem Wire'
+  );
 
-  const [newPrice, setNewPrice] =
-    useState<number>(200);
+  const [newImageUrl, setNewImageUrl] = useState<string>('');
 
-  const [newOriginalPrice, setNewOriginalPrice] =
-    useState<number>(250);
+  // Product Card Crop State
+  const [newCardImageUrl, setNewCardImageUrl] = useState<string>('');
+  const [isCropperOpen, setIsCropperOpen] = useState<boolean>(false);
+  const [cropZoom, setCropZoom] = useState<number>(1);
+  const [cropX, setCropX] = useState<number>(0.5);
+  const [cropY, setCropY] = useState<number>(0.5);
 
-  const [newStock, setNewStock] =
-    useState<number>(10);
+  // Interactive cropper drag state
+  const [isDraggingCrop, setIsDraggingCrop] = useState<boolean>(false);
+  const [cropDragStart, setCropDragStart] = useState<{
+    x: number;
+    y: number;
+    cropX: number;
+    cropY: number;
+  } | null>(null);
 
-  const [newLeadTime, setNewLeadTime] =
-    useState<number>(1);
+  // Store Settings State
+  const [storeNameInput, setStoreNameInput] = useState<string>(
+    settings.storeName
+  );
+  const [taglineInput, setTaglineInput] = useState<string>(
+    settings.tagline
+  );
+  const [univNameInput, setUnivNameInput] = useState<string>(
+    settings.universityName
+  );
+  const [whatsappInput, setWhatsappInput] = useState<string>(
+    settings.whatsappNumber
+  );
+  const [announcementInput, setAnnouncementInput] = useState<string>(
+    settings.announcementText
+  );
+  const [pickupLocInput, setPickupLocInput] = useState<string>(
+    settings.pickupLocation
+  );
 
-  const [newDescription, setNewDescription] =
-    useState<string>('');
+  // Owner Credentials State
+  const [adminUsernameInput, setAdminUsernameInput] = useState<string>(
+    settings.adminUsername || 'admin'
+  );
+  const [adminPinInput, setAdminPinInput] = useState<string>(
+    settings.adminPin || 'admin123'
+  );
 
-  const [newColors, setNewColors] =
-    useState<string>(
-      'Pastel Pink, Yellow, Cream'
-    );
+  // Payment Details & UPI QR Code State
+  const [upiIdInput, setUpiIdInput] = useState<string>(
+    settings.upiId || 'tanishcrochet@upi'
+  );
 
-  const [newFeatures, setNewFeatures] =
-    useState<string>(
-      '100% Milk Cotton, Flexible Stem Wire'
-    );
-
-  const [newImageUrl, setNewImageUrl] =
-    useState<string>('');
-
-  // =========================================================
-  // PRODUCT CARD CROPPER STATE
-  // =========================================================
-
-  const [newCardImageUrl, setNewCardImageUrl] =
-    useState<string>('');
-
-  const [isCropperOpen, setIsCropperOpen] =
-    useState<boolean>(false);
-
-  const [cropZoom, setCropZoom] =
-    useState<number>(1);
-
-  const [cropX, setCropX] =
-    useState<number>(0.5);
-
-  const [cropY, setCropY] =
-    useState<number>(0.5);
-
-  const [isDraggingCrop, setIsDraggingCrop] =
-    useState<boolean>(false);
-
-  const [cropDragStart, setCropDragStart] =
-    useState<{
-      x: number;
-      y: number;
-      cropX: number;
-      cropY: number;
-    } | null>(null);
-
-  // =========================================================
-  // STORE SETTINGS
-  // =========================================================
-
-  const [storeNameInput, setStoreNameInput] =
-    useState<string>(settings.storeName);
-
-  const [taglineInput, setTaglineInput] =
-    useState<string>(settings.tagline);
-
-  const [univNameInput, setUnivNameInput] =
-    useState<string>(settings.universityName);
-
-  const [whatsappInput, setWhatsappInput] =
-    useState<string>(settings.whatsappNumber);
-
-  const [announcementInput, setAnnouncementInput] =
-    useState<string>(settings.announcementText);
-
-  const [pickupLocInput, setPickupLocInput] =
-    useState<string>(settings.pickupLocation);
-
-  // =========================================================
-  // ADMIN CREDENTIALS
-  // =========================================================
-
-  const [adminUsernameInput, setAdminUsernameInput] =
-    useState<string>(
-      settings.adminUsername || 'admin'
-    );
-
-  const [adminPinInput, setAdminPinInput] =
-    useState<string>(
-      settings.adminPin || 'admin123'
-    );
-
-  // =========================================================
-  // PAYMENT SETTINGS
-  // =========================================================
-
-  const [upiIdInput, setUpiIdInput] =
-    useState<string>(
-      settings.upiId || 'tanishcrochet@upi'
-    );
-
-  const [upiPayeeNameInput, setUpiPayeeNameInput] =
-    useState<string>(
-      settings.upiPayeeName || settings.storeName
-    );
+  const [upiPayeeNameInput, setUpiPayeeNameInput] = useState<string>(
+    settings.upiPayeeName || settings.storeName
+  );
 
   const [upiQrImageUrlInput, setUpiQrImageUrlInput] =
-    useState<string>(
-      settings.upiQrImageUrl || ''
-    );
+    useState<string>(settings.upiQrImageUrl || '');
 
   const [paymentInstructionsInput, setPaymentInstructionsInput] =
     useState<string>(
@@ -195,43 +137,28 @@ export const AdminDashboard: React.FC = () => {
         'Scan QR code with GPay/PhonePe/Paytm/BHIM to pay instantly.'
     );
 
-  // =========================================================
-  // DELIVERY LOCATIONS
-  // =========================================================
-
-  const [deliveryLocations, setDeliveryLocations] =
-    useState<string[]>(
-      settings.campusDeliveryLocations || [
-        "Hostel Block A (Men's Dorm)",
-        "Hostel Block B (Men's Dorm)",
-        'Girls Hostel 1 (GH-1)',
-        'Girls Hostel 3 (GH-3)',
-        'Central Library Plaza',
-        'Student Activity Center (SAC)'
-      ]
-    );
-
-  const [newLocationInput, setNewLocationInput] =
-    useState<string>('');
-
-  // =========================================================
-  // STATS
-  // =========================================================
-
-  const totalRevenue = orders.reduce(
-    (sum, o) => sum + o.total,
-    0
+  // Campus Delivery Locations State
+  const [deliveryLocations, setDeliveryLocations] = useState<string[]>(
+    settings.campusDeliveryLocations || [
+      "Hostel Block A (Men's Dorm)",
+      "Hostel Block B (Men's Dorm)",
+      'Girls Hostel 1 (GH-1)',
+      'Girls Hostel 3 (GH-3)',
+      'Central Library Plaza',
+      'Student Activity Center (SAC)'
+    ]
   );
 
+  const [newLocationInput, setNewLocationInput] = useState<string>('');
+
+  // Stats
+  const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+
   const activeOrdersCount = orders.filter(
-    o =>
-      o.status !== 'Delivered' &&
-      o.status !== 'Cancelled'
+    o => o.status !== 'Delivered' && o.status !== 'Cancelled'
   ).length;
 
-  const lowStockCount = products.filter(
-    p => p.stock <= 3
-  ).length;
+  const lowStockCount = products.filter(p => p.stock <= 3).length;
 
   const pendingRequestsCount = customRequests.filter(
     r => r.status === 'Pending Quote'
@@ -241,9 +168,7 @@ export const AdminDashboard: React.FC = () => {
   // CREATE / UPDATE PRODUCT
   // =========================================================
 
-  const handleCreateProductSubmit = (
-    e: React.FormEvent
-  ) => {
+  const handleCreateProductSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!newTitle.trim()) return;
@@ -276,48 +201,38 @@ export const AdminDashboard: React.FC = () => {
       defaultImages[newCategory] ||
       defaultImages['Flower Stems'];
 
-    const colors = newColors
-      .split(',')
-      .map(c => c.trim())
-      .filter(Boolean);
-
-    const features = newFeatures
-      .split(',')
-      .map(f => f.trim())
-      .filter(Boolean);
-
     if (editingProduct) {
       updateProduct(editingProduct.id, {
-        name: newTitle.trim(),
+        name: newTitle,
         category: newCategory,
         price: newPrice,
         originalPrice: newOriginalPrice,
         stock: newStock,
         leadTimeDays: newLeadTime,
         description: newDescription,
-        colorsAvailable: colors,
-        features,
+        colorsAvailable: newColors.split(',').map(c => c.trim()),
+        features: newFeatures.split(',').map(f => f.trim()),
         imageUrl: finalImage,
         cardImageUrl: newCardImageUrl.trim()
-          ? newCardImageUrl.trim()
-          : editingProduct.cardImageUrl || undefined
+          ? newCardImageUrl
+          : undefined
       });
 
       setEditingProduct(null);
     } else {
       addProduct({
-        name: newTitle.trim(),
+        name: newTitle,
         category: newCategory,
         price: newPrice,
         originalPrice: newOriginalPrice,
         stock: newStock,
         leadTimeDays: newLeadTime,
         description: newDescription,
-        colorsAvailable: colors,
-        features,
+        colorsAvailable: newColors.split(',').map(c => c.trim()),
+        features: newFeatures.split(',').map(f => f.trim()),
         imageUrl: finalImage,
         cardImageUrl: newCardImageUrl.trim()
-          ? newCardImageUrl.trim()
+          ? newCardImageUrl
           : undefined
       });
     }
@@ -332,27 +247,21 @@ export const AdminDashboard: React.FC = () => {
 
   const startEditProduct = (prod: Product) => {
     setEditingProduct(prod);
-
     setNewTitle(prod.name);
     setNewCategory(prod.category);
     setNewPrice(prod.price);
-    setNewOriginalPrice(
-      prod.originalPrice || prod.price
-    );
+    setNewOriginalPrice(prod.originalPrice || prod.price);
     setNewStock(prod.stock);
     setNewLeadTime(prod.leadTimeDays);
     setNewDescription(prod.description);
-    setNewColors(
-      prod.colorsAvailable.join(', ')
-    );
-    setNewFeatures(
-      prod.features.join(', ')
-    );
+    setNewColors(prod.colorsAvailable.join(', '));
+    setNewFeatures(prod.features.join(', '));
     setNewImageUrl(prod.imageUrl);
-    setNewCardImageUrl(
-      prod.cardImageUrl || ''
-    );
-
+    setNewCardImageUrl(prod.cardImageUrl || '');
+    setCropZoom(1);
+    setCropX(0.5);
+    setCropY(0.5);
+    setIsCropperOpen(false);
     setIsAddProductOpen(true);
   };
 
@@ -362,7 +271,6 @@ export const AdminDashboard: React.FC = () => {
 
   const resetProductForm = () => {
     setEditingProduct(null);
-
     setNewTitle('');
     setNewCategory('Flower Stems');
     setNewPrice(200);
@@ -370,24 +278,14 @@ export const AdminDashboard: React.FC = () => {
     setNewStock(10);
     setNewLeadTime(1);
     setNewDescription('');
-
-    setNewColors(
-      'Pastel Pink, Yellow, Cream'
-    );
-
-    setNewFeatures(
-      '100% Milk Cotton, Flexible Stem Wire'
-    );
-
+    setNewColors('Pastel Pink, Yellow, Cream');
+    setNewFeatures('100% Milk Cotton, Flexible Stem Wire');
     setNewImageUrl('');
     setNewCardImageUrl('');
-
     setIsCropperOpen(false);
     setCropZoom(1);
     setCropX(0.5);
     setCropY(0.5);
-    setIsDraggingCrop(false);
-    setCropDragStart(null);
   };
 
   // =========================================================
@@ -399,23 +297,22 @@ export const AdminDashboard: React.FC = () => {
   ) => {
     const file = e.target.files?.[0];
 
-    if (!file) return;
+    if (file) {
+      const reader = new FileReader();
 
-    const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewImageUrl(reader.result as string);
 
-    reader.onloadend = () => {
-      setNewImageUrl(
-        reader.result as string
-      );
+        // New original image = old crop is no longer valid.
+        setNewCardImageUrl('');
 
-      setNewCardImageUrl('');
+        showToast(
+          'Image uploaded successfully — preview ready!'
+        );
+      };
 
-      showToast(
-        'Image uploaded successfully — preview ready!'
-      );
-    };
-
-    reader.readAsDataURL(file);
+      reader.readAsDataURL(file);
+    }
   };
 
   // =========================================================
@@ -428,9 +325,8 @@ export const AdminDashboard: React.FC = () => {
       return;
     }
 
-    setCropZoom(1);
-    setCropX(0.5);
-    setCropY(0.5);
+    // Do not reset the crop when reopening the cropper.
+    // Reset is handled only by the Reset button.
     setIsDraggingCrop(false);
     setCropDragStart(null);
     setIsCropperOpen(true);
@@ -444,19 +340,18 @@ export const AdminDashboard: React.FC = () => {
     setCropDragStart(null);
   };
 
-  // =========================================================
-  // CROP DRAGGING
-  // =========================================================
-
   const handleCropPointerDown = (
     e: React.PointerEvent<HTMLDivElement>
   ) => {
-    e.currentTarget.setPointerCapture(
-      e.pointerId
-    );
+    e.preventDefault();
+
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // Pointer capture is not available in every browser context.
+    }
 
     setIsDraggingCrop(true);
-
     setCropDragStart({
       x: e.clientX,
       y: e.clientY,
@@ -468,47 +363,37 @@ export const AdminDashboard: React.FC = () => {
   const handleCropPointerMove = (
     e: React.PointerEvent<HTMLDivElement>
   ) => {
-    if (
-      !isDraggingCrop ||
-      !cropDragStart
-    ) {
-      return;
-    }
+    if (!isDraggingCrop || !cropDragStart) return;
 
-    const rect =
-      e.currentTarget.getBoundingClientRect();
+    e.preventDefault();
 
-    if (!rect.width || !rect.height) {
-      return;
-    }
+    const rect = e.currentTarget.getBoundingClientRect();
+
+    if (!rect.width || !rect.height) return;
+
+    // object-position uses the same 0..1 coordinate system as the sliders.
+    // The movement is reduced at higher zoom so dragging stays controllable.
+    const zoomFactor = Math.max(cropZoom, 1);
 
     const deltaX =
-      (e.clientX - cropDragStart.x) /
-      rect.width /
-      Math.max(cropZoom, 1);
+      ((e.clientX - cropDragStart.x) / rect.width) /
+      zoomFactor;
 
     const deltaY =
-      (e.clientY - cropDragStart.y) /
-      rect.height /
-      Math.max(cropZoom, 1);
+      ((e.clientY - cropDragStart.y) / rect.height) /
+      zoomFactor;
 
     setCropX(
       Math.max(
         0,
-        Math.min(
-          1,
-          cropDragStart.cropX - deltaX
-        )
+        Math.min(1, cropDragStart.cropX - deltaX)
       )
     );
 
     setCropY(
       Math.max(
         0,
-        Math.min(
-          1,
-          cropDragStart.cropY - deltaY
-        )
+        Math.min(1, cropDragStart.cropY - deltaY)
       )
     );
   };
@@ -516,23 +401,17 @@ export const AdminDashboard: React.FC = () => {
   const handleCropPointerUp = (
     e: React.PointerEvent<HTMLDivElement>
   ) => {
-    if (
-      e.currentTarget.hasPointerCapture(
-        e.pointerId
-      )
-    ) {
-      e.currentTarget.releasePointerCapture(
-        e.pointerId
-      );
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {
+      // Ignore pointer-capture cleanup errors.
     }
 
     setIsDraggingCrop(false);
     setCropDragStart(null);
   };
-
-  // =========================================================
-  // SAVE CROPPED PRODUCT CARD IMAGE
-  // =========================================================
 
   const saveCardCrop = () => {
     if (!newImageUrl.trim()) {
@@ -542,145 +421,79 @@ export const AdminDashboard: React.FC = () => {
 
     const img = new Image();
 
-    if (
-      !newImageUrl.startsWith('data:image/')
-    ) {
+    // Local uploaded data URLs do not need CORS. Remote URLs do.
+    if (!newImageUrl.startsWith('data:image/')) {
       img.crossOrigin = 'anonymous';
     }
 
     img.onload = () => {
-      const sourceWidth =
-        img.naturalWidth;
+      const sourceWidth = img.naturalWidth;
+      const sourceHeight = img.naturalHeight;
 
-      const sourceHeight =
-        img.naturalHeight;
-
-      if (
-        !sourceWidth ||
-        !sourceHeight
-      ) {
-        showToast(
-          'Could not read this image.'
-        );
+      if (!sourceWidth || !sourceHeight) {
+        showToast('Could not read this image.');
         return;
       }
 
       const targetAspect = 3 / 4;
-      const sourceAspect =
-        sourceWidth / sourceHeight;
+      const sourceAspect = sourceWidth / sourceHeight;
 
       let baseCropWidth: number;
       let baseCropHeight: number;
 
-      if (
-        sourceAspect > targetAspect
-      ) {
-        baseCropHeight =
-          sourceHeight;
-
-        baseCropWidth =
-          sourceHeight *
-          targetAspect;
+      if (sourceAspect > targetAspect) {
+        baseCropHeight = sourceHeight;
+        baseCropWidth = sourceHeight * targetAspect;
       } else {
-        baseCropWidth =
-          sourceWidth;
-
-        baseCropHeight =
-          sourceWidth /
-          targetAspect;
+        baseCropWidth = sourceWidth;
+        baseCropHeight = sourceWidth / targetAspect;
       }
 
+      // Zoom means we see a smaller portion of the original image.
       const cropWidth = Math.min(
         sourceWidth,
-        baseCropWidth /
-          Math.max(cropZoom, 1)
+        baseCropWidth / Math.max(cropZoom, 1)
       );
-
       const cropHeight = Math.min(
         sourceHeight,
-        baseCropHeight /
-          Math.max(cropZoom, 1)
+        baseCropHeight / Math.max(cropZoom, 1)
       );
 
-      let finalCropWidth =
-        cropWidth;
+      let finalCropWidth = cropWidth;
+      let finalCropHeight = cropHeight;
 
-      let finalCropHeight =
-        cropHeight;
-
-      if (
-        finalCropWidth /
-          finalCropHeight >
-        targetAspect
-      ) {
-        finalCropWidth =
-          finalCropHeight *
-          targetAspect;
+      if (finalCropWidth / finalCropHeight > targetAspect) {
+        finalCropWidth = finalCropHeight * targetAspect;
       } else {
-        finalCropHeight =
-          finalCropWidth /
-          targetAspect;
+        finalCropHeight = finalCropWidth / targetAspect;
       }
 
-      const maxX = Math.max(
-        0,
-        sourceWidth -
-          finalCropWidth
-      );
-
-      const maxY = Math.max(
-        0,
-        sourceHeight -
-          finalCropHeight
-      );
+      const maxX = Math.max(0, sourceWidth - finalCropWidth);
+      const maxY = Math.max(0, sourceHeight - finalCropHeight);
 
       const sx = Math.max(
         0,
-        Math.min(
-          maxX,
-          maxX * cropX
-        )
+        Math.min(maxX, maxX * cropX)
       );
-
       const sy = Math.max(
         0,
-        Math.min(
-          maxY,
-          maxY * cropY
-        )
+        Math.min(maxY, maxY * cropY)
       );
 
-      const canvas =
-        document.createElement(
-          'canvas'
-        );
-
-      // Exact 3:4 output.
+      const canvas = document.createElement('canvas');
       canvas.width = 600;
       canvas.height = 800;
 
-      const ctx =
-        canvas.getContext('2d');
+      const ctx = canvas.getContext('2d');
 
       if (!ctx) {
-        showToast(
-          'Could not create the card image.'
-        );
+        showToast('Could not create the card image.');
         return;
       }
 
-      ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
-
-      ctx.imageSmoothingEnabled =
-        true;
-
-      ctx.imageSmoothingQuality =
-        'high';
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
 
       try {
         ctx.drawImage(
@@ -695,23 +508,17 @@ export const AdminDashboard: React.FC = () => {
           canvas.height
         );
 
-        const croppedImage =
-          canvas.toDataURL(
-            'image/jpeg',
-            0.92
-          );
-
-        setNewCardImageUrl(
-          croppedImage
+        const croppedImage = canvas.toDataURL(
+          'image/jpeg',
+          0.94
         );
 
+        setNewCardImageUrl(croppedImage);
         setIsCropperOpen(false);
         setIsDraggingCrop(false);
         setCropDragStart(null);
 
-        showToast(
-          'Product Card crop saved successfully!'
-        );
+        showToast('Product Card crop saved successfully!');
       } catch {
         showToast(
           'This image cannot be cropped from its URL. Please upload the image file instead.'
@@ -735,25 +542,18 @@ export const AdminDashboard: React.FC = () => {
   const handleQrFileUpload = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const file =
-      e.target.files?.[0];
+    const file = e.target.files?.[0];
 
-    if (!file) return;
+    if (file) {
+      const reader = new FileReader();
 
-    const reader =
-      new FileReader();
+      reader.onloadend = () => {
+        setUpiQrImageUrlInput(reader.result as string);
+        showToast('Payment QR Code uploaded successfully!');
+      };
 
-    reader.onloadend = () => {
-      setUpiQrImageUrlInput(
-        reader.result as string
-      );
-
-      showToast(
-        'Payment QR Code uploaded successfully!'
-      );
-    };
-
-    reader.readAsDataURL(file);
+      reader.readAsDataURL(file);
+    }
   };
 
   // =========================================================
@@ -761,31 +561,23 @@ export const AdminDashboard: React.FC = () => {
   // =========================================================
 
   const handleAddLocation = () => {
-    const location =
-      newLocationInput.trim();
+    if (!newLocationInput.trim()) return;
 
-    if (!location) return;
-
-    if (
-      deliveryLocations.includes(
-        location
-      )
-    ) {
-      showToast(
-        'Location already exists in list!'
-      );
+    if (deliveryLocations.includes(newLocationInput.trim())) {
+      showToast('Location already exists in list!');
       return;
     }
 
-    setDeliveryLocations([
+    const updated = [
       ...deliveryLocations,
-      location
-    ]);
+      newLocationInput.trim()
+    ];
 
+    setDeliveryLocations(updated);
     setNewLocationInput('');
 
     showToast(
-      `Added location "${location}"`
+      `Added location "${newLocationInput.trim()}"`
     );
   };
 
@@ -793,36 +585,24 @@ export const AdminDashboard: React.FC = () => {
   // REMOVE DELIVERY LOCATION
   // =========================================================
 
-  const handleRemoveLocation = (
-    locToRemove: string
-  ) => {
-    if (
-      deliveryLocations.length <= 1
-    ) {
-      showToast(
-        'Must keep at least 1 delivery location!'
-      );
+  const handleRemoveLocation = (locToRemove: string) => {
+    if (deliveryLocations.length <= 1) {
+      showToast('Must keep at least 1 delivery location!');
       return;
     }
 
     setDeliveryLocations(
-      deliveryLocations.filter(
-        loc => loc !== locToRemove
-      )
+      deliveryLocations.filter(loc => loc !== locToRemove)
     );
 
-    showToast(
-      `Removed location "${locToRemove}"`
-    );
+    showToast(`Removed location "${locToRemove}"`);
   };
 
   // =========================================================
   // SAVE SETTINGS
   // =========================================================
 
-  const handleSaveSettings = (
-    e: React.FormEvent
-  ) => {
+  const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
 
     updateSettings({
@@ -830,31 +610,15 @@ export const AdminDashboard: React.FC = () => {
       tagline: taglineInput,
       universityName: univNameInput,
       whatsappNumber: whatsappInput,
-      announcementText:
-        announcementInput,
-      pickupLocation:
-        pickupLocInput,
-
-      adminUsername:
-        adminUsernameInput.trim(),
-
-      adminPin:
-        adminPinInput.trim(),
-
-      campusDeliveryLocations:
-        deliveryLocations,
-
-      upiId:
-        upiIdInput.trim(),
-
-      upiPayeeName:
-        upiPayeeNameInput.trim(),
-
-      upiQrImageUrl:
-        upiQrImageUrlInput.trim(),
-
-      paymentInstructions:
-        paymentInstructionsInput.trim()
+      announcementText: announcementInput,
+      pickupLocation: pickupLocInput,
+      adminUsername: adminUsernameInput.trim(),
+      adminPin: adminPinInput.trim(),
+      campusDeliveryLocations: deliveryLocations,
+      upiId: upiIdInput.trim(),
+      upiPayeeName: upiPayeeNameInput.trim(),
+      upiQrImageUrl: upiQrImageUrlInput.trim(),
+      paymentInstructions: paymentInstructionsInput.trim()
     });
   };
 
@@ -862,20 +626,11 @@ export const AdminDashboard: React.FC = () => {
   // FILTER PRODUCTS
   // =========================================================
 
-  const filteredProducts =
-    products.filter(product => {
-      const search =
-        productSearch.toLowerCase();
-
-      return (
-        product.name
-          .toLowerCase()
-          .includes(search) ||
-        product.category
-          .toLowerCase()
-          .includes(search)
-      );
-    });
+  const filteredProducts = products.filter(
+    p =>
+      p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+      p.category.toLowerCase().includes(productSearch.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-stone-100 text-black pb-16">
@@ -936,9 +691,7 @@ export const AdminDashboard: React.FC = () => {
       <div className="bg-white border-b border-stone-200 px-4 sm:px-8 py-2 overflow-x-auto no-scrollbar flex items-center gap-2">
 
         <button
-          onClick={() =>
-            setActiveTab('overview')
-          }
+          onClick={() => setActiveTab('overview')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
             activeTab === 'overview'
               ? 'bg-purple-600 text-white shadow-sm'
@@ -952,9 +705,7 @@ export const AdminDashboard: React.FC = () => {
         </button>
 
         <button
-          onClick={() =>
-            setActiveTab('products')
-          }
+          onClick={() => setActiveTab('products')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
             activeTab === 'products'
               ? 'bg-purple-600 text-white shadow-sm'
@@ -968,9 +719,7 @@ export const AdminDashboard: React.FC = () => {
         </button>
 
         <button
-          onClick={() =>
-            setActiveTab('orders')
-          }
+          onClick={() => setActiveTab('orders')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
             activeTab === 'orders'
               ? 'bg-purple-600 text-white shadow-sm'
@@ -984,9 +733,7 @@ export const AdminDashboard: React.FC = () => {
         </button>
 
         <button
-          onClick={() =>
-            setActiveTab('custom')
-          }
+          onClick={() => setActiveTab('custom')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
             activeTab === 'custom'
               ? 'bg-purple-600 text-white shadow-sm'
@@ -1000,9 +747,7 @@ export const AdminDashboard: React.FC = () => {
         </button>
 
         <button
-          onClick={() =>
-            setActiveTab('settings')
-          }
+          onClick={() => setActiveTab('settings')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
             activeTab === 'settings'
               ? 'bg-purple-600 text-white shadow-sm'
@@ -1030,10 +775,16 @@ export const AdminDashboard: React.FC = () => {
         {activeTab === 'overview' && (
           <div className="space-y-8">
 
+            {/* STAT CARDS */}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
+              {/* TOTAL REVENUE */}
+
               <div className="bg-white p-5 rounded-3xl border border-stone-200 shadow-sm flex items-center justify-between">
+
                 <div>
+
                   <div className="text-xs font-bold text-black uppercase tracking-wider">
                     Total Sales Revenue
                   </div>
@@ -1045,15 +796,21 @@ export const AdminDashboard: React.FC = () => {
                   <div className="text-[11px] text-emerald-700 font-semibold mt-1">
                     ↑ From campus sales
                   </div>
+
                 </div>
 
                 <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xl">
                   ₹
                 </div>
+
               </div>
 
+              {/* ACTIVE ORDERS */}
+
               <div className="bg-white p-5 rounded-3xl border border-stone-200 shadow-sm flex items-center justify-between">
+
                 <div>
+
                   <div className="text-xs font-bold text-black uppercase tracking-wider">
                     Active Campus Orders
                   </div>
@@ -1065,15 +822,21 @@ export const AdminDashboard: React.FC = () => {
                   <div className="text-[11px] text-black font-semibold mt-1">
                     Need fulfillment
                   </div>
+
                 </div>
 
                 <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-800 flex items-center justify-center font-bold text-xl">
                   🛍️
                 </div>
+
               </div>
 
+              {/* LOW STOCK */}
+
               <div className="bg-white p-5 rounded-3xl border border-stone-200 shadow-sm flex items-center justify-between">
+
                 <div>
+
                   <div className="text-xs font-bold text-black uppercase tracking-wider">
                     Low Stock Warning
                   </div>
@@ -1085,15 +848,21 @@ export const AdminDashboard: React.FC = () => {
                   <div className="text-[11px] text-black font-semibold mt-1">
                     Items ≤ 3 in stock
                   </div>
+
                 </div>
 
                 <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xl">
                   ⚠️
                 </div>
+
               </div>
 
+              {/* CUSTOM REQUESTS */}
+
               <div className="bg-white p-5 rounded-3xl border border-stone-200 shadow-sm flex items-center justify-between">
+
                 <div>
+
                   <div className="text-xs font-bold text-black uppercase tracking-wider">
                     Custom Design Requests
                   </div>
@@ -1105,14 +874,18 @@ export const AdminDashboard: React.FC = () => {
                   <div className="text-[11px] text-black font-semibold mt-1">
                     Pending price quotes
                   </div>
+
                 </div>
 
                 <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-800 flex items-center justify-center font-bold text-xl">
                   ✨
                 </div>
+
               </div>
 
             </div>
+
+            {/* LOWER OVERVIEW */}
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
@@ -1121,99 +894,100 @@ export const AdminDashboard: React.FC = () => {
               <div className="lg:col-span-8 bg-white rounded-3xl border border-stone-200 p-6 shadow-sm space-y-4">
 
                 <div className="flex items-center justify-between">
+
                   <h3 className="font-extrabold text-black text-lg">
                     Recent Campus Orders
                   </h3>
 
                   <button
-                    onClick={() =>
-                      setActiveTab('orders')
-                    }
+                    onClick={() => setActiveTab('orders')}
                     className="text-xs font-bold text-purple-700 hover:text-purple-900"
                   >
                     View All ({orders.length}) →
                   </button>
+
                 </div>
 
                 <div className="space-y-3">
 
-                  {orders
-                    .slice(0, 4)
-                    .map(order => (
-                      <div
-                        key={order.id}
-                        className="p-4 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-between flex-wrap gap-3"
-                      >
+                  {orders.slice(0, 4).map(order => (
 
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
+                    <div
+                      key={order.id}
+                      className="p-4 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-between flex-wrap gap-3"
+                    >
 
-                            <span className="font-bold text-black text-sm">
-                              {order.id}
-                            </span>
+                      <div>
 
-                            <span className="text-xs text-black">
-                              • {order.customerName}
-                            </span>
+                        <div className="flex items-center gap-2">
 
-                            <span className="bg-stone-200 text-black text-[10px] font-bold px-2 py-0.5 rounded-md">
-                              {order.dormOrBuilding}
-                            </span>
-
-                          </div>
-
-                          <div className="text-xs text-black mt-1">
-                            {order.items
-                              .map(
-                                i =>
-                                  `${i.quantity}x ${i.productName}`
-                              )
-                              .join(', ')}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-
-                          <span className="font-extrabold text-rose-700 text-sm">
-                            ₹{order.total}
+                          <span className="font-bold text-black text-sm">
+                            {order.id}
                           </span>
 
-                          <select
-                            value={order.status}
-                            onChange={e =>
-                              updateOrderStatus(
-                                order.id,
-                                e.target
-                                  .value as OrderStatus
-                              )
-                            }
-                            className="bg-white border border-stone-300 font-bold text-black text-xs rounded-xl px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-purple-300"
-                          >
-                            <option value="Pending">
-                              Pending
-                            </option>
+                          <span className="text-xs text-black">
+                            • {order.customerName}
+                          </span>
 
-                            <option value="Crocheting">
-                              Crocheting
-                            </option>
+                          <span className="bg-stone-200 text-black text-[10px] font-bold px-2 py-0.5 rounded-md">
+                            {order.dormOrBuilding}
+                          </span>
 
-                            <option value="Ready for Pickup">
-                              Ready for Pickup
-                            </option>
+                        </div>
 
-                            <option value="Delivered">
-                              Delivered
-                            </option>
-
-                            <option value="Cancelled">
-                              Cancelled
-                            </option>
-                          </select>
-
+                        <div className="text-xs text-black mt-1">
+                          {order.items
+                            .map(
+                              i =>
+                                `${i.quantity}x ${i.productName}`
+                            )
+                            .join(', ')}
                         </div>
 
                       </div>
-                    ))}
+
+                      <div className="flex items-center gap-3">
+
+                        <span className="font-extrabold text-rose-700 text-sm">
+                          ₹{order.total}
+                        </span>
+
+                        <select
+                          value={order.status}
+                          onChange={e =>
+                            updateOrderStatus(
+                              order.id,
+                              e.target.value as OrderStatus
+                            )
+                          }
+                          className="bg-white border border-stone-300 font-bold text-black text-xs rounded-xl px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-purple-300"
+                        >
+                          <option value="Pending">
+                            Pending
+                          </option>
+
+                          <option value="Crocheting">
+                            Crocheting
+                          </option>
+
+                          <option value="Ready for Pickup">
+                            Ready for Pickup
+                          </option>
+
+                          <option value="Delivered">
+                            Delivered
+                          </option>
+
+                          <option value="Cancelled">
+                            Cancelled
+                          </option>
+                        </select>
+
+                      </div>
+
+                    </div>
+
+                  ))}
 
                 </div>
 
@@ -1245,6 +1019,7 @@ export const AdminDashboard: React.FC = () => {
                 <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
 
                   {products.map(prod => (
+
                     <div
                       key={prod.id}
                       className="p-3 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-between"
@@ -1253,26 +1028,9 @@ export const AdminDashboard: React.FC = () => {
                       <div className="flex items-center gap-2 max-w-[170px]">
 
                         <img
-                          src={
-                            prod.cardImageUrl ||
-                            prod.imageUrl
-                          }
-                          alt={prod.name}
-                          loading="lazy"
+                          src={prod.cardImageUrl || prod.imageUrl}
+                          alt=""
                           className="w-8 h-8 rounded-lg object-cover"
-                          onError={e => {
-                            const image =
-                              e.currentTarget;
-
-                            if (
-                              prod.imageUrl &&
-                              image.src !==
-                                prod.imageUrl
-                            ) {
-                              image.src =
-                                prod.imageUrl;
-                            }
-                          }}
                         />
 
                         <div className="truncate">
@@ -1295,10 +1053,7 @@ export const AdminDashboard: React.FC = () => {
                           onClick={() =>
                             updateStock(
                               prod.id,
-                              Math.max(
-                                0,
-                                prod.stock - 1
-                              )
+                              prod.stock - 1
                             )
                           }
                           className="w-6 h-6 flex items-center justify-center font-bold text-xs text-black hover:bg-stone-100 rounded-lg"
@@ -1331,6 +1086,7 @@ export const AdminDashboard: React.FC = () => {
                       </div>
 
                     </div>
+
                   ))}
 
                 </div>
@@ -1347,9 +1103,8 @@ export const AdminDashboard: React.FC = () => {
         {/* ======================================================= */}
 
         {activeTab === 'products' && (
-          <div className="space-y-6">
 
-            {/* SEARCH */}
+          <div className="space-y-6">
 
             <div className="bg-white p-4 rounded-3xl border border-stone-200 flex flex-wrap items-center justify-between gap-4 shadow-sm">
 
@@ -1362,9 +1117,7 @@ export const AdminDashboard: React.FC = () => {
                   placeholder="Search products by title or category..."
                   value={productSearch}
                   onChange={e =>
-                    setProductSearch(
-                      e.target.value
-                    )
+                    setProductSearch(e.target.value)
                   }
                   className="w-full bg-stone-50 border border-stone-200 rounded-2xl pl-10 pr-4 py-2 text-xs font-semibold text-black placeholder:text-black outline-none focus:ring-2 focus:ring-purple-200"
                 />
@@ -1379,16 +1132,15 @@ export const AdminDashboard: React.FC = () => {
                 className="bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs px-5 py-2.5 rounded-2xl shadow-md flex items-center gap-2 transition-all"
               >
                 <Plus className="w-4 h-4" />
-                <span>
-                  Add New Crochet Product
-                </span>
+                <span>Add New Crochet Product</span>
               </button>
 
             </div>
 
-            {/* ADD / EDIT PRODUCT */}
+            {/* ADD PRODUCT */}
 
             {isAddProductOpen && (
+
               <div className="bg-white rounded-3xl border-2 border-purple-400 p-6 shadow-xl space-y-4">
 
                 <div className="flex items-center justify-between border-b border-stone-200 pb-3">
@@ -1412,17 +1164,14 @@ export const AdminDashboard: React.FC = () => {
                 </div>
 
                 <form
-                  onSubmit={
-                    handleCreateProductSubmit
-                  }
+                  onSubmit={handleCreateProductSubmit}
                   className="space-y-4"
                 >
-
-                  {/* BASIC PRODUCT DATA */}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
                     <div>
+
                       <label className="block text-xs font-bold text-black mb-1">
                         Product Title:
                       </label>
@@ -1433,15 +1182,15 @@ export const AdminDashboard: React.FC = () => {
                         placeholder="e.g. Handmade Sunflower Bouquet"
                         value={newTitle}
                         onChange={e =>
-                          setNewTitle(
-                            e.target.value
-                          )
+                          setNewTitle(e.target.value)
                         }
                         className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-black placeholder:text-black outline-none"
                       />
+
                     </div>
 
                     <div>
+
                       <label className="block text-xs font-bold text-black mb-1">
                         Category:
                       </label>
@@ -1450,13 +1199,11 @@ export const AdminDashboard: React.FC = () => {
                         value={newCategory}
                         onChange={e =>
                           setNewCategory(
-                            e.target
-                              .value as ProductCategory
+                            e.target.value as ProductCategory
                           )
                         }
                         className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs font-semibold text-black"
                       >
-
                         <option value="Flower Stems">
                           Flower Stems
                         </option>
@@ -1480,11 +1227,12 @@ export const AdminDashboard: React.FC = () => {
                         <option value="Wearables & Hair">
                           Wearables & Hair
                         </option>
-
                       </select>
+
                     </div>
 
                     <div>
+
                       <label className="block text-xs font-bold text-black mb-1">
                         Price (₹):
                       </label>
@@ -1496,16 +1244,16 @@ export const AdminDashboard: React.FC = () => {
                         value={newPrice}
                         onChange={e =>
                           setNewPrice(
-                            Number(
-                              e.target.value
-                            )
+                            Number(e.target.value)
                           )
                         }
                         className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-black outline-none"
                       />
+
                     </div>
 
                     <div>
+
                       <label className="block text-xs font-bold text-black mb-1">
                         Original Price (₹):
                       </label>
@@ -1516,16 +1264,16 @@ export const AdminDashboard: React.FC = () => {
                         value={newOriginalPrice}
                         onChange={e =>
                           setNewOriginalPrice(
-                            Number(
-                              e.target.value
-                            )
+                            Number(e.target.value)
                           )
                         }
                         className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-black outline-none"
                       />
+
                     </div>
 
                     <div>
+
                       <label className="block text-xs font-bold text-black mb-1">
                         Stock Quantity:
                       </label>
@@ -1537,16 +1285,16 @@ export const AdminDashboard: React.FC = () => {
                         value={newStock}
                         onChange={e =>
                           setNewStock(
-                            Number(
-                              e.target.value
-                            )
+                            Number(e.target.value)
                           )
                         }
                         className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-black outline-none"
                       />
+
                     </div>
 
                     <div>
+
                       <label className="block text-xs font-bold text-black mb-1">
                         Crochet Lead Time (Days):
                       </label>
@@ -1558,20 +1306,18 @@ export const AdminDashboard: React.FC = () => {
                         value={newLeadTime}
                         onChange={e =>
                           setNewLeadTime(
-                            Number(
-                              e.target.value
-                            )
+                            Number(e.target.value)
                           )
                         }
                         className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-black outline-none"
                       />
+
                     </div>
 
                   </div>
 
-                  {/* COLORS */}
-
                   <div>
+
                     <label className="block text-xs font-bold text-black mb-1">
                       Color Variations (comma separated):
                     </label>
@@ -1581,17 +1327,15 @@ export const AdminDashboard: React.FC = () => {
                       placeholder="Pink, Yellow, Lavender, Cream"
                       value={newColors}
                       onChange={e =>
-                        setNewColors(
-                          e.target.value
-                        )
+                        setNewColors(e.target.value)
                       }
                       className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-black placeholder:text-black outline-none"
                     />
+
                   </div>
 
-                  {/* DESCRIPTION */}
-
                   <div>
+
                     <label className="block text-xs font-bold text-black mb-1">
                       Product Description:
                     </label>
@@ -1601,12 +1345,11 @@ export const AdminDashboard: React.FC = () => {
                       placeholder="Describe yarn material, dimensions, and craft details..."
                       value={newDescription}
                       onChange={e =>
-                        setNewDescription(
-                          e.target.value
-                        )
+                        setNewDescription(e.target.value)
                       }
                       className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-black placeholder:text-black outline-none"
                     />
+
                   </div>
 
                   {/* IMAGE INPUTS */}
@@ -1624,9 +1367,7 @@ export const AdminDashboard: React.FC = () => {
                         placeholder="https://images.unsplash.com/..."
                         value={newImageUrl}
                         onChange={e => {
-                          setNewImageUrl(
-                            e.target.value
-                          );
+                          setNewImageUrl(e.target.value);
                           setNewCardImageUrl('');
                         }}
                         className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-black placeholder:text-black outline-none"
@@ -1647,9 +1388,7 @@ export const AdminDashboard: React.FC = () => {
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={
-                          handleImageFileUpload
-                        }
+                        onChange={handleImageFileUpload}
                         className="w-full text-xs text-black file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200"
                       />
 
@@ -1660,6 +1399,7 @@ export const AdminDashboard: React.FC = () => {
                   {/* ORIGINAL IMAGE PREVIEW */}
 
                   {newImageUrl && (
+
                     <div className="flex items-center gap-3 bg-stone-50 p-2 rounded-xl border border-stone-200">
 
                       <img
@@ -1673,11 +1413,15 @@ export const AdminDashboard: React.FC = () => {
                       </span>
 
                     </div>
+
                   )}
 
+                  {/* ================================================= */}
                   {/* PRODUCT CARD IMAGE */}
+                  {/* ================================================= */}
 
                   {newImageUrl && (
+
                     <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4 space-y-3">
 
                       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1697,9 +1441,7 @@ export const AdminDashboard: React.FC = () => {
 
                         <button
                           type="button"
-                          onClick={
-                            openCropper
-                          }
+                          onClick={openCropper}
                           className="bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-sm flex items-center gap-2 transition-all"
                         >
                           <Crop className="w-4 h-4" />
@@ -1709,12 +1451,11 @@ export const AdminDashboard: React.FC = () => {
                       </div>
 
                       {newCardImageUrl ? (
+
                         <div className="flex flex-wrap items-center gap-3 bg-white p-3 rounded-xl border border-purple-200">
 
                           <img
-                            src={
-                              newCardImageUrl
-                            }
+                            src={newCardImageUrl}
                             alt="Product Card Crop"
                             className="w-24 aspect-[3/4] rounded-xl object-cover border border-stone-200 bg-stone-100"
                           />
@@ -1746,25 +1487,30 @@ export const AdminDashboard: React.FC = () => {
                           </button>
 
                         </div>
+
                       ) : (
+
                         <div className="text-[11px] text-black font-semibold">
                           No custom crop selected — Product Card will use the original image.
                         </div>
+
                       )}
 
                     </div>
+
                   )}
 
-                  {/* FORM ACTIONS */}
+                  {/* ================================================= */}
+                  {/* PRODUCT FORM ACTIONS */}
+                  {/* ================================================= */}
 
                   <div className="flex justify-end gap-3 pt-2">
 
                     <button
                       type="button"
-                      onClick={() => {
-                        setIsAddProductOpen(false);
-                        resetProductForm();
-                      }}
+                      onClick={() =>
+                        setIsAddProductOpen(false)
+                      }
                       className="px-4 py-2 rounded-xl text-xs font-bold text-black hover:bg-stone-100"
                     >
                       Cancel
@@ -1784,188 +1530,132 @@ export const AdminDashboard: React.FC = () => {
                 </form>
 
               </div>
+
             )}
 
-            {/* ================================================= */}
-            {/* FIXED PRODUCT CARDS */}
-            {/* ================================================= */}
+            {/* PRODUCT CARDS */}
 
-{/* ========================================================= */}
-{/* PRODUCT CARDS */}
-{/* ========================================================= */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredProducts.map(prod => (
 
-  {filteredProducts.map(prod => {
-
-    const adminImage =
-      prod.cardImageUrl?.trim() ||
-      prod.imageUrl?.trim() ||
-      '';
-
-    return (
-      <div
-        key={prod.id}
-        className="bg-white rounded-3xl border border-stone-200 p-4 shadow-sm flex flex-col space-y-3"
-      >
-
-        {/* ================================================= */}
-        {/* PRODUCT IMAGE + INFORMATION */}
-        {/* ================================================= */}
-
-        <div className="flex gap-3">
-
-          {/* SMALL PRODUCT IMAGE */}
-          <div className="w-20 h-20 shrink-0 overflow-hidden rounded-xl bg-stone-100 border border-stone-200">
-
-            {adminImage ? (
-              <img
-                src={adminImage}
-                alt={prod.name}
-                className="w-full h-full object-cover"
-                loading="lazy"
-                onError={e => {
-                  const img = e.currentTarget;
-
-                  if (
-                    prod.imageUrl &&
-                    img.src !== prod.imageUrl
-                  ) {
-                    img.src = prod.imageUrl;
-                  }
-                }}
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-[9px] font-bold text-stone-500">
-                No Image
-              </div>
-            )}
-
-          </div>
-
-          {/* ================================================= */}
-          {/* PRODUCT INFORMATION */}
-          {/* ================================================= */}
-
-          <div className="flex-1 min-w-0">
-
-            {/* CATEGORY */}
-            <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wider">
-              {prod.category}
-            </span>
-
-            {/* NAME */}
-            <h4 className="font-bold text-black text-sm truncate mt-0.5">
-              {prod.name}
-            </h4>
-
-            {/* PRICE */}
-            <div className="text-xs font-black text-black mt-1">
-              ₹{prod.price}
-            </div>
-
-            {/* STOCK */}
-            <div className="flex items-center gap-2 mt-2">
-
-              <span className="text-[11px] text-black">
-                Stock:
-              </span>
-
-              <div className="flex items-center border border-stone-300 rounded-lg bg-stone-50 px-1">
-
-                {/* DECREASE STOCK */}
-                <button
-                  onClick={() =>
-                    updateStock(
-                      prod.id,
-                      Math.max(0, prod.stock - 1)
-                    )
-                  }
-                  className="w-5 h-5 flex items-center justify-center font-bold text-xs text-black hover:bg-stone-100 rounded"
-                  type="button"
+                <div
+                  key={prod.id}
+                  className="bg-white rounded-3xl border border-stone-200 p-4 shadow-sm flex flex-col justify-between space-y-3"
                 >
-                  -
-                </button>
 
-                {/* STOCK VALUE */}
-                <span
-                  className={`w-6 text-center text-xs font-bold ${
-                    prod.stock <= 3
-                      ? 'text-amber-700'
-                      : 'text-black'
-                  }`}
-                >
-                  {prod.stock}
-                </span>
+                  <div className="flex gap-3">
 
-                {/* INCREASE STOCK */}
-                <button
-                  onClick={() =>
-                    updateStock(
-                      prod.id,
-                      prod.stock + 1
-                    )
-                  }
-                  className="w-5 h-5 flex items-center justify-center font-bold text-xs text-black hover:bg-stone-100 rounded"
-                  type="button"
-                >
-                  +
-                </button>
+                    <img
+                      src={prod.cardImageUrl || prod.imageUrl}
+                      alt={prod.name}
+                      className="w-20 h-20 rounded-2xl object-cover border border-stone-200"
+                    />
 
-              </div>
+                    <div className="flex-1 min-w-0">
+
+                      <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wider">
+                        {prod.category}
+                      </span>
+
+                      <h4 className="font-bold text-black text-sm truncate">
+                        {prod.name}
+                      </h4>
+
+                      <div className="text-xs font-black text-black mt-0.5">
+                        ₹{prod.price}
+                      </div>
+
+                      <div className="flex items-center gap-2 mt-2">
+
+                        <span className="text-[11px] text-black">
+                          Stock:
+                        </span>
+
+                        <div className="flex items-center border border-stone-300 rounded-lg bg-stone-50 px-1">
+
+                          <button
+                            onClick={() =>
+                              updateStock(
+                                prod.id,
+                                prod.stock - 1
+                              )
+                            }
+                            className="w-5 h-5 flex items-center justify-center font-bold text-xs text-black"
+                          >
+                            -
+                          </button>
+
+                          <span
+                            className={`w-6 text-center text-xs font-bold ${
+                              prod.stock <= 3
+                                ? 'text-amber-700'
+                                : 'text-black'
+                            }`}
+                          >
+                            {prod.stock}
+                          </span>
+
+                          <button
+                            onClick={() =>
+                              updateStock(
+                                prod.id,
+                                prod.stock + 1
+                              )
+                            }
+                            className="w-5 h-5 flex items-center justify-center font-bold text-xs text-black"
+                          >
+                            +
+                          </button>
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-stone-100">
+
+                    <span className="text-[11px] text-black font-semibold">
+                      ★ {prod.rating.toFixed(1)} ({prod.reviewCount} reviews)
+                    </span>
+
+                    <div className="flex items-center gap-1">
+
+                      <button
+                        onClick={() =>
+                          startEditProduct(prod)
+                        }
+                        className="p-1.5 text-black hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
+                        title="Edit Product"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          setDeleteProductId(prod.id)
+                        }
+                        className="p-1.5 text-black hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
+                        title="Delete Product"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              ))}
 
             </div>
 
           </div>
 
-        </div>
-
-        {/* ================================================= */}
-        {/* RATING + ACTIONS */}
-        {/* ================================================= */}
-
-        <div className="flex items-center justify-between pt-2 border-t border-stone-100">
-
-          {/* RATING */}
-          <span className="text-[11px] text-black font-semibold">
-            ★ {prod.rating.toFixed(1)} ({prod.reviewCount} reviews)
-          </span>
-
-          {/* ACTION BUTTONS */}
-          <div className="flex items-center gap-1">
-
-            {/* EDIT */}
-            <button
-              onClick={() => startEditProduct(prod)}
-              className="p-1.5 text-black hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
-              title="Edit Product"
-              type="button"
-            >
-              <Edit className="w-4 h-4" />
-            </button>
-
-            {/* DELETE */}
-            <button
-              onClick={() =>
-                setDeleteProductId(prod.id)
-              }
-              className="p-1.5 text-black hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
-              title="Delete Product"
-              type="button"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-    );
-  })}
-
-</div>
-          </div>
         )}
 
         {/* ======================================================= */}
@@ -1973,6 +1663,7 @@ export const AdminDashboard: React.FC = () => {
         {/* ======================================================= */}
 
         {activeTab === 'orders' && (
+
           <div className="space-y-4">
 
             <h3 className="font-extrabold text-black text-lg">
@@ -1982,6 +1673,7 @@ export const AdminDashboard: React.FC = () => {
             <div className="space-y-4">
 
               {orders.map(ord => (
+
                 <div
                   key={ord.id}
                   className="bg-white rounded-3xl border border-stone-200 p-6 shadow-sm space-y-4"
@@ -2040,16 +1732,13 @@ export const AdminDashboard: React.FC = () => {
                         onChange={e =>
                           updateOrderStatus(
                             ord.id,
-                            e.target
-                              .value as OrderStatus
+                            e.target.value as OrderStatus
                           )
                         }
                         className={`font-extrabold text-xs rounded-xl px-3 py-2 outline-none border transition-all ${
-                          ord.status ===
-                          'Delivered'
+                          ord.status === 'Delivered'
                             ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
-                            : ord.status ===
-                              'Ready for Pickup'
+                            : ord.status === 'Ready for Pickup'
                             ? 'bg-amber-100 text-amber-900 border-amber-300'
                             : 'bg-rose-100 text-rose-900 border-rose-300'
                         }`}
@@ -2083,57 +1772,56 @@ export const AdminDashboard: React.FC = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
 
-                    {ord.items.map(
-                      (item, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-3 bg-stone-50 p-2 rounded-xl border border-stone-200"
-                        >
+                    {ord.items.map((item, idx) => (
 
-                          <img
-                            src={
-                              item.imageUrl
-                            }
-                            alt=""
-                            className="w-10 h-10 rounded-lg object-cover"
-                          />
+                      <div
+                        key={idx}
+                        className="flex items-center gap-3 bg-stone-50 p-2 rounded-xl border border-stone-200"
+                      >
 
-                          <div>
+                        <img
+                          src={item.imageUrl}
+                          alt=""
+                          className="w-10 h-10 rounded-lg object-cover"
+                        />
 
-                            <div className="font-bold text-black">
-                              {item.productName}
-                            </div>
+                        <div>
 
-                            <div className="text-black">
-                              Qty:{' '}
-                              {item.quantity} • ₹
-                              {item.price}{' '}
-                              {item.selectedColor
-                                ? `(${item.selectedColor})`
-                                : ''}
-                            </div>
-
-                            {item.giftNote && (
-                              <div className="text-[10px] text-rose-700 font-semibold">
-                                Note: "
-                                {item.giftNote}"
-                              </div>
-                            )}
-
+                          <div className="font-bold text-black">
+                            {item.productName}
                           </div>
 
+                          <div className="text-black">
+                            Qty: {item.quantity} • ₹{item.price}{' '}
+                            {item.selectedColor
+                              ? `(${item.selectedColor})`
+                              : ''}
+                          </div>
+
+                          {item.giftNote && (
+
+                            <div className="text-[10px] text-rose-700 font-semibold">
+                              Note: "{item.giftNote}"
+                            </div>
+
+                          )}
+
                         </div>
-                      )
-                    )}
+
+                      </div>
+
+                    ))}
 
                   </div>
 
                 </div>
+
               ))}
 
             </div>
 
           </div>
+
         )}
 
         {/* ======================================================= */}
@@ -2141,6 +1829,7 @@ export const AdminDashboard: React.FC = () => {
         {/* ======================================================= */}
 
         {activeTab === 'custom' && (
+
           <div className="space-y-4">
 
             <h3 className="font-extrabold text-black text-lg">
@@ -2150,6 +1839,7 @@ export const AdminDashboard: React.FC = () => {
             <div className="space-y-4">
 
               {customRequests.map(req => (
+
                 <div
                   key={req.id}
                   className="bg-white rounded-3xl border border-stone-200 p-6 shadow-sm space-y-3"
@@ -2238,8 +1928,7 @@ export const AdminDashboard: React.FC = () => {
                       <span>
                         🎨 Colors:{' '}
                         <strong className="text-black">
-                          {req.primaryColor} /{' '}
-                          {req.secondaryColor}
+                          {req.primaryColor} / {req.secondaryColor}
                         </strong>
                       </span>
 
@@ -2253,6 +1942,7 @@ export const AdminDashboard: React.FC = () => {
                     </div>
 
                     {req.quotedPrice && (
+
                       <div className="font-extrabold text-black text-sm">
 
                         Quoted Price:{' '}
@@ -2262,16 +1952,19 @@ export const AdminDashboard: React.FC = () => {
                         </span>
 
                       </div>
+
                     )}
 
                   </div>
 
                 </div>
+
               ))}
 
             </div>
 
           </div>
+
         )}
 
         {/* ======================================================= */}
@@ -2279,6 +1972,7 @@ export const AdminDashboard: React.FC = () => {
         {/* ======================================================= */}
 
         {activeTab === 'settings' && (
+
           <div className="space-y-6 max-w-3xl">
 
             <div className="bg-white rounded-3xl border border-stone-200 p-6 shadow-sm space-y-6">
@@ -2292,7 +1986,7 @@ export const AdminDashboard: React.FC = () => {
                 className="space-y-6"
               >
 
-                {/* GENERAL */}
+                {/* GENERAL STORE INFO */}
 
                 <div className="space-y-4">
 
@@ -2494,7 +2188,7 @@ export const AdminDashboard: React.FC = () => {
 
                   </div>
 
-                  {/* QR */}
+                  {/* QR UPLOAD */}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
 
@@ -2531,9 +2225,7 @@ export const AdminDashboard: React.FC = () => {
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={
-                          handleQrFileUpload
-                        }
+                        onChange={handleQrFileUpload}
                         className="w-full text-xs text-black file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-100 file:text-emerald-700 hover:file:bg-emerald-200"
                       />
 
@@ -2542,12 +2234,11 @@ export const AdminDashboard: React.FC = () => {
                   </div>
 
                   {upiQrImageUrlInput && (
+
                     <div className="flex items-center gap-3 bg-emerald-50/70 p-3 rounded-2xl border border-emerald-200">
 
                       <img
-                        src={
-                          upiQrImageUrlInput
-                        }
+                        src={upiQrImageUrlInput}
                         alt="Custom QR Preview"
                         className="w-16 h-16 rounded-xl object-contain border border-white shadow-sm bg-white"
                       />
@@ -2565,6 +2256,7 @@ export const AdminDashboard: React.FC = () => {
                       </div>
 
                     </div>
+
                   )}
 
                   <div>
@@ -2576,9 +2268,7 @@ export const AdminDashboard: React.FC = () => {
                     <input
                       type="text"
                       placeholder="e.g. Scan QR code with GPay/PhonePe/Paytm and send screenshot on WhatsApp!"
-                      value={
-                        paymentInstructionsInput
-                      }
+                      value={paymentInstructionsInput}
                       onChange={e =>
                         setPaymentInstructionsInput(
                           e.target.value
@@ -2618,9 +2308,7 @@ export const AdminDashboard: React.FC = () => {
                     <input
                       type="text"
                       placeholder="e.g. Science Building Annex / GH-4 Lounge..."
-                      value={
-                        newLocationInput
-                      }
+                      value={newLocationInput}
                       onChange={e =>
                         setNewLocationInput(
                           e.target.value
@@ -2631,9 +2319,7 @@ export const AdminDashboard: React.FC = () => {
 
                     <button
                       type="button"
-                      onClick={
-                        handleAddLocation
-                      }
+                      onClick={handleAddLocation}
                       className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-xs flex items-center gap-1"
                     >
 
@@ -2649,33 +2335,31 @@ export const AdminDashboard: React.FC = () => {
 
                   <div className="flex flex-wrap gap-2 pt-2">
 
-                    {deliveryLocations.map(
-                      (loc, idx) => (
-                        <span
-                          key={idx}
-                          className="bg-purple-50 border border-purple-200 text-purple-900 font-semibold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-xs"
-                        >
+                    {deliveryLocations.map((loc, idx) => (
 
-                          <span>
-                            {loc}
-                          </span>
+                      <span
+                        key={idx}
+                        className="bg-purple-50 border border-purple-200 text-purple-900 font-semibold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-xs"
+                      >
 
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleRemoveLocation(
-                                loc
-                              )
-                            }
-                            className="text-purple-700 hover:text-rose-700 font-black p-0.5 rounded-full hover:bg-rose-100 transition-colors"
-                            title="Remove Location"
-                          >
-                            ×
-                          </button>
-
+                        <span>
+                          {loc}
                         </span>
-                      )
-                    )}
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleRemoveLocation(loc)
+                          }
+                          className="text-purple-700 hover:text-rose-700 font-black p-0.5 rounded-full hover:bg-rose-100 transition-colors"
+                          title="Remove Location"
+                        >
+                          ×
+                        </button>
+
+                      </span>
+
+                    ))}
 
                   </div>
 
@@ -2714,9 +2398,7 @@ export const AdminDashboard: React.FC = () => {
                       <input
                         type="text"
                         required
-                        value={
-                          adminUsernameInput
-                        }
+                        value={adminUsernameInput}
                         onChange={e =>
                           setAdminUsernameInput(
                             e.target.value
@@ -2769,6 +2451,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
 
           </div>
+
         )}
 
       </div>
@@ -2780,84 +2463,49 @@ export const AdminDashboard: React.FC = () => {
       {isCropperOpen && newImageUrl && (
         <div
           className="fixed inset-0 z-[99999] flex items-center justify-center overflow-hidden bg-black/75 p-3 backdrop-blur-md sm:p-6"
-          onClick={() =>
-            setIsCropperOpen(false)
-          }
+          onClick={() => setIsCropperOpen(false)}
         >
-
           <div
             className="flex max-h-[calc(100dvh-24px)] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-2xl sm:max-h-[calc(100dvh-48px)]"
-            onClick={e =>
-              e.stopPropagation()
-            }
+            onClick={e => e.stopPropagation()}
           >
-
-            {/* CROP HEADER */}
-
             <div className="flex shrink-0 items-center justify-between gap-4 border-b border-stone-200 bg-white px-4 py-3 sm:px-6 sm:py-4">
-
               <div className="min-w-0">
-
                 <h2 className="text-base font-extrabold text-black sm:text-lg">
                   Crop Product Card Image
                 </h2>
-
                 <p className="mt-0.5 text-[11px] font-semibold text-stone-500 sm:text-xs">
-                  Drag the image to position it • Use the slider to zoom
+                  Drag the image to position it • Use the controls below
                 </p>
-
               </div>
 
               <button
                 type="button"
-                onClick={() =>
-                  setIsCropperOpen(false)
-                }
+                onClick={() => setIsCropperOpen(false)}
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-black transition-all hover:bg-stone-200 active:scale-95"
                 aria-label="Close cropper"
               >
                 <X className="h-5 w-5" />
               </button>
-
             </div>
 
-            {/* CROP AREA */}
-
             <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-stone-950 p-3 sm:p-5">
-
               <div className="flex min-h-0 w-full items-center justify-center">
-
                 <div
                   className={`relative w-[min(420px,82vw)] aspect-[3/4] max-h-[58dvh] overflow-hidden rounded-2xl bg-stone-900 shadow-2xl ring-1 ring-white/10 touch-none select-none ${
-                    isDraggingCrop
-                      ? 'cursor-grabbing'
-                      : 'cursor-grab'
+                    isDraggingCrop ? "cursor-grabbing" : "cursor-grab"
                   }`}
-                  onPointerDown={
-                    handleCropPointerDown
-                  }
-                  onPointerMove={
-                    handleCropPointerMove
-                  }
-                  onPointerUp={
-                    handleCropPointerUp
-                  }
-                  onPointerCancel={
-                    handleCropPointerUp
-                  }
-                  /*
-                   * IMPORTANT:
-                   * There is intentionally NO onWheel here.
-                   *
-                   * The old wheel handler was responsible for the
-                   * passive event warning and also made the browser
-                   * page zoom/scroll unexpectedly.
-                   *
-                   * Zoom is now controlled only by the controls below.
-                   */
-                  title="Drag to reposition. Use the zoom controls below."
+                  onPointerDown={handleCropPointerDown}
+                  onPointerMove={handleCropPointerMove}
+                  onPointerUp={handleCropPointerUp}
+                  onPointerCancel={handleCropPointerUp}
+                  style={{
+                    touchAction: 'none',
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none'
+                  }}
+                  title="Drag to reposition. Use the controls below."
                 >
-
                   <img
                     src={newImageUrl}
                     alt="Crop preview"
@@ -2866,59 +2514,36 @@ export const AdminDashboard: React.FC = () => {
                     style={{
                       objectPosition: `${cropX * 100}% ${cropY * 100}%`,
                       transform: `scale(${cropZoom})`,
-                      transformOrigin:
-                        'center center'
+                      transformOrigin: 'center center'
                     }}
                   />
 
-                  {/* CROP OVERLAY */}
-
                   <div className="pointer-events-none absolute inset-0">
-
                     <div className="absolute inset-0 rounded-2xl border-2 border-white/95" />
 
                     <div className="absolute left-1/3 top-0 h-full border-l border-white/30" />
-
                     <div className="absolute left-2/3 top-0 h-full border-l border-white/30" />
-
                     <div className="absolute left-0 top-1/3 w-full border-t border-white/30" />
-
                     <div className="absolute left-0 top-2/3 w-full border-t border-white/30" />
 
                     <div className="absolute left-0 top-0 h-8 w-8 rounded-tl-2xl border-l-4 border-t-4 border-white" />
-
                     <div className="absolute right-0 top-0 h-8 w-8 rounded-tr-2xl border-r-4 border-t-4 border-white" />
-
                     <div className="absolute bottom-0 left-0 h-8 w-8 rounded-bl-2xl border-b-4 border-l-4 border-white" />
-
                     <div className="absolute bottom-0 right-0 h-8 w-8 rounded-br-2xl border-b-4 border-r-4 border-white" />
 
                     <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/80 bg-white/20" />
 
                     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/65 px-3 py-1.5 text-[10px] font-bold text-white backdrop-blur-md sm:text-xs">
-                      {isDraggingCrop
-                        ? 'Moving image…'
-                        : 'Drag to reposition'}
+                      {isDraggingCrop ? "Moving image…" : "Drag to reposition"}
                     </div>
-
                   </div>
-
                 </div>
-
               </div>
-
             </div>
 
-            {/* CROP CONTROLS */}
-
             <div className="shrink-0 border-t border-stone-200 bg-white px-4 py-3 sm:px-6 sm:py-4">
-
               <div className="mx-auto w-full max-w-3xl">
-
-                {/* ZOOM */}
-
                 <div className="flex items-center gap-2 sm:gap-3">
-
                   <span className="w-10 shrink-0 text-xs font-extrabold text-black sm:w-12">
                     Zoom
                   </span>
@@ -2927,15 +2552,7 @@ export const AdminDashboard: React.FC = () => {
                     type="button"
                     onClick={() =>
                       setCropZoom(prev =>
-                        Math.max(
-                          1,
-                          Number(
-                            (
-                              prev -
-                              0.1
-                            ).toFixed(2)
-                          )
-                        )
+                        Math.max(1, Number((prev - 0.1).toFixed(2)))
                       )
                     }
                     className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-white text-lg font-bold text-black transition-all hover:bg-stone-100 active:scale-95"
@@ -2952,11 +2569,7 @@ export const AdminDashboard: React.FC = () => {
                     step="0.01"
                     value={cropZoom}
                     onChange={e =>
-                      setCropZoom(
-                        Number(
-                          e.target.value
-                        )
-                      )
+                      setCropZoom(Number(e.target.value))
                     }
                     className="min-w-0 flex-1 accent-purple-600"
                     aria-label="Zoom"
@@ -2966,15 +2579,7 @@ export const AdminDashboard: React.FC = () => {
                     type="button"
                     onClick={() =>
                       setCropZoom(prev =>
-                        Math.min(
-                          3,
-                          Number(
-                            (
-                              prev +
-                              0.1
-                            ).toFixed(2)
-                          )
-                        )
+                        Math.min(3, Number((prev + 0.1).toFixed(2)))
                       )
                     }
                     className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-white text-lg font-bold text-black transition-all hover:bg-stone-100 active:scale-95"
@@ -2984,36 +2589,22 @@ export const AdminDashboard: React.FC = () => {
                   </button>
 
                   <span className="w-12 text-right text-xs font-bold text-stone-500">
-                    {Math.round(
-                      cropZoom * 100
-                    )}
-                    %
+                    {Math.round(cropZoom * 100)}%
                   </span>
-
                 </div>
 
-                {/* POSITION SLIDERS */}
-
                 <div className="mt-3 grid grid-cols-2 gap-3">
-
                   <div>
-
                     <div className="mb-1 flex items-center justify-between">
-
                       <label
                         htmlFor="crop-x"
                         className="text-[11px] font-extrabold text-black"
                       >
                         Horizontal
                       </label>
-
                       <span className="text-[10px] font-bold text-stone-500">
-                        {Math.round(
-                          cropX * 100
-                        )}
-                        %
+                        {Math.round(cropX * 100)}%
                       </span>
-
                     </div>
 
                     <input
@@ -3024,36 +2615,24 @@ export const AdminDashboard: React.FC = () => {
                       step="0.01"
                       value={cropX}
                       onChange={e =>
-                        setCropX(
-                          Number(
-                            e.target.value
-                          )
-                        )
+                        setCropX(Number(e.target.value))
                       }
                       className="w-full accent-purple-600"
                       aria-label="Horizontal position"
                     />
-
                   </div>
 
                   <div>
-
                     <div className="mb-1 flex items-center justify-between">
-
                       <label
                         htmlFor="crop-y"
                         className="text-[11px] font-extrabold text-black"
                       >
                         Vertical
                       </label>
-
                       <span className="text-[10px] font-bold text-stone-500">
-                        {Math.round(
-                          cropY * 100
-                        )}
-                        %
+                        {Math.round(cropY * 100)}%
                       </span>
-
                     </div>
 
                     <input
@@ -3064,29 +2643,18 @@ export const AdminDashboard: React.FC = () => {
                       step="0.01"
                       value={cropY}
                       onChange={e =>
-                        setCropY(
-                          Number(
-                            e.target.value
-                          )
-                        )
+                        setCropY(Number(e.target.value))
                       }
                       className="w-full accent-purple-600"
                       aria-label="Vertical position"
                     />
-
                   </div>
-
                 </div>
 
-                {/* ACTIONS */}
-
                 <div className="mt-3 flex items-center justify-between gap-3 border-t border-stone-100 pt-3">
-
                   <button
                     type="button"
-                    onClick={
-                      resetCropPosition
-                    }
+                    onClick={resetCropPosition}
                     className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-extrabold text-stone-600 transition-all hover:bg-stone-100 hover:text-black active:scale-95"
                   >
                     <RotateCcw className="h-4 w-4" />
@@ -3094,14 +2662,9 @@ export const AdminDashboard: React.FC = () => {
                   </button>
 
                   <div className="flex gap-2">
-
                     <button
                       type="button"
-                      onClick={() =>
-                        setIsCropperOpen(
-                          false
-                        )
-                      }
+                      onClick={() => setIsCropperOpen(false)}
                       className="rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-xs font-extrabold text-black transition-all hover:bg-stone-100 active:scale-95"
                     >
                       Cancel
@@ -3109,23 +2672,16 @@ export const AdminDashboard: React.FC = () => {
 
                     <button
                       type="button"
-                      onClick={
-                        saveCardCrop
-                      }
+                      onClick={saveCardCrop}
                       className="flex items-center gap-2 rounded-xl bg-purple-600 px-5 py-2.5 text-xs font-extrabold text-white shadow-md transition-all hover:bg-purple-700 active:scale-95"
                     >
                       <Crop className="h-4 w-4" />
                       Save Crop
                     </button>
-
                   </div>
-
                 </div>
-
               </div>
-
             </div>
-
           </div>
         </div>
       )}
@@ -3137,65 +2693,47 @@ export const AdminDashboard: React.FC = () => {
       {deleteProductId !== null && (
         <div
           className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
-          onClick={() =>
-            setDeleteProductId(null)
-          }
+          onClick={() => setDeleteProductId(null)}
         >
-
           <div
             className="w-full max-w-md overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-2xl"
-            onClick={e =>
-              e.stopPropagation()
-            }
+            onClick={e => e.stopPropagation()}
           >
-
             <div className="flex items-start gap-4 px-6 pt-6">
-
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-100">
                 <Trash2 className="h-6 w-6 text-rose-600" />
               </div>
 
               <div className="min-w-0">
-
                 <h3 className="text-lg font-extrabold text-black">
                   Delete Product?
                 </h3>
-
                 <p className="mt-1 text-xs font-semibold text-stone-500">
                   This action cannot be undone.
                 </p>
-
               </div>
 
               <button
                 type="button"
-                onClick={() =>
-                  setDeleteProductId(null)
-                }
+                onClick={() => setDeleteProductId(null)}
                 className="ml-auto rounded-xl p-2 text-stone-500 transition-colors hover:bg-stone-100 hover:text-black"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
               </button>
-
             </div>
 
             <div className="px-6 py-5">
-
               <p className="text-sm leading-6 text-stone-600">
                 Are you sure you want to permanently delete this product?
                 It will be removed from your store catalog.
               </p>
-
             </div>
 
             <div className="flex justify-end gap-3 border-t border-stone-200 bg-stone-50 px-6 py-4">
-
               <button
                 type="button"
-                onClick={() =>
-                  setDeleteProductId(null)
-                }
+                onClick={() => setDeleteProductId(null)}
                 className="rounded-xl border border-stone-300 bg-white px-5 py-2.5 text-xs font-extrabold text-black transition-all hover:bg-stone-100 active:scale-95"
               >
                 Cancel
@@ -3204,37 +2742,20 @@ export const AdminDashboard: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-
-                  if (
-                    deleteProductId === null
-                  ) {
-                    return;
-                  }
-
-                  deleteProduct(
-                    deleteProductId
-                  );
-
+                  if (deleteProductId === null) return;
+                  deleteProduct(deleteProductId);
                   setDeleteProductId(null);
-
-                  showToast(
-                    'Product deleted successfully!'
-                  );
+                  showToast("Product deleted successfully!");
                 }}
                 className="flex items-center gap-2 rounded-xl bg-rose-600 px-5 py-2.5 text-xs font-extrabold text-white shadow-md transition-all hover:bg-rose-700 active:scale-95"
               >
                 <Trash2 className="h-4 w-4" />
                 Delete Product
               </button>
-
             </div>
-
           </div>
-
         </div>
       )}
-
     </div>
   );
 };
-
