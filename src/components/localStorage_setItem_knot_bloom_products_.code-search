@@ -1,0 +1,14 @@
+# Query: localStorage.setItem('knot_bloom_products'
+# ContextLines: 1
+
+2 results - 2 files
+
+src\context\StoreContext.backup.tsx:
+  151    useEffect(() => {
+  152:     localStorage.setItem('knot_bloom_products', JSON.stringify(products));
+  153    }, [products]);
+
+src\context\StoreContext.tsx:
+  useEffect(() => {
+  saveStoreData('products', products);
+}, [products]);
