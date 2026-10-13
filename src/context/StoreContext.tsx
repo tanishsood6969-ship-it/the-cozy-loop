@@ -767,11 +767,12 @@ export const StoreProvider: React.FC<{
   const pendingLocalSaves = useRef<Set<string>>(new Set());
   const localMutationVersion = useRef<Record<string, number>>({});
 
-  const markDataTypeModified = (dataType: string) => {
-    markDataTypeModified(dataType);
-    localMutationVersion.current[dataType] =
-      (localMutationVersion.current[dataType] || 0) + 1;
-  };
+ const markDataTypeModified = (dataType: string) => {
+  modifiedDataTypes.current.add(dataType);
+
+  localMutationVersion.current[dataType] =
+    (localMutationVersion.current[dataType] || 0) + 1;
+};
 
   const markProductModified = (id: string) => {
     modifiedProductIds.current.add(id);
